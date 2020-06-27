@@ -1,10 +1,13 @@
 # README
 
+<!-- cspell:ignoreWords Metasys cmdlet MSSDA -->
 To use powershell to invoke Metasys web services I recommend the `Invoke-RestMethod` cmdlet as it understands JSON and parses it for you. This makes it much easier to deal with the results.
 
 ## Get A Token
 
-First you must acquire a token. You want to protect that token. So we'll invoke the method, retrieve the access token, and store it in a `SecureString` all in one line. (Note: you also want to protect your password but I haven't researched credential stores enough to figure out best way to do that).
+First you must acquire a token. You want to protect that token. So we'll invoke the method, retrieve the access token, and store it in a `SecureString` all in one line. (Note: you also want to protect your password but I haven't researched credential stores enough to figure out best way to do that). I did figure out `SecureString` because you need the token in this format to use `Invoke-RestMethod`.
+
+Basically we are doing a `POST` to `/login`:
 
 ```powershell
 > $json = '{ "username": "yourUserName", "password": "yourPassword" }'
@@ -16,6 +19,8 @@ You wouldn't normally want to use `-SkipCertificateCheck` in a production system
 ## Read an Object
 
 Now you can use the token from the first step on multiple calls to the system. A typical use case is to read an object or the attribute of an object. To do that you need the `id` of the object. This isn't discoverable in the UI (yet). But you can use the `/objectIdentifiers` endpoint to look up the `id` given a reference.
+
+This is a `GET /objectIdentifiers`
 
 ```powershell
 > $siteId = Invoke-RestMethod -Uri https://usa.cg.na.jci.com/api/v3/objectIdentifiers?fqr=usa:usa -Authentication bearer -Token $secureAccessToken -SkipCertificateCheck -Method GET
@@ -30,6 +35,9 @@ We can double check this worked:
 
 Now I'm going to read the site director object using this id (and then display the result):
 
+This is a `GET /objects/{id}` where `id` is the `$siteId` we just read:
+
+<!-- cspell:disable -->
 ```powershell
 > $siteObject = Invoke-RestMethod -Uri https://usa.cg.na.jci.com/api/v3/objects/$siteId -Authentication bearer -Token $secureAccessToken -SkipCertificateCheck -Method GET
 > $siteObject
@@ -62,6 +70,7 @@ item                 : @{attrChangeCount=0; name=USA; description=;
                        id=06fa33b0-f717-5f14-b4ef-e592356f4e4c}
 views                : {@{title=Focus; views=System.Object[]; id=viewNameEnumSet.focusView}}
 ```
+<!-- cspell:enable -->
 
 Note that the more complex values aren't expanded. We can specifically mention one to see it. Let's look at the date and time.
 
@@ -98,6 +107,8 @@ For all of the steps that involve reading, the only thing that really changes is
 
 ### Get the id
 
+Again this is `GET /objectIdentifiers`:
+
 ```powershell
 > $id = Invoke-RestMethod -Uri https://usa.cg.na.jci.com/api/v3/objectIdentifiers?fqr=usa:alabama.cg.na.jci.com/Programming2.AV012 -Authentication bearer -Token $secureAccessToken -SkipCertificateCheck -Method GET
 > $id
@@ -105,6 +116,8 @@ For all of the steps that involve reading, the only thing that really changes is
 ```
 
 ### Read Default View
+
+This is `GET /objects/{id}`:
 
 ```powershell
 > $av = Invoke-RestMethod -Uri https://usa.cg.na.jci.com/api/v3/objects/$id -Authentication bearer -Token $secureAccessToken -SkipCertificateCheck -Method GET
@@ -116,6 +129,8 @@ AV012
 ```
 
 ### List the Views
+
+`GET /objects/{id}/views`
 
 Here I'll fetch the views and then show how I explored them to find the options view:
 
@@ -149,8 +164,11 @@ In the last line we actually can view the whole URL for the optionsView
 
 ### Fetch the Options View
 
+`GET /objects/{id}/views?viewId={viewId}`
+
 We'll just use the URL from the last example:
 
+<!-- cspell:disable -->
 ```powershell
 > $optionsView = Invoke-RestMethod -Uri https://usa.cg.na.jci.com/api/v3/objects/9c42b998-ba30-5bb2-85ca-5a337ee82818?viewId=optionsView -Authentication bearer -Token $secureAccessToken -SkipCertificateCheck -Method GET
 >
@@ -194,8 +212,11 @@ attrChangeCount        : 28
 defaultAttribute       : attributeEnumSet.presentValue
 id                     : 9c42b998-ba30-5bb2-85ca-5a337ee82818
 ```
+<!-- cspell:enable -->
 
 ### Read a Single Attribute
+
+`GET /objects/{id}/attributes/{attributeId}`
 
 A typical use case for our MSSDA customers is to be able to poll one or more attributes for change of values. Instead of reading an entire view of an object, we can just read one attribute. then we'll inspect the `item` section of the payload (where all the attribute values are, in this case just `presentValue`). But we'll also inspect the `condition` section of the payload. This is where we'll see any `priority`, `reliability`, or `status` codes associated with the attributes.
 
@@ -241,6 +262,8 @@ So we can see it's in operator override.
 
 ### Write to an Object
 
+`PATCH /objects/{id}` with a body
+
 Here's we'll need to create some json:
 
 ```powershell
@@ -249,7 +272,7 @@ Here's we'll need to create some json:
 > $writeResponse
 ```
 
-![](write-success.png)
+![Write Successful](write-success.png)
 
 And I'll change it back
 
@@ -258,9 +281,11 @@ And I'll change it back
 > $writeResponse = Invoke-RestMethod -Uri https://usa.cg.na.jci.com/api/v3/objects/$id -Authentication bearer -Token $secureAccessToken -SkipCertificateCheck -Method PATCH -Body $writeJson -ContentType "application/json"
 ```
 
-![](reset-values-success.png)
+![Write Successful](reset-values-success.png)
 
 ### List the Commands
+
+`GET /objects/{id}/commands`
 
 Now let's discover the commands on an AV
 
@@ -332,7 +357,7 @@ minItems  : 0
 maxItems  : 0
 ```
 
-Each command is modelled as a JSON schema. Let's take a look at the `operatorOverride` and `release`. We mainly want to inspect the needed parameters which are described in the `items` section:
+Each command is modelled as a JSON schema. Let's take a look at the `operatorOverride` and `release` commands which are at index 0 and 3 respectively of the items property. We mainly want to inspect the needed parameters which are described in the `items` section of each command:
 
 ```powershell
 > $commands.items[1]
@@ -354,7 +379,7 @@ number Value
 
 ```
 
-This command takes one parameter of type `number`. The release command is more complicated. It'll be heldful to convert it to JSON to see all of it:
+This command takes one parameter of type `number`. The release command is more complicated. It'll be helpful to convert it to JSON to see all of it:
 
 ```powershell
 > ConvertTo-Json $commands.items[3] -Depth 10
