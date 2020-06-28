@@ -208,7 +208,12 @@
         $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body
     }
 
-    $response = Invoke-RestMethod @request
+    $responseObject = Invoke-WebRequest @request
+    $response = $null
+    if ($responseObject -and $responseObject.Content) {
+        $response = ConvertFrom-Json ([String]::new($responseObject.Content))
+    }
+    Write-Verbose ("Http Status: " + $responseObject.StatusCode)
     [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
     return $response
 
