@@ -7,7 +7,8 @@ param(
     [switch]$Clear,
     [string]$Body,
     [string]$Method = "Get",
-    [Int]$Version = 3
+    [Int]$Version = 3,
+    [switch]$SkipCertificateCheck
 )
 
 If (($Version -lt 2) -or ($Version -gt 3)) {
@@ -18,6 +19,7 @@ If (($Version -lt 2) -or ($Version -gt 3)) {
 if ($Clear.IsPresent) {
     $env:METASYS_SECURE_TOKEN = $null
     $env:METASYS_SITE = $null
+    $env:METASYS_VERSION = $null
     $env:METASYS_LAST_RESPONSE = $null
     $env:METASYS_EXPIRES = $null
     return
@@ -25,10 +27,30 @@ if ($Clear.IsPresent) {
 
 # Login Region
 
-if ($env:METASYS_EXPIRATION) {
-    $expiration = [Datetime]::Parse($env:METASYS_EXPIRATION)
+if ($env:METASYS_EXPIRES) {
+    $expiration = [Datetime]::Parse($env:METASYS_EXPIRES)
     if ([Datetime]::now -gt $expiration) {
+        # Token is expired, require login
         $Login = $true
+    } else {
+        # attempt to renew the token to keep it fresh
+        $refreshRequest = @{
+            Method = "Get"
+            Uri = [System.Uri]("https://" + $env:METASYS_SITE +  "/api/v" + $env:METASYS_VERSION + "/refreshToken")
+            Authentication = "bearer"
+            Token = ConvertTo-SecureString -String $env:METASYS_SECURE_TOKEN
+            SkipCertificateCheck = true
+        }
+        try {
+            $refreshResponse = Invoke-RestMethod @refreshRequest
+            $env:METASYS_EXPIRES = $refreshResponse.expires
+            $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $refreshResponse.accessToken
+
+        } catch {
+            # refreshing doesn't seem to work
+        }
+
+
     }
 }
 
@@ -68,7 +90,8 @@ if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
         $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
         $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $secureToken
         $env:METASYS_SITE = $Site
-        $env:METASYS_EXPIRATION = $loginResponse.expires
+        $env:METASYS_EXPIRES = $loginResponse.expires
+        $env:METASYS_VERSION = $Version
     }
 }
 
