@@ -8,7 +8,8 @@
         [string]$Body,
         [string]$Method = "Get",
         [Int]$Version = 3,
-        [switch]$SkipCertificateCheck
+        [switch]$SkipCertificateCheck,
+        [string]$Reference
     )
 
     class MetasysEnvVars {
@@ -188,12 +189,26 @@
         }
     }
 
+    if ($Path -and $Reference) {
+        Write-Warning "-Path and -Reference are mutually exclusive"
+        return
+    }
+
+    if (!$Path -and !$Reference) {
+       return
+    }
+
+    if ($Reference) {
+        $Path = "/objectIdentifiers?fqr=" + $Reference
+        $request = buildRequest -uri (buildUri -path $Path)
+    }
 
     if ($Path) {
         $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body
-        $response = Invoke-RestMethod @request
-        [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
-        return $response
     }
+
+    $response = Invoke-RestMethod @request
+    [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
+    return $response
 
 #}
