@@ -49,7 +49,7 @@ if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
 
     $loginRequest = @{
         Method               = "Post"
-        Uri                  = [System.Uri] "https://thesun.cg.na.jci.com/api/v3/login"
+        Uri                  = [System.Uri] ("https://" + $Site + "/api/v" + $Version + "/login")
         Body                 = $json
         ContentType          = "application/json"
         SkipCertificateCheck = true
