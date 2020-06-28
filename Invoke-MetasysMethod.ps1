@@ -11,6 +11,19 @@ param(
     [switch]$SkipCertificateCheck
 )
 
+function buildUri {
+    param (
+        [string]$site = $env:METASYS_SITE,
+        [string]$version = $env:METASYS_VERSION,
+        [string]$baseUri = "api",
+        [string]$path
+    )
+
+
+     $uri = [System.Uri] ("https://" + $site + "/" + ([System.IO.Path]::Join($baseUri, "v" + $version, $path)))
+    return $uri
+}
+
 If (($Version -lt 2) -or ($Version -gt 3)) {
     Write-Error -Message "Version out of range. Should be 2 or 3"
     return
@@ -36,7 +49,7 @@ if ($env:METASYS_EXPIRES) {
         # attempt to renew the token to keep it fresh
         $refreshRequest = @{
             Method = "Get"
-            Uri = [System.Uri]("https://" + $env:METASYS_SITE +  "/api/v" + $env:METASYS_VERSION + "/refreshToken")
+            Uri = buildUri -path "/refreshToken" #[System.Uri]("https://" + $env:METASYS_SITE +  "/api/v" + $env:METASYS_VERSION + "/refreshToken")
             Authentication = "bearer"
             Token = ConvertTo-SecureString -String $env:METASYS_SECURE_TOKEN
             SkipCertificateCheck = true
@@ -71,7 +84,7 @@ if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
 
     $loginRequest = @{
         Method               = "Post"
-        Uri                  = [System.Uri] ("https://" + $Site + "/api/v" + $Version + "/login")
+        Uri                  = buildUri -site $Site -version $Version -path "login" #[System.Uri] ("https://" + $Site + "/api/v" + $Version + "/login")
         Body                 = $json
         ContentType          = "application/json"
         SkipCertificateCheck = true
@@ -100,7 +113,7 @@ if ($Path) {
 
     $request = @{
         Method               = $Method
-        Uri                  = [System.Uri]("https://" + $env:METASYS_SITE + "/api/v3" + $Path)
+        Uri                  = buildUri -path $Path
         Authentication       = "bearer"
         Token                = ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
         SkipCertificateCheck = true
