@@ -124,12 +124,12 @@ Now I can see that their is one parameter of type `number`. In the next section 
 
 ## Send Command
 
-I need to construct the payload which is easy. It's just `[55.0]` where `55` is the value I want to send. Commands always take an array (even if it's empty).
+I need to construct the payload which is easy. It's just `[72.34]` where `72.34` is the value I want to send. Commands always take an array (even if it's empty).
 
 ```powershell
-> $currentValue = ( ./Invoke-MetasysMethod.ps1 -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/attributes/presentValue).item.presentValue
+> $response = ./Invoke-MetasysMethod.ps1 -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/attributes/presentValue
 
-> $currentValue
+> $response.item.presentValue
 
 0
 ```
@@ -137,8 +137,19 @@ I need to construct the payload which is easy. It's just `[55.0]` where `55` is 
 Now send the command
 
 ```powershell
-> 
+> ./Invoke-MetasysMethod.ps1 -Method Put -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/commands/adjust -Body '[72.34]'
 
+```
+
+And read the value back
+
+```powershell
+> $response = ./Invoke-MetasysMethod.ps1 -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/attributes/presentValue
+
+> $response.item.presentValue
+
+72.34
+```
 
 ## Explicitly Login
 
