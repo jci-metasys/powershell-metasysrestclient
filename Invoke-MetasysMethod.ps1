@@ -1,5 +1,4 @@
-# Invoke-RestMethod -Method POST -Uri "https://thesun.cg.na.jci.com/api/v3/login" -Body @{ username="michael"; password="BlahBlah2!" } -ContentType "applicaton/json" -SkipCertificateCheck
-function Invoke-MetasysMethod {
+#function Invoke-MetasysMethod {
     param(
         [string]$Site,
         [string]$UserName,
@@ -130,7 +129,7 @@ function Invoke-MetasysMethod {
         $password = Read-Host -Prompt "Password" -AsSecureString
 
         $jsonObject = @{
-            username = "Michael"
+            username = $UserName
             password = ConvertFrom-SecureString -SecureString $password -AsPlainText
         }
         $json = (ConvertTo-Json $jsonObject)
@@ -145,20 +144,16 @@ function Invoke-MetasysMethod {
 
         try {
             $loginResponse = Invoke-RestMethod @loginRequest
-            $loginSuccessful = $true
-        }
-        catch {
-            Write-Host "An error occurred:"
-            Write-Host $_
-            return
-        }
-
-        if ($loginSuccessful) {
             $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
             [MetasysEnvVars]::setToken((ConvertFrom-SecureString -SecureString $secureToken))
             $env:METASYS_SITE = $Site
             [MetasysEnvVars]::setExpires($loginResponse.expires)
             $env:METASYS_VERSION = $Version
+        }
+        catch {
+            Write-Host "An error occurred:"
+            Write-Host $_
+            return
         }
     }
 
@@ -178,4 +173,4 @@ function Invoke-MetasysMethod {
         return $response
     }
 
-}
+#}
