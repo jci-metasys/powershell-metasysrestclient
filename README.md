@@ -3,6 +3,10 @@
 <!-- cspell:ignoreWords Metasys cmdlet MSSDA -->
 To use powershell to invoke Metasys web services I recommend the `Invoke-RestMethod` cmdlet as it understands JSON and parses it for you. This makes it much easier to deal with the results.
 
+Alternatively you can try your hand at [Invoke-MetasysMethod](./Invoke-MetasysMethod.ps1). It removes a lot of boiler plate from the calls you'll see below.
+
+See [Invoke-MetasysMethod Instructions]
+
 ## Get A Token
 
 First you must acquire a token. You want to protect that token. So we'll invoke the method, retrieve the access token, and store it in a `SecureString` all in one line. (Note: you also want to protect your password but I haven't researched credential stores enough to figure out best way to do that). I did figure out `SecureString` because you need the token in this format to use `Invoke-RestMethod`.

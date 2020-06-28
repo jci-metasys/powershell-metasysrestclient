@@ -2,7 +2,7 @@
     param(
         [string]$Site,
         [string]$UserName,
-        [Boolean]$Login = $false,
+        [switch]$Login,
         [string]$Path,
         [switch]$Clear,
         [string]$Body,
@@ -93,6 +93,7 @@
             Authentication       = "bearer"
             Token                = ConvertTo-SecureString $token
             SkipCertificateCheck = $skipCertCheck
+            ContentType          = "application/json"
         }
     }
 
@@ -151,7 +152,7 @@
         }
     }
 
-    if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin)) {
+    if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($Site -and ($Site -ne [MetasysEnvVars]::getSite()))) {
         if (!$Site) {
             $Site = Read-Host -Prompt "Site"
         }
