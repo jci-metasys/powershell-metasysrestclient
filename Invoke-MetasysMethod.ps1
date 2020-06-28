@@ -37,6 +37,14 @@ class MetasysEnvVars
         $env:METASYS_EXPIRES = $expires
     }
 
+    static [string] getToken() {
+        return $env:METASYS_SECURE_TOKEN
+    }
+
+    static [void] setToken([string]$token) {
+        $env:METASYS_SECURE_TOKEN = $token
+    }
+
     static [void] clear() {
         $env:METASYS_SECURE_TOKEN = $null
         $env:METASYS_SITE = $null
@@ -84,15 +92,15 @@ if ([MetasysEnvVars]::getExpires()) {
         # attempt to renew the token to keep it fresh
         $refreshRequest = @{
             Method = "Get"
-            Uri = buildUri -path "/refreshToken" #[System.Uri]("https://" + $env:METASYS_SITE +  "/api/v" + $env:METASYS_VERSION + "/refreshToken")
+            Uri = buildUri -path "/refreshToken"
             Authentication = "bearer"
-            Token = ConvertTo-SecureString -String $env:METASYS_SECURE_TOKEN
+            Token = ConvertTo-SecureString -String ([MetasysEnvVars]::getToken())
             SkipCertificateCheck = true
         }
         try {
             $refreshResponse = Invoke-RestMethod @refreshRequest
             [MetasysEnvVars]::setExpires($refreshResponse.expires)
-            $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $refreshResponse.accessToken
+            [MetasysEnvVars]::setToken( (ConvertFrom-SecureString -SecureString $refreshResponse.accessToken) )
 
         } catch {
             # refreshing doesn't seem to work
@@ -102,7 +110,7 @@ if ([MetasysEnvVars]::getExpires()) {
     }
 }
 
-if (($Login) -or (!$env:METASYS_SECURE_TOKEN) -or ($ForceLogin)) {
+if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin)) {
     if (!$Site) {
         $Site = Read-Host -Prompt "Site"
     }
@@ -136,7 +144,7 @@ if (($Login) -or (!$env:METASYS_SECURE_TOKEN) -or ($ForceLogin)) {
 
     if ($loginSuccessful) {
         $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
-        $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $secureToken
+        [MetasysEnvVars]::setToken((ConvertFrom-SecureString -SecureString $secureToken))
         $env:METASYS_SITE = $Site
         [MetasysEnvVars]::setExpires($loginResponse.expires)
         $env:METASYS_VERSION = $Version
@@ -150,7 +158,7 @@ if ($Path) {
         Method               = $Method
         Uri                  = buildUri -path $Path
         Authentication       = "bearer"
-        Token                = ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
+        Token                = ConvertTo-SecureString ([MetasysEnvVars]::getToken())
         SkipCertificateCheck = true
     }
     $response = Invoke-RestMethod @request
