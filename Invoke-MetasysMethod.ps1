@@ -18,10 +18,19 @@ If (($Version -lt 2) -or ($Version -gt 3)) {
 if ($Clear.IsPresent) {
     $env:METASYS_SECURE_TOKEN = $null
     $env:METASYS_SITE = $null
+    $env:METASYS_LAST_RESPONSE = $null
+    $env:METASYS_EXPIRES = $null
     return
 }
 
 # Login Region
+
+if ($env:METASYS_EXPIRATION) {
+    $expiration = [Datetime]::Parse($env:METASYS_EXPIRATION)
+    if ([Datetime]::now -gt $expiration) {
+        $Login = $true
+    }
+}
 
 if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
     if (!$Site) {
@@ -39,17 +48,18 @@ if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
     $json = (ConvertTo-Json $jsonObject)
 
     $loginRequest = @{
-        Method = "Post"
-        Uri = [System.Uri] "https://thesun.cg.na.jci.com/api/v3/login"
-        Body = $json
-        ContentType = "application/json"
+        Method               = "Post"
+        Uri                  = [System.Uri] "https://thesun.cg.na.jci.com/api/v3/login"
+        Body                 = $json
+        ContentType          = "application/json"
         SkipCertificateCheck = true
     }
 
     try {
         $loginResponse = Invoke-RestMethod @loginRequest
         $loginSuccessful = $true
-    } catch {
+    }
+    catch {
         Write-Host "An error occurred:"
         Write-Host $_
     }
@@ -58,21 +68,22 @@ if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
         $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
         $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $secureToken
         $env:METASYS_SITE = $Site
+        $env:METASYS_EXPIRATION = $loginResponse.expires
     }
 }
 
 
 if ($Path) {
 
-    $uriBuilder = New-Object -TypeName System.UriBuilder -ArgumentList  "https",  $METASYS_SITE
+    $uriBuilder = New-Object -TypeName System.UriBuilder -ArgumentList  "https", $METASYS_SITE
     $uriBuilder.Path = "api/v" + $Version + "/" + $Path
     $uri = $uriBuilder.Uri
 
     $request = @{
-        Method = $Method
-        Uri = [System.Uri]("https://thesun.cg.na.jci.com/api/v3" + $Path)
-        Authentication = "bearer"
-        Token = ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
+        Method               = $Method
+        Uri                  = [System.Uri]("https://thesun.cg.na.jci.com/api/v3" + $Path)
+        Authentication       = "bearer"
+        Token                = ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
         SkipCertificateCheck = true
     }
     $response = Invoke-RestMethod @request
