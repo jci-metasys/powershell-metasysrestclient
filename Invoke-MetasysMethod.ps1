@@ -45,6 +45,14 @@ class MetasysEnvVars
         $env:METASYS_SECURE_TOKEN = $token
     }
 
+    static [string] getLast() {
+        return $env:METASYS_LAST_RESPONSE
+    }
+
+    static [void] setLast([string]$last) {
+        $env:METASYS_LAST_RESPONSE = $last
+    }
+
     static [void] clear() {
         $env:METASYS_SECURE_TOKEN = $null
         $env:METASYS_SITE = $null
@@ -162,7 +170,7 @@ if ($Path) {
         SkipCertificateCheck = true
     }
     $response = Invoke-RestMethod @request
-    $env:METASYS_LAST_RESPONSE = ConvertTo-Json $response -Depth 15
+    [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
     return $response
 }
 
