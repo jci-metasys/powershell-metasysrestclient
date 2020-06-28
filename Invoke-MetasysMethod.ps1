@@ -75,13 +75,9 @@ if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
 
 if ($Path) {
 
-    $uriBuilder = New-Object -TypeName System.UriBuilder -ArgumentList  "https", $METASYS_SITE
-    $uriBuilder.Path = "api/v" + $Version + "/" + $Path
-    $uri = $uriBuilder.Uri
-
     $request = @{
         Method               = $Method
-        Uri                  = [System.Uri]("https://thesun.cg.na.jci.com/api/v3" + $Path)
+        Uri                  = [System.Uri]("https://" + $env:METASYS_SITE + "/api/v3" + $Path)
         Authentication       = "bearer"
         Token                = ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
         SkipCertificateCheck = true
