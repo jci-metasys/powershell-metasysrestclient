@@ -11,16 +11,53 @@ param(
     [switch]$SkipCertificateCheck
 )
 
+class MetasysEnvVars
+{
+    static [string] getSite() {
+        return $env:METASYS_SITE
+    }
+
+    static [void] setSite([string]$site) {
+        $env:METASYS_SITE = $site
+    }
+
+    static [int] getVersion() {
+        return $env:METASYS_VERSION
+    }
+
+    static [void] setVersion([int]$version) {
+        $enf:METASYS_VERSION = $version
+    }
+
+    static [string] getExpires() {
+        return $env:METASYS_EXPIRES
+    }
+
+    static [void] setExpires([string]$expires) {
+        $env:METASYS_EXPIRES = $expires
+    }
+
+    static [void] clear() {
+        $env:METASYS_SECURE_TOKEN = $null
+        $env:METASYS_SITE = $null
+        $env:METASYS_VERSION = $null
+        $env:METASYS_LAST_RESPONSE = $null
+        $env:METASYS_EXPIRES = $null
+    }
+
+}
+
+Set-StrictMode -Version 2
+
 function buildUri {
     param (
-        [string]$site = $env:METASYS_SITE,
-        [string]$version = $env:METASYS_VERSION,
+        [string]$site = [MetasysEnvVars]::getSite(),
+        [int]$version = [MetasysEnvVars]::getVersion(),
         [string]$baseUri = "api",
         [string]$path
     )
 
-
-     $uri = [System.Uri] ("https://" + $site + "/" + ([System.IO.Path]::Join($baseUri, "v" + $version, $path)))
+    $uri = [System.Uri] ("https://" + $site + "/" + ([System.IO.Path]::Join($baseUri, "v" + $version, $path)))
     return $uri
 }
 
@@ -30,21 +67,19 @@ If (($Version -lt 2) -or ($Version -gt 3)) {
 }
 
 if ($Clear.IsPresent) {
-    $env:METASYS_SECURE_TOKEN = $null
-    $env:METASYS_SITE = $null
-    $env:METASYS_VERSION = $null
-    $env:METASYS_LAST_RESPONSE = $null
-    $env:METASYS_EXPIRES = $null
-    return
+    [MetasysEnvVars]::clear()
+    return # end the program
 }
 
 # Login Region
 
-if ($env:METASYS_EXPIRES) {
-    $expiration = [Datetime]::Parse($env:METASYS_EXPIRES)
+$ForceLogin = false
+
+if ([MetasysEnvVars]::getExpires()) {
+    $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
     if ([Datetime]::now -gt $expiration) {
         # Token is expired, require login
-        $Login = $true
+        $ForceLogin = $true
     } else {
         # attempt to renew the token to keep it fresh
         $refreshRequest = @{
@@ -56,7 +91,7 @@ if ($env:METASYS_EXPIRES) {
         }
         try {
             $refreshResponse = Invoke-RestMethod @refreshRequest
-            $env:METASYS_EXPIRES = $refreshResponse.expires
+            [MetasysEnvVars]::setExpires($refreshResponse.expires)
             $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $refreshResponse.accessToken
 
         } catch {
@@ -67,7 +102,7 @@ if ($env:METASYS_EXPIRES) {
     }
 }
 
-if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
+if (($Login) -or (!$env:METASYS_SECURE_TOKEN) -or ($ForceLogin)) {
     if (!$Site) {
         $Site = Read-Host -Prompt "Site"
     }
@@ -103,7 +138,7 @@ if (($Login -eq $true) -or (!$env:METASYS_SECURE_TOKEN)) {
         $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
         $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $secureToken
         $env:METASYS_SITE = $Site
-        $env:METASYS_EXPIRES = $loginResponse.expires
+        [MetasysEnvVars]::setExpires($loginResponse.expires)
         $env:METASYS_VERSION = $Version
     }
 }
