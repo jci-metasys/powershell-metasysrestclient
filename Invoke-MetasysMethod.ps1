@@ -76,6 +76,37 @@
         return $uri
     }
 
+    function buildRequest {
+        param (
+            [string]$method = "Get",
+            [string]$uri,
+            [string]$body = $null,
+            [string]$token = [MetasysEnvVars]::getToken(),
+            [bool]$skipCertCheck = $true
+        )
+
+        return @{
+            Method               = $method
+            Uri                  = buildUri -path $Path
+            Body                 = $body
+            Authentication       = "bearer"
+            Token                = ConvertTo-SecureString $token
+            SkipCertificateCheck = $skipCertCheck
+        }
+    }
+
+    function executeRequest {
+        param (
+            [string]$method = "Get",
+            [string]$uri,
+            [string]$body = $null,
+            [string]$token = [MetasysEnvVars]::getToken(),
+            [bool]$skipCertCheck = $true
+        )
+
+        return Invoke-RestMethod @(buildRequest -uri (buildUri -path $Path) -method $Method -body $Body)
+    }
+
     If (($Version -lt 2) -or ($Version -gt 3)) {
         Write-Error -Message "Version out of range. Should be 2 or 3"
         return
@@ -159,15 +190,7 @@
 
 
     if ($Path) {
-
-        $request = @{
-            Method               = $Method
-            Uri                  = buildUri -path $Path
-            Body                 = $Body
-            Authentication       = "bearer"
-            Token                = ConvertTo-SecureString ([MetasysEnvVars]::getToken())
-            SkipCertificateCheck = true
-        }
+        $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body
         $response = Invoke-RestMethod @request
         [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
         return $response
