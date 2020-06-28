@@ -4,7 +4,7 @@ param(
     [string]$UserName,
     [Boolean]$Login = $false,
     [string]$Path,
-    [Boolean]$Clear = $false,
+    [switch]$Clear,
     [string]$Body,
     [string]$Method = "Get",
     [Int]$Version = 3
@@ -15,7 +15,7 @@ If (($Version -lt 2) -or ($Version -gt 3)) {
     return
 }
 
-if ($Clear) {
+if ($Clear.IsPresent) {
     $env:METASYS_SECURE_TOKEN = $null
     $env:METASYS_SITE = $null
     return
