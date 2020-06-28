@@ -75,6 +75,8 @@ if ($Path) {
         Token = ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
         SkipCertificateCheck = true
     }
-    return Invoke-RestMethod @request
+    $response = Invoke-RestMethod @request
+    $env:METASYS_LAST_RESPONSE = ConvertTo-Json $response -Depth 15
+    return $response
 }
 
