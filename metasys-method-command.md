@@ -11,27 +11,41 @@ PS> Install-Module -Name Invoke-MetasysMethod
 ## Usage
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 [[-Method] <string>] [[-Site] <string>]
+> Invoke-MetasysMethod [[-Method] <string>] [[-Site] <string>]
 >   [[-Version] <Int32>] [[-Path] <string>][[-Body] <string>] [[]] [[-UserName] <string>]
 >   [[-Reference] <string>] [-Clear] [-SkipCertificateCheck]
 ```
 
-## Read an Object
-
-This can be done in 2 steps. The first is to get the guid of the object and the second is to read the object.
+Some documentation is provided by the help system:
 
 ```powershell
-> $id = ./Invoke-MetasysMethod.ps1 -Reference thesun:thesun
+> help Invoke-MetasysMethod
+```
+
+## Read an Object
+
+This can be done in 2 steps. The first is to get the guid of the object and the second is to read the object. I'm using `-Reference thesun:thesun` switch which is just a short cut for calling `-Path /objectIdentifiers?fqr=thesun:thesun`. I find I'm often looking up object ids so this made it slightly easier.
+
+```powershell
+> $id = Invoke-MetasysMethod -Reference thesun:thesun
 
 Site: thesun.cg.na.jci.com
 UserName: Michael
 Password: **********
 ```
 
-Notice that it prompted me for the site and my credentials. Next I'll read the object
+Notice that it prompted me for the site and my credentials. Let's examine the id to make sure it worked:
 
 ```powershell
-> $object = ./Invoke-MetasysMethod.ps1 -Path /objects/$id
+$id
+
+c05d5d30-ebf0-5533-8e67-f74bb728bf18
+```
+
+That looks like a valid guid. Next I'll read the object
+
+```powershell
+> $object = Invoke-MetasysMethod -Path /objects/$id
 
 ```
 
@@ -47,12 +61,130 @@ thesun
 
 ```
 
+In this case the description was empty so there was nothing to see.
+
+Or you can see the whole `item` section (which contains all of the attributes) and convert it to json
+
+```powershell
+> ConvertTo-Json $object.item -Depth 10
+
+{
+  "attrChangeCount": 0.0,
+  "name": "thesun",
+  "description": "The Sun Server",
+  "bacnetObjectType": "objectTypeEnumSet.adsClass",
+  "objectCategory": "objectCategoryEnumSet.systemCategory",
+  "version": {
+    "major": 34,
+    "minor": 0
+  },
+  "modelName": "ADS",
+  "localTime": {
+    "hour": 6,
+    "minute": 16,
+    "second": 45,
+    "hundredth": 321
+  },
+  "localDate": {
+    "year": 2020,
+    "month": 6,
+    "dayOfMonth": 29,
+    "dayOfWeek": 1
+  },
+  "itemReference": "thesun:thesun",
+  "fipsComplianceStatus": "noOfComplianceStateEnumSet.nonCompliantUnlicensed",
+  "almSnoozeTime": 5.0,
+  "auditEnabledClasLev": 2.0,
+  "addAdsrepos": [],
+  "adsRepositoriesStatus": [],
+  "sampleRate": 139.2857,
+  "serviceTime": 56.0,
+  "numberOfNxesReporting": 8.0,
+  "transferBufferFullWorstNxe": 4.0,
+  "hostName": "Granymede4201",
+  "isValidated": false,
+  "id": "c05d5d30-ebf0-5533-8e67-f74bb728bf18"
+}
+```
+
+## Environment Variables
+
+There are a couple enviroment variables that are set that you might find useful.
+
+Here I'm inspecting what site I'm on.
+
+```powershell
+> $env:METASYS_SITE
+
+thesun.cg.na.jci.com
+```
+
+Let's say I made a call but forgot to store it in a variable. You can use `$env:METASYS_LAST_RESPONSE`
+
+For example, let me fetch the object again:
+
+```powershell
+> Invoke-MetasysMethod -Path /objects/$id
+
+self                 : https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18?includeSchema=false&viewId=viewNameEnumSet.focusView
+objectType           : objectTypeEnumSet.adsClass
+parentUrl            : https://thesun.cg.na.jci.com/api/v3/objects/8e16a75e-20e8-55bd-ac11-926c1122d69c
+objectsUrl           : https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/objects
+networkDeviceUrl     :
+pointsUrl            : https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/points
+trendedAttributesUrl : https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/trendedAttributes
+alarmsUrl            : https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/alarms
+auditsUrl            : https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/audits
+item                 : @{attrChangeCount=0; name=thesun; description=The Sun Server; bacnetObjectType=objectTypeEnumSet.adsClass; objectCategory=objectCategoryEnumSet.systemCategory; version=; modelName=ADS; localTime=; localDate=; itemReference=thesun:thesun;
+                       fipsComplianceStatus=noOfComplianceStateEnumSet.nonCompliantUnlicensed; almSnoozeTime=5; auditEnabledClasLev=2; addAdsrepos=System.Object[]; adsRepositoriesStatus=System.Object[]; sampleRate=0; serviceTime=56; numberOfNxesReporting=8; transferBufferFullWorstNxe=4; hostName=Granymede4201;
+                       isValidated=False; id=c05d5d30-ebf0-5533-8e67-f74bb728bf18}
+views                : {@{title=Focus; views=System.Object[]; id=viewNameEnumSet.focusView}}
+condition            :
+```
+
+But I wanted it to be in a variable so that I could query it like a normal object rather than copy paste. Or in this case I can't see all of the `item` section because the default rendering doesn't show everything. Not to worry. The full json representation is in the environment variable
+
+```powershell
+$env:METASYS_LAST_RESPONSE
+
+{
+  "self": "https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18?includeSchema=false&viewId=viewNameEnumSet.focusView",
+  "objectType": "objectTypeEnumSet.adsClass",
+  "parentUrl": "https://thesun.cg.na.jci.com/api/v3/objects/8e16a75e-20e8-55bd-ac11-926c1122d69c",
+  "objectsUrl": "https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/objects",
+  "networkDeviceUrl": null,
+  "pointsUrl": "https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/points",
+  "trendedAttributesUrl": "https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/trendedAttributes",
+  "alarmsUrl": "https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/alarms",
+  "auditsUrl": "https://thesun.cg.na.jci.com/api/v3/objects/c05d5d30-ebf0-5533-8e67-f74bb728bf18/audits",
+  "item": {
+    "attrChangeCount": 0.0,
+    "name": "thesun",
+    "description": "The Sun Server",
+    "bacnetObjectType": "objectTypeEnumSet.adsClass",
+    "objectCategory": "objectCategoryEnumSet.systemCategory",
+    "version": {
+      "major": 34,
+      "minor": 0
+...truncated
+```
+
+If I want to store this for later in my own object (rather than JSON):
+
+```powershell
+> $object = ConvertFrom-Json $env:METASYS_LAST_RESPONSE
+
+> $object.item.name
+
+thesun
+```
+
 ## Read an Attribute
 
 Now we'll read just one attribute - the status - of the site object
 
 ```powershell
- > $siteObject = ./Invoke-MetasysMethod.ps1 -Path /objects/$id/attributes/status
+ > $siteObject = Invoke-MetasysMethod -Path /objects/$id/attributes/status
 
 > $siteObject.item
 
@@ -69,13 +201,13 @@ Now we'll write the description to be "The Sun Server"
 ```powershell
 > $json = '{ "item": { "description": "The Sun Server" } }'
 
-> ./Invoke-MetasysMethod.ps1 -Method Patch -Body $json -Path /objects/$id
+> Invoke-MetasysMethod -Method Patch -Body $json -Path /objects/$id
 ```
 
 And we'll read it back to see it changed
 
 ```powershell
-> $description = ./Invoke-MetasysMethod.ps1 -Path /objects/$id/attributes/description
+> $description = Invoke-MetasysMethod -Path /objects/$id/attributes/description
 
 > $description.item.description
 
@@ -87,7 +219,7 @@ The Sun Server
 Now let's take a look at some commands on an AV:
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 -Reference thesun:TSunN50/AV1
+> Invoke-MetasysMethod -Reference thesun:TSunN50/AV1
 
 ec73dbb1-db01-5e59-aaff-6552288bba54
 ```
@@ -95,7 +227,7 @@ ec73dbb1-db01-5e59-aaff-6552288bba54
 And we'll use that to look up commands
 
 ```powershell
-> $commands = > ./Invoke-MetasysMethod.ps1 -Path /objects/ec73dbb1-db01-5e59-aaff-6552288bba54/commands
+> $commands = > Invoke-MetasysMethod -Path /objects/ec73dbb1-db01-5e59-aaff-6552288bba54/commands
 ```
 
 Now let's take a look at the commands. I'm just going to look at the first one which I know is `adjust`
@@ -131,7 +263,7 @@ Now I can see that their is one parameter of type `number`. In the next section 
 I need to construct the payload which is easy. It's just `[72.34]` where `72.34` is the value I want to send. Commands always take an array (even if it's empty).
 
 ```powershell
-> $response = ./Invoke-MetasysMethod.ps1 -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/attributes/presentValue
+> $response = Invoke-MetasysMethod -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/attributes/presentValue
 
 > $response.item.presentValue
 
@@ -141,14 +273,14 @@ I need to construct the payload which is easy. It's just `[72.34]` where `72.34`
 Now send the command
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 -Method Put -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/commands/adjust -Body '[72.34]'
+> Invoke-MetasysMethod -Method Put -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/commands/adjust -Body '[72.34]'
 
 ```
 
 And read the value back
 
 ```powershell
-> $response = ./Invoke-MetasysMethod.ps1 -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/attributes/presentValue
+> $response = Invoke-MetasysMethod -Path /objects/7ecb7158-e2b5-52af-a4cf-b352486406fc/attributes/presentValue
 
 > $response.item.presentValue
 
@@ -166,7 +298,7 @@ Force a login with the `-Login` switch
 Here you can see that I have a valid session as I'm able to read the id of an object
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 -Reference thesun:thesun
+> Invoke-MetasysMethod -Reference thesun:thesun
 
 c05d5d30-ebf0-5533-8e67-f74bb728bf18
 ```
@@ -174,7 +306,7 @@ c05d5d30-ebf0-5533-8e67-f74bb728bf18
 Now I'll make the same call but with `-Login` switch
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 -Reference thesun:thesun -Login
+> Invoke-MetasysMethod -Reference thesun:thesun -Login
 
 Site: thesun.cg.na.jci.com
 UserName: Michael
@@ -187,7 +319,7 @@ c05d5d30-ebf0-5533-8e67-f74bb728bf18
 Now I'm going to make a call to a different site. I could just pass `-Login` but I want to go ahead and pass the site and my username on the command line:
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 -Reference WIN-21DJ9JV9QH6:WIN-21DJ9JV9QH6 -Site 10.164.104.81 -UserName testuser
+> Invoke-MetasysMethod -Reference WIN-21DJ9JV9QH6:WIN-21DJ9JV9QH6 -Site 10.164.104.81 -UserName testuser
 
 Password: ************
 1949c631-7823-5230-b951-aae3f8c9d64a
@@ -202,13 +334,13 @@ All of the session state is stored in environment variables. If at any time you 
 So I'll go ahead and use `-Clear`
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 -Clear
+> Invoke-MetasysMethod -Clear
 ```
 
 And then make the same call as in the last section (without -Site or -UserName) and you'll see I'm prompted for credentials
 
 ```powershell
-> ./Invoke-MetasysMethod.ps1 -Reference WIN-21DJ9JV9QH6:WIN-21DJ9JV9QH6
+> Invoke-MetasysMethod -Reference WIN-21DJ9JV9QH6:WIN-21DJ9JV9QH6
 
 Site: 10.164.104.81
 UserName: testuser
