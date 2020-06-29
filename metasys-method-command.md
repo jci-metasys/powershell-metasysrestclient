@@ -4,7 +4,9 @@
 
 ## Installation
 
-
+```powershell
+PS> Install-Module -Name Invoke-MetasysMethod
+```
 
 ## Usage
 

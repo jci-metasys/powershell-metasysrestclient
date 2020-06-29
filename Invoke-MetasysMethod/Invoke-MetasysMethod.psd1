@@ -30,7 +30,7 @@ CompanyName = 'Johnson Controls'
 Copyright = '(c) Michael Welch. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'Allow you to interact with Metasys REST API'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
