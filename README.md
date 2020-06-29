@@ -5,7 +5,7 @@ To use powershell to invoke Metasys web services I recommend the `Invoke-RestMet
 
 Alternatively you can try your hand at [Invoke-MetasysMethod](./Invoke-MetasysMethod.ps1). It removes a lot of boiler plate from the calls you'll see below.
 
-See [Invoke-MetasysMethod Instructions]
+See [Invoke-MetasysMethod Instructions](./metasys-method-command.md)
 
 ## Get A Token
 
