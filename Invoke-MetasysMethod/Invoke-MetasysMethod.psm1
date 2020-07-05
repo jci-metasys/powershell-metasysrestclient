@@ -41,6 +41,8 @@ function Invoke-MetasysMethod {
         https://github.jci.com/cwelchmi/metasys-powershell-tutorial/blob/main/invoke-metasys-method.md
 
     #>
+
+    [CmdletBinding(PositionalBinding=$false)]
     param(
         # The hostname or ip address of the site you wish to interact with
         [string]$Site,
