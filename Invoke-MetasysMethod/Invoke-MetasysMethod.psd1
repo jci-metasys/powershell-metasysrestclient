@@ -12,7 +12,7 @@
 RootModule = 'Invoke-MetasysMethod.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.3'
+ModuleVersion = '0.0.6'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -69,7 +69,7 @@ Description = 'Allow you to interact with Metasys REST API'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Invoke-MetasysMethod'
+FunctionsToExport = 'Invoke-MetasysMethod', 'Invoke-MetasysGet', 'Invoke-MetasysPut', 'Invoke-MetasysPatch', 'Invoke-MetasysGetObject'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'
@@ -78,7 +78,7 @@ CmdletsToExport = '*'
 VariablesToExport = '*'
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = '*'
+AliasesToExport = 'mget', 'mput', 'mpatch', "mget-object"
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()

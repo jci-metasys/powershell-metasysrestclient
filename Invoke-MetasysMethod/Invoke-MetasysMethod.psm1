@@ -42,7 +42,7 @@ function Invoke-MetasysMethod {
 
     #>
 
-    [CmdletBinding(PositionalBinding=$false)]
+    [CmdletBinding(PositionalBinding = $false)]
     param(
         # The hostname or ip address of the site you wish to interact with
         [string]$Site,
@@ -71,7 +71,10 @@ function Invoke-MetasysMethod {
         # all checks of the certifiate to be skipped.
         [switch]$SkipCertificateCheck,
         # A short cut for looking up the id of an object.
-        [string]$Reference
+        [string]$Reference,
+        # Rather than just returning the content, return the full web response
+        # object will include extra like the response headers.
+        [switch]$FullWebResponse
     )
 
     class MetasysEnvVars {
@@ -183,7 +186,7 @@ function Invoke-MetasysMethod {
 
     # Login Region
 
-    $ForceLogin = false
+    $ForceLogin = $false
 
     if ([MetasysEnvVars]::getExpires()) {
         $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
@@ -198,7 +201,7 @@ function Invoke-MetasysMethod {
                 Uri                  = buildUri -path "/refreshToken"
                 Authentication       = "bearer"
                 Token                = ConvertTo-SecureString -String ([MetasysEnvVars]::getToken())
-                SkipCertificateCheck = true
+                SkipCertificateCheck = $true
             }
             try {
                 $refreshResponse = Invoke-RestMethod @refreshRequest
@@ -234,7 +237,7 @@ function Invoke-MetasysMethod {
             Uri                  = buildUri -site $Site -version $Version -path "login" #[System.Uri] ("https://" + $Site + "/api/v" + $Version + "/login")
             Body                 = $json
             ContentType          = "application/json"
-            SkipCertificateCheck = true
+            SkipCertificateCheck = $true
         }
 
         try {
@@ -258,7 +261,7 @@ function Invoke-MetasysMethod {
     }
 
     if (!$Path -and !$Reference) {
-       return
+        return
     }
 
     if ($Reference) {
@@ -272,12 +275,73 @@ function Invoke-MetasysMethod {
 
     $responseObject = Invoke-WebRequest @request
     $response = $null
-    if ($responseObject -and $responseObject.Content) {
-        $response = ConvertFrom-Json ([String]::new($responseObject.Content))
+    if ($FullWebResponse.IsPresent) {
+        $response = $responseObject
+    }
+    else {
+        if ($responseObject -and $responseObject.Content) {
+            $response = ConvertFrom-Json ([String]::new($responseObject.Content))
+        }
     }
     Write-Verbose ("Http Status: " + $responseObject.StatusCode)
     [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
     return $response
 
 }
-Export-ModuleMember -Function 'Invoke-MetasysMethod'
+
+function Invoke-MetasysGet {
+    param([Parameter(Position = 0)][string]$Path)
+    Invoke-MetasysMethod -Path $Path
+}
+function Invoke-MetasysPatch {
+    param([Parameter(Position = 0)][string]$Path, [Parameter(Position = 1)][string]$Body)
+    Invoke-MetasysMethod -Method Patch -Body $Body -Path $Path
+}
+
+function Invoke-MetasysPut {
+    param([Parameter(Position = 0)][string]$Path, [Parameter(Position = 1)][string]$Body)
+    Invoke-MetasysMethod -Method Put -Body $Body -Path $Path
+}
+
+function Invoke-MetasysGetObject {
+    <#
+    .SYNOPSIS
+        Reads the default view of a Metasys object
+
+    .DESCRIPTION
+        This function allows you to read a Metasys object given the specified
+        Reference. You will be prompted for a site and your credentials unless a
+        session has already been established.
+
+    .OUTPUTS
+        The object payload returned by the server.
+
+    .EXAMPLE
+        Invoke-MetasysGet-Object -Reference thesun:thesun
+
+        This will prompt you for the Site and your credentials and read the default view of this object.
+
+    .LINK
+
+        https://github.jci.com/cwelchmi/metasys-powershell-tutorial/blob/main/invoke-metasys-method.md
+
+    #>
+    param(
+        # The fully qualified references of a Metasys object
+        [Parameter(Position = 0)][string]$Reference
+    )
+    $id = [System.Environment]::GetEnvironmentVariable("idFor:" + $Reference)
+    if (!$id) {
+        $id = Invoke-MetasysGet -Path ("/objectIdentifiers?fqr=" + $Reference)
+        [System.Environment]::SetEnvironmentVariable("idFor:" + $Reference, $id)
+    }
+    Invoke-MetasysGet ("/objects/" + $id)
+}
+
+New-Alias -Name mget -Value Invoke-MetasysGet
+New-Alias -Name mpatch -Value Invoke-MetasysPatch
+New-Alias -Name mput -Value Invoke-MetasysPut
+New-Alias -Name mget-object -Value Invoke-MetasysGetObject
+
+Export-ModuleMember -Function 'Invoke-MetasysMethod' -Function 'Invoke-MetasysGet' -Function 'Invoke-MetasysPut' -Function 'Invoke-MetasysGetObject'
+Export-ModuleMember -Alias 'mget' -Alias 'mpatch' -Alias 'mput' -Alias 'mget-object'
