@@ -1,5 +1,5 @@
 param(
-    [string]$Site,
+    [string]$SiteHost,
     [string]$UserName,
     [switch]$Login,
     [string]$Path,
@@ -11,4 +11,4 @@ param(
     [string]$Reference
 )
 Import-Module -Name ./Invoke-MetasysMethod
-Invoke-MetasysMethod -Site $Site -UserName $UserName -Path $Path -Body $Body -Method $Method -Version $Version -Reference $Reference
+Invoke-MetasysMethod -SiteHost $SiteHose -UserName $UserName -Path $Path -Body $Body -Method $Method -Version $Version -Reference $Reference

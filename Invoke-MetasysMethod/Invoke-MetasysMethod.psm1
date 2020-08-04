@@ -175,6 +175,43 @@ function Invoke-MetasysMethod {
         return Invoke-RestMethod @(buildRequest -uri (buildUri -path $Path) -method $Method -body $Body)
     }
 
+    function find-internet-user {
+        param (
+            [string]$siteHost
+        )
+
+        $cred = Invoke-Expression "security find-internet-password -s $siteHost 2>/dev/null"
+        if ($cred) {
+            $userNameLine = $cred | Where-Object { $_.StartsWith("    ""acct") }
+            if ($userNameLine) {
+                $userName = $userNameLine.Split('=')[1].Trim('"')
+                return $userName
+            }
+        }
+    }
+
+    function find-internet-password {
+        param (
+            [string]$siteHost,
+            [string]$userName
+        )
+
+        return ConvertTo-SecureString (Invoke-Expression "security find-internet-password -s $siteHost -a $userName -w 2>/dev/null") -AsPlainText
+    }
+
+    function add-internet-password {
+        param(
+            [string]$siteHost,
+            [string]$userName,
+            [SecureString]$password
+        )
+
+        $plainText = ConvertFrom-SecureString -SecureString $password -AsPlainText
+
+        Invoke-Expression "security add-internet-password -U -s $siteHost -a $userName -w $plainText -c mgw1  "
+
+    }
+
     If (($Version -lt 2) -or ($Version -gt 3)) {
         Write-Error -Message "Version out of range. Should be 2 or 3"
         return
@@ -222,10 +259,24 @@ function Invoke-MetasysMethod {
         if (!$SiteHost) {
             $SiteHost = Read-Host -Prompt "Site host"
         }
+
         if (!$UserName) {
-            $UserName = Read-Host -Prompt "UserName"
+            # attempt to find a user name in keychain
+            $UserName = find-internet-user($SiteHost)
+
+            if (!$UserName) {
+                $UserName = Read-Host -Prompt "UserName"
+            }
         }
-        $password = Read-Host -Prompt "Password" -AsSecureString
+
+        $password = find-internet-password $SiteHost $UserName
+
+        if (!$password) {
+            $password = Read-Host -Prompt "Password" -AsSecureString
+
+            ## Attempt to store credentials
+            add-internet-password $SiteHost  $UserName  $password
+        }
 
         $jsonObject = @{
             username = $UserName
