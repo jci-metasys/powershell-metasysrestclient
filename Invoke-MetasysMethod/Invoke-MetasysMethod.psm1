@@ -15,7 +15,7 @@ function Invoke-MetasysMethod {
     .EXAMPLE
         Invoke-MetasysMethod -Reference thesun:thesun
 
-        This will prompt you for the Site and your credentials and then attempt
+        This will prompt you for a hostname and your credentials and then attempt
         to look up the id of the object with the specified reference
 
     .EXAMPLE
@@ -45,7 +45,7 @@ function Invoke-MetasysMethod {
     [CmdletBinding(PositionalBinding = $false)]
     param(
         # The hostname or ip address of the site you wish to interact with
-        [string]$Site,
+        [string]$SiteHost,
         # The username of the account you wish to use on this Site
         [string]$UserName,
         # A switch used to force Login. This isn't normally needed except
@@ -55,11 +55,12 @@ function Invoke-MetasysMethod {
         [switch]$Login,
         # The relative path to an endpont. For example: /alarms
         # All of the relative paths are listed in the API Documentation
+        # Path and Reference are mutally exclusive.
         [string]$Path,
         # Session information is stored in environment variables. To force a
         # cleanup use this switch to remove all environment variables. The next
         # time you invoke this function you'll need to provide credentials and
-        # a Site. Path and Reference are mutally exclusive.
+        # a SiteHost.
         [switch]$Clear,
         # The json payload to send with your request.
         [string]$Body,
@@ -78,12 +79,12 @@ function Invoke-MetasysMethod {
     )
 
     class MetasysEnvVars {
-        static [string] getSite() {
-            return $env:METASYS_SITE
+        static [string] getSiteHost() {
+            return $env:METASYS_SITE_HOST
         }
 
-        static [void] setSite([string]$site) {
-            $env:METASYS_SITE = $site
+        static [void] setSiteHost([string]$siteHost) {
+            $env:METASYS_SITE_HOST = $siteHost
         }
 
         static [int] getVersion() {
@@ -120,7 +121,7 @@ function Invoke-MetasysMethod {
 
         static [void] clear() {
             $env:METASYS_SECURE_TOKEN = $null
-            $env:METASYS_SITE = $null
+            $env:METASYS_SITE_HOST = $null
             $env:METASYS_VERSION = $null
             $env:METASYS_LAST_RESPONSE = $null
             $env:METASYS_EXPIRES = $null
@@ -132,13 +133,13 @@ function Invoke-MetasysMethod {
 
     function buildUri {
         param (
-            [string]$site = [MetasysEnvVars]::getSite(),
+            [string]$siteHost = [MetasysEnvVars]::getSiteHost(),
             [int]$version = [MetasysEnvVars]::getVersion(),
             [string]$baseUri = "api",
             [string]$path
         )
 
-        $uri = [System.Uri] ("https://" + $site + "/" + ([System.IO.Path]::Join($baseUri, "v" + $version, $path)))
+        $uri = [System.Uri] ("https://" + $siteHost + "/" + ([System.IO.Path]::Join($baseUri, "v" + $version, $path)))
         return $uri
     }
 
@@ -217,9 +218,9 @@ function Invoke-MetasysMethod {
         }
     }
 
-    if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($Site -and ($Site -ne [MetasysEnvVars]::getSite()))) {
-        if (!$Site) {
-            $Site = Read-Host -Prompt "Site"
+    if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost()))) {
+        if (!$SiteHost) {
+            $SiteHost = Read-Host -Prompt "Site host"
         }
         if (!$UserName) {
             $UserName = Read-Host -Prompt "UserName"
@@ -234,7 +235,7 @@ function Invoke-MetasysMethod {
 
         $loginRequest = @{
             Method               = "Post"
-            Uri                  = buildUri -site $Site -version $Version -path "login" #[System.Uri] ("https://" + $Site + "/api/v" + $Version + "/login")
+            Uri                  = buildUri -siteHost $SiteHost -version $Version -path "login"
             Body                 = $json
             ContentType          = "application/json"
             SkipCertificateCheck = $true
@@ -244,9 +245,9 @@ function Invoke-MetasysMethod {
             $loginResponse = Invoke-RestMethod @loginRequest
             $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
             [MetasysEnvVars]::setToken((ConvertFrom-SecureString -SecureString $secureToken))
-            $env:METASYS_SITE = $Site
+            [MetasysEnvVars]::setSiteHost($SiteHost)
             [MetasysEnvVars]::setExpires($loginResponse.expires)
-            $env:METASYS_VERSION = $Version
+            [MetasysEnvVars]::setVersion($Version)
         }
         catch {
             Write-Host "An error occurred:"
@@ -310,7 +311,7 @@ function Invoke-MetasysGetObject {
 
     .DESCRIPTION
         This function allows you to read a Metasys object given the specified
-        Reference. You will be prompted for a site and your credentials unless a
+        Reference. You will be prompted for a site host and your credentials unless a
         session has already been established.
 
     .OUTPUTS
@@ -319,7 +320,7 @@ function Invoke-MetasysGetObject {
     .EXAMPLE
         Invoke-MetasysGet-Object -Reference thesun:thesun
 
-        This will prompt you for the Site and your credentials and read the default view of this object.
+        This will prompt you for the Site host and your credentials and read the default view of this object.
 
     .LINK
 
@@ -343,5 +344,5 @@ New-Alias -Name mpatch -Value Invoke-MetasysPatch
 New-Alias -Name mput -Value Invoke-MetasysPut
 New-Alias -Name mget-object -Value Invoke-MetasysGetObject
 
-Export-ModuleMember -Function 'Invoke-MetasysMethod' -Function 'Invoke-MetasysGet' -Function 'Invoke-MetasysPut' -Function 'Invoke-MetasysGetObject'
-Export-ModuleMember -Alias 'mget' -Alias 'mpatch' -Alias 'mput' -Alias 'mget-object'
+Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Invoke-MetasysGet', 'Invoke-MetasysPut', 'Invoke-MetasysGetObject'
+Export-ModuleMember -Alias 'mget', 'mpatch', 'mput', 'mget-object'
