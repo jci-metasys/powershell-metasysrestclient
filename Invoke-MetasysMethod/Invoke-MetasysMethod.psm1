@@ -92,7 +92,7 @@ function Invoke-MetasysMethod {
         }
 
         static [void] setVersion([int]$version) {
-            $enf:METASYS_VERSION = $version
+            $env:METASYS_VERSION = $version
         }
 
         static [string] getExpires() {
