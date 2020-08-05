@@ -180,6 +180,10 @@ function Invoke-MetasysMethod {
             [string]$siteHost
         )
 
+        if (!$IsMacOS) {
+            return
+        }
+
         $cred = Invoke-Expression "security find-internet-password -s $siteHost 2>/dev/null"
         if ($cred) {
             $userNameLine = $cred | Where-Object { $_.StartsWith("    ""acct") }
@@ -196,6 +200,10 @@ function Invoke-MetasysMethod {
             [string]$userName
         )
 
+        if (!$IsMacOS) {
+            return
+        }
+
         return ConvertTo-SecureString (Invoke-Expression "security find-internet-password -s $siteHost -a $userName -w 2>/dev/null") -AsPlainText
     }
 
@@ -205,6 +213,10 @@ function Invoke-MetasysMethod {
             [string]$userName,
             [SecureString]$password
         )
+
+        if (!$IsMacOS) {
+            return
+        }
 
         $plainText = ConvertFrom-SecureString -SecureString $password -AsPlainText
 
