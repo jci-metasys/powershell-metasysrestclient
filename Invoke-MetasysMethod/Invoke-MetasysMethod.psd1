@@ -28,7 +28,7 @@ Author = 'Michael Welch'
 CompanyName = 'Johnson Controls'
 
 # Copyright statement for this module
-Copyright = '(c) Michael Welch. All rights reserved.'
+Copyright = '(c) Johnson Controls. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Allow you to interact with Metasys REST API'
