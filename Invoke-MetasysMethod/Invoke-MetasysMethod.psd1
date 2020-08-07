@@ -34,7 +34,7 @@ Copyright = '(c) Michael Welch. All rights reserved.'
 Description = 'Allow you to interact with Metasys REST API'
 
 # Minimum version of the PowerShell engine required by this module
-# PowerShellVersion = ''
+PowerShellVersion = '5.6.1'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
