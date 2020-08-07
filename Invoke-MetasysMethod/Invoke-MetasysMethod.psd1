@@ -12,7 +12,7 @@
 RootModule = 'Invoke-MetasysMethod.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.15'
+ModuleVersion = '0.0.16'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -34,7 +34,7 @@ Copyright = '(c) Michael Welch. All rights reserved.'
 Description = 'Allow you to interact with Metasys REST API'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '5.6.1'
+PowerShellVersion = '7.0.0'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -111,7 +111,7 @@ PrivateData = @{
         # ReleaseNotes = ''
 
         # Prerelease string of this module
-        Prerelease = 'alpha'
+        # Prerelease = 'alpha'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
