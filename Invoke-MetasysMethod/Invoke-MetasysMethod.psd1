@@ -12,10 +12,11 @@
 RootModule = 'Invoke-MetasysMethod.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.13'
+ModuleVersion = '0.0.14'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
+CompatiblePSEditions = @("Core")
 
 # ID used to uniquely identify this module
 GUID = '2e2d8299-f305-4a33-9db8-a1d41e78d840'
@@ -98,10 +99,10 @@ PrivateData = @{
         # Tags = @()
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        LicenseUri = 'https://github.com/metasys-server/invoke-metasysmethod/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        ProjectUri = 'https://github.com/metasys-server/invoke-metasysmethod'
 
         # A URL to an icon representing this module.
         # IconUri = ''
@@ -110,7 +111,7 @@ PrivateData = @{
         # ReleaseNotes = ''
 
         # Prerelease string of this module
-        # Prerelease = ''
+        Prerelease = 'alpha'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
