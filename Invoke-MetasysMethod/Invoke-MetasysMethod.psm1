@@ -131,6 +131,17 @@ function Invoke-MetasysMethod {
 
     Set-StrictMode -Version 2
 
+    # In Windows Powershell the $IsMacOS variable doesn't exist so calls to check
+    # it's value fail. This function wraps the call.
+
+    function isMacOS {
+        if ($PSVersionTable.PSEdition -eq "Core") {
+            return $IsMacOS
+        }
+
+        return (!$IsWindows -and $IsLinux)
+    }
+
     function buildUri {
         param (
             [string]$siteHost = [MetasysEnvVars]::getSiteHost(),
@@ -180,7 +191,7 @@ function Invoke-MetasysMethod {
             [string]$siteHost
         )
 
-        if (!$IsMacOS) {
+        if (!(isMacOS)) {
             return
         }
 
@@ -200,7 +211,7 @@ function Invoke-MetasysMethod {
             [string]$userName
         )
 
-        if (!$IsMacOS) {
+        if (!(isMacOS)) {
             return
         }
 
@@ -217,7 +228,7 @@ function Invoke-MetasysMethod {
             [SecureString]$password
         )
 
-        if (!$IsMacOS) {
+        if (!(isMacOS)) {
             return
         }
 
