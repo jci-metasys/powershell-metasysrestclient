@@ -139,7 +139,7 @@ function Invoke-MetasysMethod {
             return $IsMacOS
         }
 
-        return (!$IsWindows -and $IsLinux)
+        return $False
     }
 
     function buildUri {
