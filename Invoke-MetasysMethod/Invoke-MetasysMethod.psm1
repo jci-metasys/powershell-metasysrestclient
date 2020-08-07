@@ -204,7 +204,10 @@ function Invoke-MetasysMethod {
             return
         }
 
-        return ConvertTo-SecureString (Invoke-Expression "security find-internet-password -s $siteHost -a $userName -w 2>/dev/null") -AsPlainText
+        $passwordEntry = Invoke-Expression "security find-internet-password -s $siteHost -a $userName -w 2>/dev/null"
+        if ($passwordEntry) {
+            return ConvertTo-SecureString $passwordEntry -AsPlainText
+        }
     }
 
     function add-internet-password {
