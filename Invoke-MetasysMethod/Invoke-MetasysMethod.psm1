@@ -69,7 +69,7 @@ function Invoke-MetasysMethod {
         # The version of the API you intent to use
         [Int]$Version = 3,
         # NOTE: Insecure. DO NOT use in production. This switch will cause
-        # all checks of the certifiate to be skipped.
+        # all checks of the certificate to be skipped.
         [switch]$SkipCertificateCheck,
         # A short cut for looking up the id of an object.
         [string]$Reference,
@@ -127,6 +127,10 @@ function Invoke-MetasysMethod {
             $env:METASYS_EXPIRES = $null
         }
 
+        static [System.Boolean] getDefaultSkipCheck() {
+            return $env:METASYS_SKIP_CHECK_NOT_SECURE
+        }
+
     }
 
     Set-StrictMode -Version 2
@@ -159,8 +163,7 @@ function Invoke-MetasysMethod {
             [string]$method = "Get",
             [string]$uri,
             [string]$body = $null,
-            [string]$token = [MetasysEnvVars]::getToken(),
-            [bool]$skipCertCheck = $true
+            [string]$token = [MetasysEnvVars]::getToken()
         )
 
         return @{
@@ -169,7 +172,7 @@ function Invoke-MetasysMethod {
             Body                 = $body
             Authentication       = "bearer"
             Token                = ConvertTo-SecureString $token
-            SkipCertificateCheck = $skipCertCheck
+            SkipCertificateCheck = $SkipCertificateCheck
             ContentType          = "application/json"
         }
     }
@@ -179,8 +182,7 @@ function Invoke-MetasysMethod {
             [string]$method = "Get",
             [string]$uri,
             [string]$body = $null,
-            [string]$token = [MetasysEnvVars]::getToken(),
-            [bool]$skipCertCheck = $true
+            [string]$token = [MetasysEnvVars]::getToken()
         )
 
         return Invoke-RestMethod @(buildRequest -uri (buildUri -path $Path) -method $Method -body $Body)
@@ -248,6 +250,10 @@ function Invoke-MetasysMethod {
         return # end the program
     }
 
+    if (!$SkipCertificateCheck.IsPresent) {
+        $SkipCertificateCheck =[MetasysEnvVars]::getDefaultSkipCheck()
+    }
+
     # Login Region
 
     $ForceLogin = $false
@@ -265,7 +271,7 @@ function Invoke-MetasysMethod {
                 Uri                  = buildUri -path "/refreshToken"
                 Authentication       = "bearer"
                 Token                = ConvertTo-SecureString -String ([MetasysEnvVars]::getToken())
-                SkipCertificateCheck = $true
+                SkipCertificateCheck = $SkipCertificateCheck
             }
             try {
                 $refreshResponse = Invoke-RestMethod @refreshRequest
@@ -315,7 +321,7 @@ function Invoke-MetasysMethod {
             Uri                  = buildUri -siteHost $SiteHost -version $Version -path "login"
             Body                 = $json
             ContentType          = "application/json"
-            SkipCertificateCheck = $true
+            SkipCertificateCheck = $SkipCertificateCheck
         }
 
         try {
