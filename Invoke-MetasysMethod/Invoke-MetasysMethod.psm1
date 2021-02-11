@@ -387,8 +387,11 @@ function Invoke-MetasysMethod {
 }
 
 function Invoke-MetasysGet {
-    param([Parameter(Position = 0)][string]$Path)
-    Invoke-MetasysMethod -Path $Path
+    param(
+        [Parameter(Position = 0)][string]$Path,
+        [switch]$SkipCertificateCheck
+    )
+    Invoke-MetasysMethod -Path $Path -SkipCertificateCheck:$SkipCertificateCheck
 }
 function Invoke-MetasysPatch {
     param([Parameter(Position = 0)][string]$Path, [Parameter(Position = 1)][string]$Body)
@@ -425,14 +428,15 @@ function Invoke-MetasysGetObject {
     #>
     param(
         # The fully qualified references of a Metasys object
-        [Parameter(Position = 0)][string]$Reference
+        [Parameter(Position = 0)][string]$Reference,
+        [switch]$SkipCertificateCheck
     )
     $id = [System.Environment]::GetEnvironmentVariable("idFor:" + $Reference)
     if (!$id) {
-        $id = Invoke-MetasysGet -Path ("/objectIdentifiers?fqr=" + $Reference)
+        $id = Invoke-MetasysGet -Path ("/objectIdentifiers?fqr=" + $Reference) -SkipCertificateCheck:$SkipCertificateCheck
         [System.Environment]::SetEnvironmentVariable("idFor:" + $Reference, $id)
     }
-    Invoke-MetasysGet ("/objects/" + $id)
+    Invoke-MetasysGet ("/objects/" + $id) -SkipCertificateCheck:$SkipCertificateCheck
 }
 
 New-Alias -Name mget -Value Invoke-MetasysGet
