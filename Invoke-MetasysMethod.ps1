@@ -6,7 +6,7 @@ param(
     [switch]$Clear,
     [string]$Body,
     [string]$Method = "Get",
-    [Int]$Version = 3,
+    [Int]$Version = 4,
     [switch]$SkipCertificateCheck,
     [string]$Reference
 )

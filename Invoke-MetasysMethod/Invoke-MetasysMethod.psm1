@@ -67,7 +67,7 @@ function Invoke-MetasysMethod {
         # The HTTP Method you are sending.
         [string]$Method = "Get",
         # The version of the API you intent to use
-        [Int]$Version = 3,
+        [Int]$Version = 4,
         # NOTE: Insecure. DO NOT use in production. This switch will cause
         # all checks of the certificate to be skipped.
         [switch]$SkipCertificateCheck,
@@ -240,8 +240,8 @@ function Invoke-MetasysMethod {
 
     }
 
-    If (($Version -lt 2) -or ($Version -gt 3)) {
-        Write-Error -Message "Version out of range. Should be 2 or 3"
+    If (($Version -lt 2) -or ($Version -gt 4)) {
+        Write-Error -Message "Version out of range. Should be 2, 3 or 4"
         return
     }
 
