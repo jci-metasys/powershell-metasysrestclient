@@ -11,4 +11,5 @@ param(
     [string]$Reference
 )
 Import-Module -Force -Name ./Invoke-MetasysMethod
-Invoke-MetasysMethod -SiteHost $SiteHose -UserName $UserName -Path $Path -Body $Body -Method $Method -Version $Version -Reference $Reference
+# mget-object "WIN-21DJ9JV9QH6:EECMI-NCE25-2/MV1" -SkipCertificateCheck:$SkipCertificateCheck
+Invoke-MetasysMethod -SiteHost $SiteHost -UserName $UserName -Path $Path -Body $Body -Method $Method -Version $Version -Reference $Reference -SkipCertificateCheck:$SkipCertificateCheck -Clear:$Clear -Login:$Login
