@@ -357,18 +357,31 @@ function Invoke-MetasysMethod {
         $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body
     }
 
-    $responseObject = Invoke-WebRequest @request
     $response = $null
-    if ($FullWebResponse.IsPresent) {
-        $response = $responseObject
-    }
-    else {
-        if ($responseObject -and $responseObject.Content) {
-            $response = ConvertFrom-Json ([String]::new($responseObject.Content))
+    try {
+        $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
+        if ($FullWebResponse.IsPresent) {
+            $response = $responseObject
+        }
+        else {
+            if ($responseObject -and $responseObject.Content) {
+                if ($responseObject.Headers["Content-Type"] -contains "json") {
+                    $response = ConvertFrom-Json ([String]::new($responseObject.Content))
+                } else {
+                    Write-Output "An unexpected content type was found:"
+                    Write-Output [String]::new($responseObject.Content)
+                }
+            }
         }
     }
-    Write-Verbose ("Http Status: " + $responseObject.StatusCode)
-    [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
+    catch {
+        Write-Output "An unhandled error condition occurred:"
+        Write-Error $_
+    }
+    # Only overwrite the last response if $response is not null
+    if ($response) {
+        [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
+    }
     return $response
 
 }
