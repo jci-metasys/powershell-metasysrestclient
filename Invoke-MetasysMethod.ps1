@@ -10,5 +10,5 @@ param(
     [switch]$SkipCertificateCheck,
     [string]$Reference
 )
-Import-Module -Name ./Invoke-MetasysMethod
+Import-Module -Force -Name ./Invoke-MetasysMethod
 Invoke-MetasysMethod -SiteHost $SiteHose -UserName $UserName -Path $Path -Body $Body -Method $Method -Version $Version -Reference $Reference
