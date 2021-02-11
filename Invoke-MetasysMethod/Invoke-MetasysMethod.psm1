@@ -369,7 +369,7 @@ function Invoke-MetasysMethod {
                     $response = ConvertFrom-Json ([String]::new($responseObject.Content))
                 } else {
                     Write-Output "An unexpected content type was found:"
-                    Write-Output [String]::new($responseObject.Content)
+                    Write-Output $([String]::new($responseObject.Content))
                 }
             }
         }
