@@ -85,6 +85,8 @@ function Invoke-MetasysMethod {
     $Host.PrivateData.WarningBackgroundColor = $backgroundColor
     $Host.PrivateData.VerboseBackgroundColor = $backgroundColor
 
+    Write-Output ""
+
     class MetasysEnvVars {
         static [string] getSiteHost() {
             return $env:METASYS_SITE_HOST
@@ -369,6 +371,12 @@ function Invoke-MetasysMethod {
         $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
         if ($FullWebResponse.IsPresent) {
             $response = $responseObject
+        }
+        elseif ($responseObject.StatusCode -ge 400) {
+            $body = [String]::new($responseObject.Content)
+            "Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")" | Write-Error -Message
+            $responseObject.Headers.Keys | ForEach-Object {$_ + ": " + $responseObject.Headers[$_] | Write-Output}
+            Write-Output $body
         }
         else {
             if ($responseObject -and $responseObject.Content) {
