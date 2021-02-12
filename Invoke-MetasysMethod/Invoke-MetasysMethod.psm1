@@ -78,6 +78,13 @@ function Invoke-MetasysMethod {
         [switch]$FullWebResponse
     )
 
+    # Setup text background colors to match console background
+    $backgroundColor = $Host.UI.RawUI.BackgroundColor
+    $Host.PrivateData.DebugBackgroundColor = $backgroundColor
+    $Host.PrivateData.ErrorBackgroundColor = $backgroundColor
+    $Host.PrivateData.WarningBackgroundColor = $backgroundColor
+    $Host.PrivateData.VerboseBackgroundColor = $backgroundColor
+
     class MetasysEnvVars {
         static [string] getSiteHost() {
             return $env:METASYS_SITE_HOST
