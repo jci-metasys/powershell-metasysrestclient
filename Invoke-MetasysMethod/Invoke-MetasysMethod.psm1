@@ -374,7 +374,7 @@ function Invoke-MetasysMethod {
         }
         elseif ($responseObject.StatusCode -ge 400) {
             $body = [String]::new($responseObject.Content)
-            "Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")" | Write-Error -Message
+            Write-Error -Message ("Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")")
             $responseObject.Headers.Keys | ForEach-Object {$_ + ": " + $responseObject.Headers[$_] | Write-Output}
             Write-Output $body
         }
