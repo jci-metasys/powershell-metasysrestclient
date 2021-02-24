@@ -75,7 +75,9 @@ function Invoke-MetasysMethod {
         [string]$Reference,
         # Rather than just returning the content, return the full web response
         # object will include extra like the response headers.
-        [switch]$FullWebResponse
+        [switch]$FullWebResponse,
+        # A collection of headers to include in the request
+        [hashtable]$Headers
     )
 
     # Setup text background colors to match console background
@@ -175,7 +177,7 @@ function Invoke-MetasysMethod {
             [string]$token = [MetasysEnvVars]::getToken()
         )
 
-        return @{
+        $request = @{
             Method               = $method
             Uri                  = buildUri -path $Path
             Body                 = $body
@@ -183,7 +185,16 @@ function Invoke-MetasysMethod {
             Token                = ConvertTo-SecureString $token
             SkipCertificateCheck = $SkipCertificateCheck
             ContentType          = "application/json"
+            Headers              = @{}
         }
+
+        if ($Headers) {
+            foreach ($header in $Headers.GetEnumerator()) {
+                $request.Headers[$header.Key] = $header.Value
+            }
+        }
+
+        return $request
     }
 
     function executeRequest {
