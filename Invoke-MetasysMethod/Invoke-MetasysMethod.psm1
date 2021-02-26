@@ -174,12 +174,13 @@ function Invoke-MetasysMethod {
             [string]$method = "Get",
             [string]$uri,
             [string]$body = $null,
-            [string]$token = [MetasysEnvVars]::getToken()
+            [string]$token = [MetasysEnvVars]::getToken(),
+            [string]$version
         )
 
         $request = @{
             Method               = $method
-            Uri                  = buildUri -path $Path
+            Uri                  = buildUri -path $Path -version $version
             Body                 = $body
             Authentication       = "bearer"
             Token                = ConvertTo-SecureString $token
@@ -370,11 +371,11 @@ function Invoke-MetasysMethod {
 
     if ($Reference) {
         $Path = "/objectIdentifiers?fqr=" + $Reference
-        $request = buildRequest -uri (buildUri -path $Path)
+        $request = buildRequest -uri (buildUri -path $Path) -version $Version
     }
 
     if ($Path) {
-        $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body
+        $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version
     }
 
     $response = $null
