@@ -392,7 +392,12 @@ function Invoke-MetasysMethod {
         else {
             if ($responseObject -and $responseObject.Content) {
                 if ($responseObject.Headers["Content-Type"] -like "*json*") {
-                    $response = ConvertFrom-Json -AsHashtable ([String]::new($responseObject.Content))
+                    try {
+                        $response = ConvertFrom-Json ([String]::new($responseObject.Content))
+                    } catch {
+                        # only use -AsHashtable if needed because it doesn't preserve order
+                        $response = ConvertFrom-Json -AsHashtable ([String]::new($responseObject.Content))
+                    }
                 } else {
                     Write-Output "An unexpected content type was found:"
                     Write-Output $([String]::new($responseObject.Content))
