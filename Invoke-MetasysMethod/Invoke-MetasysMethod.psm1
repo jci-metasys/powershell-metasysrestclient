@@ -198,17 +198,6 @@ function Invoke-MetasysMethod {
         return $request
     }
 
-    function executeRequest {
-        param (
-            [string]$method = "Get",
-            [string]$uri,
-            [string]$body = $null,
-            [string]$token = [MetasysEnvVars]::getToken()
-        )
-
-        return Invoke-RestMethod @(buildRequest -uri (buildUri -path $Path) -method $Method -body $Body)
-    }
-
     function find-internet-user {
         param (
             [string]$siteHost
