@@ -56,6 +56,7 @@ function Invoke-MetasysMethod {
         # The relative path to an endpont. For example: /alarms
         # All of the relative paths are listed in the API Documentation
         # Path and Reference are mutally exclusive.
+        [Parameter(Position=0)]
         [string]$Path,
         # Session information is stored in environment variables. To force a
         # cleanup use this switch to remove all environment variables. The next
