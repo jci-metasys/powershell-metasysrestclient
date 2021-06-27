@@ -12,7 +12,7 @@
 RootModule = 'Invoke-MetasysMethod.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.18'
+ModuleVersion = '0.0.20'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -70,7 +70,7 @@ PowerShellVersion = '7.0.0'
 # NestedModules = @()
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Invoke-MetasysMethod', 'Invoke-MetasysGet', 'Invoke-MetasysPut', 'Invoke-MetasysPatch', 'Invoke-MetasysGetObject'
+FunctionsToExport = 'Invoke-MetasysMethod'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = '*'
@@ -79,7 +79,6 @@ CmdletsToExport = '*'
 VariablesToExport = '*'
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = 'mget', 'mput', 'mpatch', "mget-object"
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
