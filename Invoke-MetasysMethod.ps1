@@ -2,6 +2,7 @@ param(
     [string]$SiteHost,
     [string]$UserName,
     [switch]$Login,
+    [Parameter(Position=0)]
     [string]$Path,
     [switch]$Clear,
     [string]$Body,
