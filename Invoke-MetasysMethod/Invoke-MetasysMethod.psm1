@@ -139,6 +139,15 @@ function Invoke-MetasysMethod {
             $env:METASYS_EXPIRES = $null
         }
 
+        static [void] setHeaders($headers) {
+            $env:METASYS_LAST_HEADERS = ConvertTo-Json -Depth 15 $headers
+        }
+
+        static [void] setStatus($code, $description) {
+            $env:METASYS_LAST_STATUS_CODE = $code
+            $env:METASYS_LAST_STATUS_DESCRIPTION = $description
+        }
+
         static [System.Boolean] getDefaultSkipCheck() {
             return $env:METASYS_SKIP_CHECK_NOT_SECURE
         }
@@ -369,6 +378,7 @@ function Invoke-MetasysMethod {
     }
 
     $response = $null
+    $responseObject = $null
     try {
         $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
         if ($FullWebResponse.IsPresent) {
@@ -398,6 +408,8 @@ function Invoke-MetasysMethod {
     # Only overwrite the last response if $response is not null
     if ($response) {
         [MetasysEnvVars]::setLast($response)
+        [MetasysEnvVars]::setHeaders($responseObject.Headers)
+        [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
     }
     return $response
 
