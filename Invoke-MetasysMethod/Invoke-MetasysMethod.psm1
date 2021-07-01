@@ -173,6 +173,9 @@ function Invoke-MetasysMethod {
         return $False
     }
 
+    # The path can be
+    # * relative to the https://hostname/api/v{next}
+    # * absolute (eg https://hostname/api/v{next}/objects/{id}/attributes/presentValue)
     function buildUri {
         param (
             [string]$siteHost = [MetasysEnvVars]::getSiteHost(),
@@ -181,10 +184,18 @@ function Invoke-MetasysMethod {
             [string]$path
         )
 
-        $uri = [System.Uri] ("https://" + $siteHost + "/" + ([System.IO.Path]::Join($baseUri, "v" + $version, $path)))
-        return $uri
+        $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
+        if ($uri.IsAbsoluteUri) {
+            return $uri
+        }
+
+        $fullPath = "https://$siteHost/$([Path]::Join($baseUri, "v" + $version, $path))"
+        return [Uri]::new($fullPath)
     }
 
+    # The uri can be
+    # * relative to the https://hostname/api/v{next}
+    # * absolute (eg https://hostname/api/v{next}/objects/{id}/attributes/presentValue)
     function buildRequest {
         param (
             [string]$method = "Get",
