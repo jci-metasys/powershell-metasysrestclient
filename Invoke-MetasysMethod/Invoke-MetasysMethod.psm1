@@ -1,3 +1,6 @@
+using namespace System
+using namespace System.IO
+
 function Invoke-MetasysMethod {
     <#
     .SYNOPSIS
@@ -137,6 +140,9 @@ function Invoke-MetasysMethod {
             $env:METASYS_VERSION = $null
             $env:METASYS_LAST_RESPONSE = $null
             $env:METASYS_EXPIRES = $null
+            $env:METASYS_LAST_STATUS_CODE = $null
+            $env:METASYS_LAST_STATUS_DESCRIPTION = $null
+            $env:METASYS_LAST_HEADERS = $null
         }
 
         static [void] setHeaders($headers) {
@@ -148,7 +154,7 @@ function Invoke-MetasysMethod {
             $env:METASYS_LAST_STATUS_DESCRIPTION = $description
         }
 
-        static [System.Boolean] getDefaultSkipCheck() {
+        static [Boolean] getDefaultSkipCheck() {
             return $env:METASYS_SKIP_CHECK_NOT_SECURE
         }
 
@@ -411,8 +417,54 @@ function Invoke-MetasysMethod {
         [MetasysEnvVars]::setHeaders($responseObject.Headers)
         [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
     }
-    return $response
+
+    return Show-LastMetasysResponseBody $response
 
 }
 
-Export-ModuleMember -Function 'Invoke-MetasysMethod'
+function Show-LastMetasysAccessToken {
+    Write-Output $(ConvertTo-SecureString -String $env:METASYS_SECURE_TOKEN | ConvertFrom-SecureString -AsPlainText)
+}
+
+function Show-LastMetasysHeaders {
+
+    $headers = ConvertFrom-Json $env:METASYS_LAST_HEADERS
+    foreach ($header in $headers.PSObject.Properties) {
+        Write-Output "$($header.Name): $($header.Value -join ',')"
+    }
+}
+
+function Show-LastMetasysStatus {
+    Write-Output "$($env:METASYS_LAST_STATUS_CODE) ($($env:METASYS_LAST_STATUS_DESCRIPTION))"
+}
+
+function ConvertFrom-JsonSafely {
+    param(
+        [String]$json
+    )
+
+    try {
+        return ConvertFrom-Json $json
+    } catch {
+        return ConvertFrom-Json -AsHashtable $json
+    }
+}
+
+function Show-LastMetasysResponseBody {
+    param (
+        [string]$body = $env:METASYS_LAST_RESPONSE
+    )
+    ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20 | Write-Output
+}
+
+function Show-LastMetasysFullResponse {
+    Show-LastMetasysStatus
+    Show-LastMetasysHeaders
+    Show-LastMetasysResponseBody
+}
+
+function Get-LastMetasysResponseBodyAsObject {
+    return ConvertFrom-JsonSafely $env:METASYS_LAST_RESPONSE
+}
+
+Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus'
