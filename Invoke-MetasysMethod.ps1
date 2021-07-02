@@ -7,10 +7,10 @@ param(
     [switch]$Clear,
     [string]$Body,
     [string]$Method = "Get",
-    [Int]$Version = 4,
+    [Int]$Version,
     [switch]$SkipCertificateCheck,
     [hashtable]$Headers
 )
 Import-Module -Force -Name ./Invoke-MetasysMethod
 # mget-object "WIN-21DJ9JV9QH6:EECMI-NCE25-2/MV1" -SkipCertificateCheck:$SkipCertificateCheck
-Invoke-MetasysMethod -SiteHost $SiteHost -UserName $UserName -Path $Path -Body $Body -Method $Method -Version $Version -Reference $Reference -SkipCertificateCheck:$SkipCertificateCheck -Clear:$Clear -Login:$Login -FullWebResponse:$FullWebResponse -Header $Headers
+Invoke-MetasysMethod -SiteHost $SiteHost -UserName $UserName -Path $Path -Body $Body -Method $Method -Version $Version -SkipCertificateCheck:$SkipCertificateCheck -Clear:$Clear -Login:$Login -Header $Headers

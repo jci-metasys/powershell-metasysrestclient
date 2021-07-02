@@ -63,7 +63,7 @@ function Invoke-MetasysMethod {
         # The HTTP Method you are sending.
         [string]$Method = "Get",
         # The version of the API you intent to use
-        [Int]$Version = 4,
+        [Int]$Version,
         # Skips certificate validation checks. This includes all validations
         # such as expiration, revocation, trusted root authority, etc.
         # [!WARNING] Using this parameter is not secure and is not recommended.
@@ -281,8 +281,10 @@ function Invoke-MetasysMethod {
     }
 
     If (($Version -lt 2) -or ($Version -gt 4)) {
-        Write-Error -Message "Version out of range. Should be 2, 3 or 4"
-        return
+        If ($Version -ne 0) {
+            Write-Error -Message "Version out of range. Should be 2, 3 or 4"
+            return
+        }
     }
 
     if ($Clear.IsPresent) {
@@ -297,6 +299,22 @@ function Invoke-MetasysMethod {
 
     if (!$SkipCertificateCheck.IsPresent) {
         $SkipCertificateCheck =[MetasysEnvVars]::getDefaultSkipCheck()
+    }
+
+    $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
+    if ($uri.IsAbsoluteUri) {
+        $versionSegment = $uri.Segments[2]
+        $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
+        if ($Version -gt 0 -and $versionNumber -ne $Version) {
+            Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
+            return
+        }
+    }
+
+    If ($Version -eq 0) {
+        # Default to the latest version
+        # TODO: Also check a environment variable or even a config file for reasonable defaults.
+        $Version = 4
     }
 
     # Login Region
