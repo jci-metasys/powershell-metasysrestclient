@@ -10,31 +10,24 @@ function Invoke-MetasysMethod {
         This function allows you to invoke various methods of the Metasys REST API.
         Once a session is established (on the first invocation) the session state
         is maintained in the terminal session. This allows you to make additional
-        calls with less boilerplate text for each call.
+        calls with less boilerplate text necessary for each call.
 
     .OUTPUTS
-        The payloads from Metasys as Powershell objects.
+        The payloads from Metasys as formatted JSON strings.
 
     .EXAMPLE
-        Invoke-MetasysMethod -Reference thesun:thesun
+        Invoke-MetasysMethod /objects/$id
 
-        This will prompt you for a hostname and your credentials and then attempt
-        to look up the id of the object with the specified reference
-
-    .EXAMPLE
-        Invoke-MetasysMethod -Path /objects/$id
-
-        After retrieving an id of an object (like in the previous example) and
-        string it in variable $id, this example will read the default view of the
-        object.
+        Reads the default view of the specified object assuming $id contains a
+        valid object identifier
 
     .EXAMPLE
-        Invoke-MetasysMethod -Path /alarms
+        Invoke-MetasysMethod /alarms
 
         This will read the first page of alarms from the site.
 
     .EXAMPLE
-        Invoke-MetasysMethod -Method Put -Path /objects/$id/commands/adjust -Body '[72.5]'
+        Invoke-MetasysMethod -Method Put /objects/$id/commands/adjust -Body '[72.5]'
 
         This example will send the adjust command to the specified object (assuming
         a valid id is stored in $id).
@@ -56,24 +49,26 @@ function Invoke-MetasysMethod {
         # switch you will be prompted for the site or your credentials if
         # not supplied on the command line.
         [switch]$Login,
-        # The relative path to an endpont. For example: /alarms
-        # All of the relative paths are listed in the API Documentation
-        # Path and Reference are mutally exclusive.
+        # The relative or absolute url for an endpont. For example: /alarms
+        # All of the urls are listed in the API Documentation
         [Parameter(Position=0)]
         [string]$Path,
         # Session information is stored in environment variables. To force a
         # cleanup use this switch to remove all environment variables. The next
         # time you invoke this function you'll need to provide a SiteHost
         [switch]$Clear,
-        # The json payload to send with your request.
+        # The payload to send with your request.
         [Parameter(ValueFromPipeline=$true)]
         [string]$Body,
         # The HTTP Method you are sending.
         [string]$Method = "Get",
         # The version of the API you intent to use
         [Int]$Version = 4,
-        # Skips certificate validation checks. This includes all validations such as expiration, revocation, trusted root authority, etc.
-        # [!WARNING] Using this parameter is not secure and is not recommended. This switch is only intended to be used against known hosts using a self-signed certificate for testing purposes. Use at your own risk.
+        # Skips certificate validation checks. This includes all validations
+        # such as expiration, revocation, trusted root authority, etc.
+        # [!WARNING] Using this parameter is not secure and is not recommended.
+        # This switch is only intended to be used against known hosts using a
+        # self-signed certificate for testing purposes. Use at your own risk.
         [switch]$SkipCertificateCheck,
         # A collection of headers to include in the request
         [hashtable]$Headers,
