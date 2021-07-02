@@ -10,7 +10,6 @@ param(
     [Int]$Version = 4,
     [switch]$SkipCertificateCheck,
     [string]$Reference,
-    [switch]$FullWebResponse,
     [hashtable]$Headers
 )
 Import-Module -Force -Name ./Invoke-MetasysMethod

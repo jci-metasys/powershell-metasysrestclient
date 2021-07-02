@@ -77,9 +77,6 @@ function Invoke-MetasysMethod {
         [switch]$SkipCertificateCheck,
         # A short cut for looking up the id of an object.
         [string]$Reference,
-        # Rather than just returning the content, return the full web response
-        # object will include extra like the response headers.
-        [switch]$FullWebResponse,
         # A collection of headers to include in the request
         [hashtable]$Headers,
         # Erase credentials for the specified host
@@ -416,10 +413,7 @@ function Invoke-MetasysMethod {
     $responseObject = $null
     try {
         $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
-        if ($FullWebResponse.IsPresent) {
-            $response = $responseObject
-        }
-        elseif ($responseObject.StatusCode -ge 400) {
+        if ($responseObject.StatusCode -ge 400) {
             $body = [String]::new($responseObject.Content)
             Write-Error -Message ("Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")")
             $responseObject.Headers.Keys | ForEach-Object {$_ + ": " + $responseObject.Headers[$_] | Write-Output}
