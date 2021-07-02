@@ -66,6 +66,7 @@ function Invoke-MetasysMethod {
         # time you invoke this function you'll need to provide a SiteHost
         [switch]$Clear,
         # The json payload to send with your request.
+        [Parameter(ValueFromPipeline=$true)]
         [string]$Body,
         # The HTTP Method you are sending.
         [string]$Method = "Get",
