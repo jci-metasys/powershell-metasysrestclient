@@ -75,8 +75,6 @@ function Invoke-MetasysMethod {
         # Skips certificate validation checks. This includes all validations such as expiration, revocation, trusted root authority, etc.
         # [!WARNING] Using this parameter is not secure and is not recommended. This switch is only intended to be used against known hosts using a self-signed certificate for testing purposes. Use at your own risk.
         [switch]$SkipCertificateCheck,
-        # A short cut for looking up the id of an object.
-        [string]$Reference,
         # A collection of headers to include in the request
         [hashtable]$Headers,
         # Erase credentials for the specified host
@@ -391,23 +389,13 @@ function Invoke-MetasysMethod {
         }
     }
 
-    if ($Path -and $Reference) {
-        Write-Warning "-Path and -Reference are mutually exclusive"
+    if (!$Path) {
         return
     }
 
-    if (!$Path -and !$Reference) {
-        return
-    }
 
-    if ($Reference) {
-        $Path = "/objectIdentifiers?fqr=" + $Reference
-        $request = buildRequest -uri (buildUri -path $Path) -version $Version
-    }
 
-    if ($Path) {
-        $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version
-    }
+    $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version
 
     $response = $null
     $responseObject = $null

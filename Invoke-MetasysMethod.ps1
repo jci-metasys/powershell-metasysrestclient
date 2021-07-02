@@ -9,7 +9,6 @@ param(
     [string]$Method = "Get",
     [Int]$Version = 4,
     [switch]$SkipCertificateCheck,
-    [string]$Reference,
     [hashtable]$Headers
 )
 Import-Module -Force -Name ./Invoke-MetasysMethod
