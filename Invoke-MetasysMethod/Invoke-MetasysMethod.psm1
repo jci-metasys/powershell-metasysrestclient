@@ -71,8 +71,8 @@ function Invoke-MetasysMethod {
         [string]$Method = "Get",
         # The version of the API you intent to use
         [Int]$Version = 4,
-        # NOTE: Insecure. DO NOT use in production. This switch will cause
-        # all checks of the certificate to be skipped.
+        # Skips certificate validation checks. This includes all validations such as expiration, revocation, trusted root authority, etc.
+        # [!WARNING] Using this parameter is not secure and is not recommended. This switch is only intended to be used against known hosts using a self-signed certificate for testing purposes. Use at your own risk.
         [switch]$SkipCertificateCheck,
         # A short cut for looking up the id of an object.
         [string]$Reference,
