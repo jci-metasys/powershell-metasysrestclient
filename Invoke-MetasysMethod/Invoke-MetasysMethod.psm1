@@ -426,8 +426,8 @@ function Invoke-MetasysMethod {
             Write-Output $body
         }
         else {
-            if ($responseObject -and $responseObject.Content) {
-                if ($responseObject.Headers["Content-Type"] -like "*json*") {
+            if ($responseObject) {
+                if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*")) {
                     $response = [String]::new($responseObject.Content)
                 } else {
                     Write-Output "An unexpected content type was found:"
@@ -441,7 +441,7 @@ function Invoke-MetasysMethod {
         Write-Error $_
     }
     # Only overwrite the last response if $response is not null
-    if ($response) {
+    if ($null -ne $response) {
         [MetasysEnvVars]::setLast($response)
         [MetasysEnvVars]::setHeaders($responseObject.Headers)
         [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
@@ -483,6 +483,11 @@ function Show-LastMetasysResponseBody {
     param (
         [string]$body = $env:METASYS_LAST_RESPONSE
     )
+
+    if ($null -eq $body -or $body -eq "") {
+        Write-Output ""
+        return
+    }
     ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20 | Write-Output
 }
 
