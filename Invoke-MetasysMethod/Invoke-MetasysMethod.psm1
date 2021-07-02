@@ -63,8 +63,7 @@ function Invoke-MetasysMethod {
         [string]$Path,
         # Session information is stored in environment variables. To force a
         # cleanup use this switch to remove all environment variables. The next
-        # time you invoke this function you'll need to provide credentials and
-        # a SiteHost.
+        # time you invoke this function you'll need to provide a SiteHost
         [switch]$Clear,
         # The json payload to send with your request.
         [string]$Body,
@@ -81,7 +80,9 @@ function Invoke-MetasysMethod {
         # object will include extra like the response headers.
         [switch]$FullWebResponse,
         # A collection of headers to include in the request
-        [hashtable]$Headers
+        [hashtable]$Headers,
+        # Erase credentials for the specified host
+        [string]$DeleteCredentials
     )
 
     # Setup text background colors to match console background
@@ -260,6 +261,17 @@ function Invoke-MetasysMethod {
         }
     }
 
+    function clear-internet-password {
+        param(
+            [String]$siteHost
+        )
+
+        if (!$IsMacOS) {
+            return
+        }
+
+        Invoke-Expression "security delete-internet-password -s $siteHost 1>/dev/null"
+    }
     function add-internet-password {
         param(
             [string]$siteHost,
@@ -284,6 +296,11 @@ function Invoke-MetasysMethod {
 
     if ($Clear.IsPresent) {
         [MetasysEnvVars]::clear()
+        return # end the program
+    }
+
+    if ($DeleteCredentials) {
+        clear-internet-password $DeleteCredentials
         return # end the program
     }
 
@@ -477,5 +494,7 @@ function Show-LastMetasysFullResponse {
 function Get-LastMetasysResponseBodyAsObject {
     return ConvertFrom-JsonSafely $env:METASYS_LAST_RESPONSE
 }
+
+
 
 Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus'
