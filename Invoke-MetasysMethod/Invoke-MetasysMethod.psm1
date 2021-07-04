@@ -176,17 +176,6 @@ function Invoke-MetasysMethod {
 
     Set-StrictMode -Version 2
 
-    # In Windows Powershell the $IsMacOS variable doesn't exist so calls to check
-    # it's value fail. This function wraps the call.
-
-    function isMacOS {
-        if ($PSVersionTable.PSEdition -eq "Core") {
-            return $IsMacOS
-        }
-
-        return $False
-    }
-
     # The path can be
     # * relative to the https://hostname/api/v{next}
     # * absolute (eg https://hostname/api/v{next}/objects/{id}/attributes/presentValue)
@@ -244,16 +233,14 @@ function Invoke-MetasysMethod {
             [string]$siteHost
         )
 
-        if (!(isMacOS)) {
-            return
-        }
-
-        $cred = Invoke-Expression "security find-internet-password -s $siteHost 2>/dev/null"
-        if ($cred) {
-            $userNameLine = $cred | Where-Object { $_.StartsWith("    ""acct") }
-            if ($userNameLine) {
-                $userName = $userNameLine.Split('=')[1].Trim('"')
-                return $userName
+        if ($IsMacOS) {
+            $cred = Invoke-Expression "security find-internet-password -s $siteHost 2>/dev/null"
+            if ($cred) {
+                $userNameLine = $cred | Where-Object { $_.StartsWith("    ""acct") }
+                if ($userNameLine) {
+                    $userName = $userNameLine.Split('=')[1].Trim('"')
+                    return $userName
+                }
             }
         }
     }
@@ -264,7 +251,7 @@ function Invoke-MetasysMethod {
             [string]$userName
         )
 
-        if (!(isMacOS)) {
+        if (!($IsMacOS)) {
             return
         }
 
@@ -292,7 +279,7 @@ function Invoke-MetasysMethod {
             [SecureString]$password
         )
 
-        if (!(isMacOS)) {
+        if (!($IsMacOS)) {
             return
         }
 
@@ -300,6 +287,12 @@ function Invoke-MetasysMethod {
 
         Invoke-Expression "security add-internet-password -U -s $siteHost -a $userName -w $plainText -c mgw1  "
 
+    }
+
+    if ($PSVersionTable.PSEdition -ne "Core") {
+        Write-Error "Windows Powershell is not supported. Please install PowerShell Core"
+        Write-Error "See https://github.com/powershell/powershell"
+        return
     }
 
     If (($Version -lt 2) -or ($Version -gt 4)) {
@@ -373,6 +366,9 @@ function Invoke-MetasysMethod {
         }
     }
 
+    # TODO: Also force login if $UserName -ne saved user name
+    # TODO: Could also support multiple sessions by storing multiple access tokens keyed on username
+    # TODO: When token expires but we have the credentials cached we could try to login again
     if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost()))) {
 
         $SiteHost = $SiteHost ? $SiteHost : [MetasysEnvVars]::getSiteHost()
@@ -396,6 +392,7 @@ function Invoke-MetasysMethod {
             $password = Read-Host -Prompt "Password" -AsSecureString
 
             ## Attempt to store credentials
+            # TODO: Should only do this if successful
             add-internet-password $SiteHost  $UserName  $password
         }
 
