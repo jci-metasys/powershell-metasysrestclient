@@ -1,6 +1,7 @@
 using namespace System
 using namespace System.IO
 using namespace System.Security
+using namespace Microsoft.PowerShell.Commands
 
 function Invoke-MetasysMethod {
     <#
@@ -62,7 +63,7 @@ function Invoke-MetasysMethod {
         [Parameter(ValueFromPipeline=$true)]
         [string]$Body,
         # The HTTP Method you are sending.
-        [string]$Method = "Get",
+        [WebRequestMethod]$Method = "Get",
         # The version of the API you intent to use
         [Int]$Version,
         # Skips certificate validation checks. This includes all validations
@@ -324,3 +325,4 @@ function Get-LastMetasysResponseBodyAsObject {
 
 
 Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus'
+
