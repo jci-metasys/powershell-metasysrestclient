@@ -1,5 +1,6 @@
 using namespace System
 using namespace System.IO
+using namespace System.Security
 
 function Invoke-MetasysMethod {
     <#
@@ -110,12 +111,24 @@ function Invoke-MetasysMethod {
             $env:METASYS_EXPIRES = $expires
         }
 
-        static [string] getToken() {
-            return $env:METASYS_SECURE_TOKEN
+        static [SecureString] getToken() {
+            if ($env:METASYS_SECURE_TOKEN) {
+                return ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
+            }
+            return $null
         }
 
-        static [void] setToken([string]$token) {
-            $env:METASYS_SECURE_TOKEN = $token
+        static [String] getTokenAsPlainText() {
+            $secureToken = [MetasysEnvVars]::getToken()
+            if ($secureToken) {
+                return (ConvertFrom-SecureString -SecureString $secureToken -AsPlainText)
+            }
+
+            return $null
+        }
+
+        static [void] setToken([SecureString]$token) {
+            $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $token
         }
 
         static [string] getLast() {
@@ -193,7 +206,7 @@ function Invoke-MetasysMethod {
             [string]$method = "Get",
             [string]$uri,
             [string]$body = $null,
-            [string]$token = [MetasysEnvVars]::getToken(),
+            [SecureString]$token,
             [string]$version
         )
 
@@ -202,7 +215,7 @@ function Invoke-MetasysMethod {
             Uri                  = buildUri -path $Path -version $version
             Body                 = $body
             Authentication       = "bearer"
-            Token                = ConvertTo-SecureString $token
+            Token                = $token
             SkipCertificateCheck = $SkipCertificateCheck
             ContentType          = "application/json"
             Headers              = @{}
@@ -333,17 +346,18 @@ function Invoke-MetasysMethod {
                 Method               = "Get"
                 Uri                  = buildUri -path "/refreshToken"
                 Authentication       = "bearer"
-                Token                = ConvertTo-SecureString -String ([MetasysEnvVars]::getToken())
+                Token                = [MetasysEnvVars]::getToken()
                 SkipCertificateCheck = $SkipCertificateCheck
             }
             try {
                 $refreshResponse = Invoke-RestMethod @refreshRequest
                 [MetasysEnvVars]::setExpires($refreshResponse.expires)
-                [MetasysEnvVars]::setToken( (ConvertFrom-SecureString -SecureString $refreshResponse.accessToken) )
+                [MetasysEnvVars]::setToken((ConvertTo-SecureString $refreshResponse.accessToken -AsPlainText))
 
             }
             catch {
-                # refreshing doesn't seem to work
+                Write-Debug "Error attemplting to refresh token"
+                Write-Debug $_
             }
 
 
@@ -390,7 +404,7 @@ function Invoke-MetasysMethod {
         try {
             $loginResponse = Invoke-RestMethod @loginRequest
             $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
-            [MetasysEnvVars]::setToken((ConvertFrom-SecureString -SecureString $secureToken))
+            [MetasysEnvVars]::setToken($secureToken)
             [MetasysEnvVars]::setSiteHost($SiteHost)
             [MetasysEnvVars]::setExpires($loginResponse.expires)
             [MetasysEnvVars]::setVersion($Version)
@@ -408,7 +422,7 @@ function Invoke-MetasysMethod {
 
 
 
-    $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version
+    $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version -token ([MetasysEnvVars]::getToken())
 
     $response = $null
     $responseObject = $null
