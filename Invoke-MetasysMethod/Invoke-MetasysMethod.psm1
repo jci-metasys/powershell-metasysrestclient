@@ -40,6 +40,7 @@ function Invoke-MetasysMethod {
 
     #>
 
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', 'DeleteCredentialsFor', Justification="This parameter doesn't actually contain a secret", Scope='Function')]
     [CmdletBinding(PositionalBinding = $false)]
     param(
         # The hostname or ip address of the site you wish to interact with
@@ -75,7 +76,7 @@ function Invoke-MetasysMethod {
         # A collection of headers to include in the request
         [hashtable]$Headers,
         # Erase credentials for the specified host
-        [string]$DeleteCredentials
+        [string]$DeleteCredentialsFor
     )
 
     # Setup text background colors to match console background
@@ -109,8 +110,8 @@ function Invoke-MetasysMethod {
         return # end the program
     }
 
-    if ($DeleteCredentials) {
-        clear-internet-password $DeleteCredentials
+    if ($DeleteCredentialsFor) {
+        clear-internet-password $DeleteCredentialsFor
         return # end the program
     }
 
