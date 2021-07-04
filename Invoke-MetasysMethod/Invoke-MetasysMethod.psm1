@@ -148,19 +148,28 @@ function Invoke-MetasysMethod {
             $env:METASYS_LAST_STATUS_CODE = $null
             $env:METASYS_LAST_STATUS_DESCRIPTION = $null
             $env:METASYS_LAST_HEADERS = $null
+            $env:METASYS_USER_NAME = $null
         }
 
-        static [void] setHeaders($headers) {
+        static [void] setHeaders([Hashtable]$headers) {
             $env:METASYS_LAST_HEADERS = ConvertTo-Json -Depth 15 $headers
         }
 
-        static [void] setStatus($code, $description) {
+        static [void] setStatus([int]$code, [string]$description) {
             $env:METASYS_LAST_STATUS_CODE = $code
             $env:METASYS_LAST_STATUS_DESCRIPTION = $description
         }
 
         static [Boolean] getDefaultSkipCheck() {
             return $env:METASYS_SKIP_CHECK_NOT_SECURE
+        }
+
+        static [string] getUserName() {
+            return $env:METASYS_USER_NAME
+        }
+
+        static [void] setUserName([String]$UserName) {
+            $env:METASYS_USER_NAME = $UserName
         }
 
     }
@@ -336,7 +345,7 @@ function Invoke-MetasysMethod {
 
     if ([MetasysEnvVars]::getExpires()) {
         $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
-        if ([Datetime]::now -gt $expiration) {
+        if ([Datetime]::UtcNow -gt $expiration) {
             # Token is expired, require login
             $ForceLogin = $true
         }
@@ -365,10 +374,13 @@ function Invoke-MetasysMethod {
     }
 
     if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost()))) {
+
+        $SiteHost = $SiteHost ? $SiteHost : [MetasysEnvVars]::getSiteHost()
         if (!$SiteHost) {
             $SiteHost = Read-Host -Prompt "Site host"
         }
 
+        $UserName = $UserName ? $UserName : [MetasysEnvVars]::getUserName()
         if (!$UserName) {
             # attempt to find a user name in keychain
             $UserName = find-internet-user($SiteHost)
@@ -408,6 +420,7 @@ function Invoke-MetasysMethod {
             [MetasysEnvVars]::setSiteHost($SiteHost)
             [MetasysEnvVars]::setExpires($loginResponse.expires)
             [MetasysEnvVars]::setVersion($Version)
+            [MetasysEnvVars]::setUserName($UserName)
         }
         catch {
             Write-Host "An error occurred:"
