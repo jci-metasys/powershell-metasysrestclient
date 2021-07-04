@@ -8,7 +8,6 @@ Testing with PowerShell 7.0.2
 
 Some Powershell Tutorials: https://github.com/PowerShell/PowerShell/tree/master/docs/learning-powershell
 
-
 ## Install
 
 From a powershell shell:
