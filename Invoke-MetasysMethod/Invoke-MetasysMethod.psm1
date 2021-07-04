@@ -1,3 +1,7 @@
+using namespace System
+using namespace System.IO
+using namespace System.Security
+
 function Invoke-MetasysMethod {
     <#
     .SYNOPSIS
@@ -7,31 +11,24 @@ function Invoke-MetasysMethod {
         This function allows you to invoke various methods of the Metasys REST API.
         Once a session is established (on the first invocation) the session state
         is maintained in the terminal session. This allows you to make additional
-        calls with less boilerplate text for each call.
+        calls with less boilerplate text necessary for each call.
 
     .OUTPUTS
-        The payloads from Metasys as Powershell objects.
+        The payloads from Metasys as formatted JSON strings.
 
     .EXAMPLE
-        Invoke-MetasysMethod -Reference thesun:thesun
+        Invoke-MetasysMethod /objects/$id
 
-        This will prompt you for a hostname and your credentials and then attempt
-        to look up the id of the object with the specified reference
-
-    .EXAMPLE
-        Invoke-MetasysMethod -Path /objects/$id
-
-        After retrieving an id of an object (like in the previous example) and
-        string it in variable $id, this example will read the default view of the
-        object.
+        Reads the default view of the specified object assuming $id contains a
+        valid object identifier
 
     .EXAMPLE
-        Invoke-MetasysMethod -Path /alarms
+        Invoke-MetasysMethod /alarms
 
         This will read the first page of alarms from the site.
 
     .EXAMPLE
-        Invoke-MetasysMethod -Method Put -Path /objects/$id/commands/adjust -Body '[72.5]'
+        Invoke-MetasysMethod -Method Put /objects/$id/commands/adjust -Body '[72.5]'
 
         This example will send the adjust command to the specified object (assuming
         a valid id is stored in $id).
@@ -53,32 +50,31 @@ function Invoke-MetasysMethod {
         # switch you will be prompted for the site or your credentials if
         # not supplied on the command line.
         [switch]$Login,
-        # The relative path to an endpont. For example: /alarms
-        # All of the relative paths are listed in the API Documentation
-        # Path and Reference are mutally exclusive.
+        # The relative or absolute url for an endpont. For example: /alarms
+        # All of the urls are listed in the API Documentation
         [Parameter(Position=0)]
         [string]$Path,
         # Session information is stored in environment variables. To force a
         # cleanup use this switch to remove all environment variables. The next
-        # time you invoke this function you'll need to provide credentials and
-        # a SiteHost.
+        # time you invoke this function you'll need to provide a SiteHost
         [switch]$Clear,
-        # The json payload to send with your request.
+        # The payload to send with your request.
+        [Parameter(ValueFromPipeline=$true)]
         [string]$Body,
         # The HTTP Method you are sending.
         [string]$Method = "Get",
         # The version of the API you intent to use
-        [Int]$Version = 4,
-        # NOTE: Insecure. DO NOT use in production. This switch will cause
-        # all checks of the certificate to be skipped.
+        [Int]$Version,
+        # Skips certificate validation checks. This includes all validations
+        # such as expiration, revocation, trusted root authority, etc.
+        # [!WARNING] Using this parameter is not secure and is not recommended.
+        # This switch is only intended to be used against known hosts using a
+        # self-signed certificate for testing purposes. Use at your own risk.
         [switch]$SkipCertificateCheck,
-        # A short cut for looking up the id of an object.
-        [string]$Reference,
-        # Rather than just returning the content, return the full web response
-        # object will include extra like the response headers.
-        [switch]$FullWebResponse,
         # A collection of headers to include in the request
-        [hashtable]$Headers
+        [hashtable]$Headers,
+        # Erase credentials for the specified host
+        [string]$DeleteCredentials
     )
 
     # Setup text background colors to match console background
@@ -115,12 +111,24 @@ function Invoke-MetasysMethod {
             $env:METASYS_EXPIRES = $expires
         }
 
-        static [string] getToken() {
-            return $env:METASYS_SECURE_TOKEN
+        static [SecureString] getToken() {
+            if ($env:METASYS_SECURE_TOKEN) {
+                return ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
+            }
+            return $null
         }
 
-        static [void] setToken([string]$token) {
-            $env:METASYS_SECURE_TOKEN = $token
+        static [String] getTokenAsPlainText() {
+            $secureToken = [MetasysEnvVars]::getToken()
+            if ($secureToken) {
+                return (ConvertFrom-SecureString -SecureString $secureToken -AsPlainText)
+            }
+
+            return $null
+        }
+
+        static [void] setToken([SecureString]$token) {
+            $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $token
         }
 
         static [string] getLast() {
@@ -137,9 +145,21 @@ function Invoke-MetasysMethod {
             $env:METASYS_VERSION = $null
             $env:METASYS_LAST_RESPONSE = $null
             $env:METASYS_EXPIRES = $null
+            $env:METASYS_LAST_STATUS_CODE = $null
+            $env:METASYS_LAST_STATUS_DESCRIPTION = $null
+            $env:METASYS_LAST_HEADERS = $null
         }
 
-        static [System.Boolean] getDefaultSkipCheck() {
+        static [void] setHeaders($headers) {
+            $env:METASYS_LAST_HEADERS = ConvertTo-Json -Depth 15 $headers
+        }
+
+        static [void] setStatus($code, $description) {
+            $env:METASYS_LAST_STATUS_CODE = $code
+            $env:METASYS_LAST_STATUS_DESCRIPTION = $description
+        }
+
+        static [Boolean] getDefaultSkipCheck() {
             return $env:METASYS_SKIP_CHECK_NOT_SECURE
         }
 
@@ -158,6 +178,9 @@ function Invoke-MetasysMethod {
         return $False
     }
 
+    # The path can be
+    # * relative to the https://hostname/api/v{next}
+    # * absolute (eg https://hostname/api/v{next}/objects/{id}/attributes/presentValue)
     function buildUri {
         param (
             [string]$siteHost = [MetasysEnvVars]::getSiteHost(),
@@ -166,16 +189,24 @@ function Invoke-MetasysMethod {
             [string]$path
         )
 
-        $uri = [System.Uri] ("https://" + $siteHost + "/" + ([System.IO.Path]::Join($baseUri, "v" + $version, $path)))
-        return $uri
+        $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
+        if ($uri.IsAbsoluteUri) {
+            return $uri
+        }
+
+        $fullPath = "https://$siteHost/$([Path]::Join($baseUri, "v" + $version, $path))"
+        return [Uri]::new($fullPath)
     }
 
+    # The uri can be
+    # * relative to the https://hostname/api/v{next}
+    # * absolute (eg https://hostname/api/v{next}/objects/{id}/attributes/presentValue)
     function buildRequest {
         param (
             [string]$method = "Get",
             [string]$uri,
             [string]$body = $null,
-            [string]$token = [MetasysEnvVars]::getToken(),
+            [SecureString]$token,
             [string]$version
         )
 
@@ -184,7 +215,7 @@ function Invoke-MetasysMethod {
             Uri                  = buildUri -path $Path -version $version
             Body                 = $body
             Authentication       = "bearer"
-            Token                = ConvertTo-SecureString $token
+            Token                = $token
             SkipCertificateCheck = $SkipCertificateCheck
             ContentType          = "application/json"
             Headers              = @{}
@@ -234,6 +265,17 @@ function Invoke-MetasysMethod {
         }
     }
 
+    function clear-internet-password {
+        param(
+            [String]$siteHost
+        )
+
+        if (!$IsMacOS) {
+            return
+        }
+
+        Invoke-Expression "security delete-internet-password -s $siteHost 1>/dev/null"
+    }
     function add-internet-password {
         param(
             [string]$siteHost,
@@ -252,8 +294,10 @@ function Invoke-MetasysMethod {
     }
 
     If (($Version -lt 2) -or ($Version -gt 4)) {
-        Write-Error -Message "Version out of range. Should be 2, 3 or 4"
-        return
+        If ($Version -ne 0) {
+            Write-Error -Message "Version out of range. Should be 2, 3 or 4"
+            return
+        }
     }
 
     if ($Clear.IsPresent) {
@@ -261,8 +305,29 @@ function Invoke-MetasysMethod {
         return # end the program
     }
 
+    if ($DeleteCredentials) {
+        clear-internet-password $DeleteCredentials
+        return # end the program
+    }
+
     if (!$SkipCertificateCheck.IsPresent) {
         $SkipCertificateCheck =[MetasysEnvVars]::getDefaultSkipCheck()
+    }
+
+    $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
+    if ($uri.IsAbsoluteUri) {
+        $versionSegment = $uri.Segments[2]
+        $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
+        if ($Version -gt 0 -and $versionNumber -ne $Version) {
+            Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
+            return
+        }
+    }
+
+    If ($Version -eq 0) {
+        # Default to the latest version
+        # TODO: Also check a environment variable or even a config file for reasonable defaults.
+        $Version = 4
     }
 
     # Login Region
@@ -281,17 +346,18 @@ function Invoke-MetasysMethod {
                 Method               = "Get"
                 Uri                  = buildUri -path "/refreshToken"
                 Authentication       = "bearer"
-                Token                = ConvertTo-SecureString -String ([MetasysEnvVars]::getToken())
+                Token                = [MetasysEnvVars]::getToken()
                 SkipCertificateCheck = $SkipCertificateCheck
             }
             try {
                 $refreshResponse = Invoke-RestMethod @refreshRequest
                 [MetasysEnvVars]::setExpires($refreshResponse.expires)
-                [MetasysEnvVars]::setToken( (ConvertFrom-SecureString -SecureString $refreshResponse.accessToken) )
+                [MetasysEnvVars]::setToken((ConvertTo-SecureString $refreshResponse.accessToken -AsPlainText))
 
             }
             catch {
-                # refreshing doesn't seem to work
+                Write-Debug "Error attemplting to refresh token"
+                Write-Debug $_
             }
 
 
@@ -338,7 +404,7 @@ function Invoke-MetasysMethod {
         try {
             $loginResponse = Invoke-RestMethod @loginRequest
             $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
-            [MetasysEnvVars]::setToken((ConvertFrom-SecureString -SecureString $secureToken))
+            [MetasysEnvVars]::setToken($secureToken)
             [MetasysEnvVars]::setSiteHost($SiteHost)
             [MetasysEnvVars]::setExpires($loginResponse.expires)
             [MetasysEnvVars]::setVersion($Version)
@@ -350,45 +416,28 @@ function Invoke-MetasysMethod {
         }
     }
 
-    if ($Path -and $Reference) {
-        Write-Warning "-Path and -Reference are mutually exclusive"
+    if (!$Path) {
         return
     }
 
-    if (!$Path -and !$Reference) {
-        return
-    }
 
-    if ($Reference) {
-        $Path = "/objectIdentifiers?fqr=" + $Reference
-        $request = buildRequest -uri (buildUri -path $Path) -version $Version
-    }
 
-    if ($Path) {
-        $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version
-    }
+    $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version -token ([MetasysEnvVars]::getToken())
 
     $response = $null
+    $responseObject = $null
     try {
         $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
-        if ($FullWebResponse.IsPresent) {
-            $response = $responseObject
-        }
-        elseif ($responseObject.StatusCode -ge 400) {
+        if ($responseObject.StatusCode -ge 400) {
             $body = [String]::new($responseObject.Content)
             Write-Error -Message ("Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")")
             $responseObject.Headers.Keys | ForEach-Object {$_ + ": " + $responseObject.Headers[$_] | Write-Output}
             Write-Output $body
         }
         else {
-            if ($responseObject -and $responseObject.Content) {
-                if ($responseObject.Headers["Content-Type"] -like "*json*") {
-                    try {
-                        $response = ConvertFrom-Json ([String]::new($responseObject.Content))
-                    } catch {
-                        # only use -AsHashtable if needed because it doesn't preserve order
-                        $response = ConvertFrom-Json -AsHashtable ([String]::new($responseObject.Content))
-                    }
+            if ($responseObject) {
+                if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*")) {
+                    $response = [String]::new($responseObject.Content)
                 } else {
                     Write-Output "An unexpected content type was found:"
                     Write-Output $([String]::new($responseObject.Content))
@@ -401,70 +450,66 @@ function Invoke-MetasysMethod {
         Write-Error $_
     }
     # Only overwrite the last response if $response is not null
-    if ($response) {
-        [MetasysEnvVars]::setLast((ConvertTo-Json $response -Depth 15))
+    if ($null -ne $response) {
+        [MetasysEnvVars]::setLast($response)
+        [MetasysEnvVars]::setHeaders($responseObject.Headers)
+        [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
     }
-    return $response
+
+    return Show-LastMetasysResponseBody $response
 
 }
 
-function Invoke-MetasysGet {
-    param(
-        [Parameter(Position = 0)][string]$Path,
-        [switch]$SkipCertificateCheck
-    )
-    Invoke-MetasysMethod -Path $Path -SkipCertificateCheck:$SkipCertificateCheck
-}
-function Invoke-MetasysPatch {
-    param([Parameter(Position = 0)][string]$Path, [Parameter(Position = 1)][string]$Body)
-    Invoke-MetasysMethod -Method Patch -Body $Body -Path $Path
+function Show-LastMetasysAccessToken {
+    Write-Output $(ConvertTo-SecureString -String $env:METASYS_SECURE_TOKEN | ConvertFrom-SecureString -AsPlainText)
 }
 
-function Invoke-MetasysPut {
-    param([Parameter(Position = 0)][string]$Path, [Parameter(Position = 1)][string]$Body)
-    Invoke-MetasysMethod -Method Put -Body $Body -Path $Path
-}
+function Show-LastMetasysHeaders {
 
-function Invoke-MetasysGetObject {
-    <#
-    .SYNOPSIS
-        Reads the default view of a Metasys object
-
-    .DESCRIPTION
-        This function allows you to read a Metasys object given the specified
-        Reference. You will be prompted for a site host and your credentials unless a
-        session has already been established.
-
-    .OUTPUTS
-        The object payload returned by the server.
-
-    .EXAMPLE
-        Invoke-MetasysGet-Object -Reference thesun:thesun
-
-        This will prompt you for the Site host and your credentials and read the default view of this object.
-
-    .LINK
-
-        https://github.jci.com/cwelchmi/metasys-powershell-tutorial/blob/main/invoke-metasys-method.md
-
-    #>
-    param(
-        # The fully qualified references of a Metasys object
-        [Parameter(Position = 0)][string]$Reference,
-        [switch]$SkipCertificateCheck
-    )
-    $id = [System.Environment]::GetEnvironmentVariable("idFor:" + $Reference)
-    if (!$id) {
-        $id = Invoke-MetasysGet -Path ("/objectIdentifiers?fqr=" + $Reference) -SkipCertificateCheck:$SkipCertificateCheck
-        [System.Environment]::SetEnvironmentVariable("idFor:" + $Reference, $id)
+    $headers = ConvertFrom-Json $env:METASYS_LAST_HEADERS
+    foreach ($header in $headers.PSObject.Properties) {
+        Write-Output "$($header.Name): $($header.Value -join ',')"
     }
-    Invoke-MetasysGet ("/objects/" + $id) -SkipCertificateCheck:$SkipCertificateCheck
 }
 
-New-Alias -Name mget -Value Invoke-MetasysGet
-New-Alias -Name mpatch -Value Invoke-MetasysPatch
-New-Alias -Name mput -Value Invoke-MetasysPut
-New-Alias -Name mget-object -Value Invoke-MetasysGetObject
+function Show-LastMetasysStatus {
+    Write-Output "$($env:METASYS_LAST_STATUS_CODE) ($($env:METASYS_LAST_STATUS_DESCRIPTION))"
+}
 
-Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Invoke-MetasysGet', 'Invoke-MetasysPut', 'Invoke-MetasysGetObject'
-Export-ModuleMember -Alias 'mget', 'mpatch', 'mput', 'mget-object'
+function ConvertFrom-JsonSafely {
+    param(
+        [String]$json
+    )
+
+    try {
+        return ConvertFrom-Json $json
+    } catch {
+        return ConvertFrom-Json -AsHashtable $json
+    }
+}
+
+function Show-LastMetasysResponseBody {
+    param (
+        [string]$body = $env:METASYS_LAST_RESPONSE
+    )
+
+    if ($null -eq $body -or $body -eq "") {
+        Write-Output ""
+        return
+    }
+    ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20 | Write-Output
+}
+
+function Show-LastMetasysFullResponse {
+    Show-LastMetasysStatus
+    Show-LastMetasysHeaders
+    Show-LastMetasysResponseBody
+}
+
+function Get-LastMetasysResponseBodyAsObject {
+    return ConvertFrom-JsonSafely $env:METASYS_LAST_RESPONSE
+}
+
+
+
+Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus'
