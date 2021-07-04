@@ -3,6 +3,59 @@ using namespace System.IO
 using namespace System.Security
 using namespace Microsoft.PowerShell.Commands
 
+function assertPowershellCore {
+    if ($PSVersionTable.PSEdition -ne "Core") {
+        Write-Error "Windows Powershell is not supported. Please install PowerShell Core"
+        Write-Error "See https://github.com/powershell/powershell"
+        exit
+    }
+}
+
+function assertValidVersion {
+    param(
+        [Int]$Version
+    )
+    If (($Version -lt 2) -or ($Version -gt 4)) {
+        If ($Version -ne 0) {
+            Write-Error -Message "Version out of range. Should be 2, 3 or 4" -Category InvalidArgument
+            exit
+        }
+    }
+}
+
+function handleClearSwitch {
+    param (
+        [Switch]$Clear
+    )
+
+    if ($Clear.IsPresent) {
+        [MetasysEnvVars]::clear()
+        Write-Output "Environment variables cleared"
+        exit # end the program
+    }
+}
+
+function handleDeleteCredentialsFor {
+    param (
+        [string]$DeleteCredentialsFor
+    )
+    if ($DeleteCredentialsFor) {
+        clear-internet-password $DeleteCredentialsFor
+        exit
+    }
+}
+
+function setBackgroundColorsToMatchConsole {
+    # Setup text background colors to match console background
+    $backgroundColor = $Host.UI.RawUI.BackgroundColor
+    $Host.PrivateData.DebugBackgroundColor = $backgroundColor
+    $Host.PrivateData.ErrorBackgroundColor = $backgroundColor
+    $Host.PrivateData.WarningBackgroundColor = $backgroundColor
+    $Host.PrivateData.VerboseBackgroundColor = $backgroundColor
+
+    Write-Output ""
+}
+
 function Invoke-MetasysMethod {
     <#
     .SYNOPSIS
@@ -40,7 +93,7 @@ function Invoke-MetasysMethod {
 
     #>
 
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', 'DeleteCredentialsFor', Justification="This parameter doesn't actually contain a secret", Scope='Function')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', 'DeleteCredentialsFor', Justification = "This parameter doesn't actually contain a secret", Scope = 'Function')]
     [CmdletBinding(PositionalBinding = $false)]
     param(
         # The hostname or ip address of the site you wish to interact with
@@ -54,14 +107,14 @@ function Invoke-MetasysMethod {
         [switch]$Login,
         # The relative or absolute url for an endpont. For example: /alarms
         # All of the urls are listed in the API Documentation
-        [Parameter(Position=0)]
+        [Parameter(Position = 0)]
         [string]$Path,
         # Session information is stored in environment variables. To force a
         # cleanup use this switch to remove all environment variables. The next
         # time you invoke this function you'll need to provide a SiteHost
         [switch]$Clear,
         # The payload to send with your request.
-        [Parameter(ValueFromPipeline=$true)]
+        [Parameter(ValueFromPipeline = $true)]
         [string]$Body,
         # The HTTP Method you are sending.
         [WebRequestMethod]$Method = "Get",
@@ -76,47 +129,26 @@ function Invoke-MetasysMethod {
         # A collection of headers to include in the request
         [hashtable]$Headers,
         # Erase credentials for the specified host
-        [string]$DeleteCredentialsFor
+        [string]$DeleteCredentialsFor,
+        # TODO: Add support for password to be passed in
+        [SecureString]$Password
     )
 
-    # Setup text background colors to match console background
-    $backgroundColor = $Host.UI.RawUI.BackgroundColor
-    $Host.PrivateData.DebugBackgroundColor = $backgroundColor
-    $Host.PrivateData.ErrorBackgroundColor = $backgroundColor
-    $Host.PrivateData.WarningBackgroundColor = $backgroundColor
-    $Host.PrivateData.VerboseBackgroundColor = $backgroundColor
-
-    Write-Output ""
+    setBackgroundColorsToMatchConsole
 
     Set-StrictMode -Version 2
 
+    assertPowershellCore
 
+    assertValidVersion $Version
 
-    if ($PSVersionTable.PSEdition -ne "Core") {
-        Write-Error "Windows Powershell is not supported. Please install PowerShell Core"
-        Write-Error "See https://github.com/powershell/powershell"
-        return
-    }
+    handleClearSwitch -Clear:$Clear
 
-    If (($Version -lt 2) -or ($Version -gt 4)) {
-        If ($Version -ne 0) {
-            Write-Error -Message "Version out of range. Should be 2, 3 or 4"
-            return
-        }
-    }
+    handleDeleteCredentialsFor $DeleteCredentialsFor
 
-    if ($Clear.IsPresent) {
-        [MetasysEnvVars]::clear()
-        return # end the program
-    }
-
-    if ($DeleteCredentialsFor) {
-        clear-internet-password $DeleteCredentialsFor
-        return # end the program
-    }
 
     if (!$SkipCertificateCheck.IsPresent) {
-        $SkipCertificateCheck =[MetasysEnvVars]::getDefaultSkipCheck()
+        $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
     }
 
     $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
@@ -244,14 +276,15 @@ function Invoke-MetasysMethod {
         if ($responseObject.StatusCode -ge 400) {
             $body = [String]::new($responseObject.Content)
             Write-Error -Message ("Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")")
-            $responseObject.Headers.Keys | ForEach-Object {$_ + ": " + $responseObject.Headers[$_] | Write-Output}
+            $responseObject.Headers.Keys | ForEach-Object { $_ + ": " + $responseObject.Headers[$_] | Write-Output }
             Write-Output $body
         }
         else {
             if ($responseObject) {
                 if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*")) {
                     $response = [String]::new($responseObject.Content)
-                } else {
+                }
+                else {
                     Write-Output "An unexpected content type was found:"
                     Write-Output $([String]::new($responseObject.Content))
                 }
@@ -296,7 +329,8 @@ function ConvertFrom-JsonSafely {
 
     try {
         return ConvertFrom-Json $json
-    } catch {
+    }
+    catch {
         return ConvertFrom-Json -AsHashtable $json
     }
 }
