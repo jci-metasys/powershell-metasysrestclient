@@ -322,19 +322,19 @@ function Invoke-MetasysMethod {
 }
 
 function Show-LastMetasysAccessToken {
-    Write-Output $(ConvertTo-SecureString -String $env:METASYS_SECURE_TOKEN | ConvertFrom-SecureString -AsPlainText)
+    Write-Output $(ConvertTo-SecureString -String ([MetasysEnvVars]::getToken()) | ConvertFrom-SecureString -AsPlainText)
 }
 
 function Show-LastMetasysHeaders {
 
-    $headers = ConvertFrom-Json $env:METASYS_LAST_HEADERS
+    $headers = ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
     foreach ($header in $headers.PSObject.Properties) {
         Write-Output "$($header.Name): $($header.Value -join ',')"
     }
 }
 
 function Show-LastMetasysStatus {
-    Write-Output "$($env:METASYS_LAST_STATUS_CODE) ($($env:METASYS_LAST_STATUS_DESCRIPTION))"
+    Write-Output ([MetasysEnvVars]::getStatus())
 }
 
 function ConvertFrom-JsonSafely {
@@ -351,7 +351,7 @@ function ConvertFrom-JsonSafely {
 
 function Show-LastMetasysResponseBody {
     param (
-        [string]$body = $env:METASYS_LAST_RESPONSE
+        [string]$body = ([MetasysEnvVars]::getLast())
     )
 
     if ($null -eq $body -or $body -eq "") {
@@ -368,7 +368,7 @@ function Show-LastMetasysFullResponse {
 }
 
 function Get-LastMetasysResponseBodyAsObject {
-    return ConvertFrom-JsonSafely $env:METASYS_LAST_RESPONSE
+    return ConvertFrom-JsonSafely ([MetasysEnvVars]::getLast())
 }
 
 

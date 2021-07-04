@@ -11,7 +11,7 @@
 # Script module or binary module file associated with this manifest.
 RootModule = 'Invoke-MetasysMethod.psm1'
 
-NestedModules = @("MetasysEnvVars.ps1", "password-management.ps1")
+NestedModules = @("metasys-env-vars.ps1", "password-management.ps1")
 
 # Version number of this module.
 ModuleVersion = '0.0.20'

@@ -67,9 +67,17 @@ class MetasysEnvVars {
         $env:METASYS_LAST_HEADERS = ConvertTo-Json -Depth 15 $headers
     }
 
+    static [string] getHeaders() {
+        return $env:METASYS_LAST_HEADERS
+    }
+
     static [void] setStatus([int]$code, [string]$description) {
         $env:METASYS_LAST_STATUS_CODE = $code
         $env:METASYS_LAST_STATUS_DESCRIPTION = $description
+    }
+
+    static [string] getStatus() {
+        return "$($env:METASYS_LAST_STATUS_CODE) ($($env:METASYS_LAST_STATUS_DESCRIPTION))"
     }
 
     static [Boolean] getDefaultSkipCheck() {
