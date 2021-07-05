@@ -76,7 +76,7 @@ function Invoke-MetasysMethod {
         This will read the first page of alarms from the site.
 
     .EXAMPLE
-        Invoke-MetasysMethod -Method Put /objects/$id/commands/adjust -Body '[72.5]'
+        Invoke-MetasysMethod -Method Put /objects/$id/commands/adjust -Body '{ "parameters": [72.5] }'
 
         This example will send the adjust command to the specified object (assuming
         a valid id is stored in $id).
@@ -222,7 +222,7 @@ function Invoke-MetasysMethod {
         if (!$Password) {
             Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
             $password = Get-MetasysPassword -SiteHost $SiteHost -UserName $UserName
-    
+
             if (!$password) {
                 $password = Read-Host -Prompt "Password" -AsSecureString
             }
@@ -290,7 +290,7 @@ function Invoke-MetasysMethod {
                 }
             }
         }
-    }   
+    }
     catch {
         Write-Output "An unhandled error condition occurred:"
         Write-Error $_
