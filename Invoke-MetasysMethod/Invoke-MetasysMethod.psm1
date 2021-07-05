@@ -123,7 +123,8 @@ function Invoke-MetasysMethod {
         # A collection of headers to include in the request
         [hashtable]$Headers,
         # TODO: Add support for password to be passed in
-        [SecureString]$Password
+        [SecureString]$Password,
+        [Switch]$ReturnBodyAsObject
     )
 
     PROCESS {
@@ -298,7 +299,11 @@ function Invoke-MetasysMethod {
             [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
         }
 
-        return Show-LastMetasysResponseBody $response
+        if ($ReturnBodyAsObject.IsPresent -and $null -ne $response) {
+            return Get-LastMetasysResponseBodyAsObject
+        } else {
+            return Show-LastMetasysResponseBody $response
+        }
     }
 
 }
