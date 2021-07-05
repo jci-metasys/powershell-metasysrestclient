@@ -259,7 +259,8 @@ function Invoke-MetasysMethod {
 
 
     $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version  `
-        $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
+        $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
+        -headers $Headers
 
     $response = $null
     $responseObject = $null

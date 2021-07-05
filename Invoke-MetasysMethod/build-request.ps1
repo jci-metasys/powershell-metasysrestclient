@@ -10,7 +10,8 @@ function buildRequest {
         [string]$body = $null,
         [SecureString]$token,
         [string]$version,
-        [switch]$skipCertificateCheck
+        [switch]$skipCertificateCheck,
+        [Hashtable]$headers
     )
 
     $request = @{
@@ -27,7 +28,7 @@ function buildRequest {
         $request.Authentication = "bearer"
     }
 
-    if ($Headers) {
+    if ($headers) {
         foreach ($header in $Headers.GetEnumerator()) {
             $request.Headers[$header.Key] = $header.Value
         }
