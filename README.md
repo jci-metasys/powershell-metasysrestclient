@@ -4,14 +4,19 @@ A light weight wrapper around the powershell `Invoke-WebRequest` command.
 
 Features:
 
-* Securely stores credentials in OS keychain after your first successful login to a Metasys device
-* Establishes a "session" with a Metasys device so you don't need to send credentials on each call
-* Manages the access token for you so you don't need to explicitly send it on each request
+* Establishes a "session" with a Metasys device so you don't need to send credentials on each call or explicitly managed the access token
+* Securely stores credentials in OS keychain after your first successful login to a Metasys device (requires SecretManagement module annd a Secret Vault implementationn)
 * Provides some helper cmdlets to inspect all the results of the previous command
 
 ## Dependencies
 
-Powershell Core for your OS: See the [repository](https://github.com/powershell/powershell).
+* Powershell Core for your OS: See the [repository](https://github.com/powershell/powershell).
+
+    **Note:** Windows PowerShell is not supported
+
+## Credential Management
+
+See [Tips and Tricks](docs/tips-and-tricks.md) for more info.
 
 ## Prerequisites
 
@@ -23,19 +28,12 @@ See the Documentation for the Metasys REST API for more information on what endp
 
 Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to explicitly include the `-Version` parameter when making calls. Else `Invoke-MetasysMethod` assumes `v4`.
 
-## Install
+## Installation
 
 From a powershell shell:
 
 ```bash
-PS > Install-Module Invoke-MetasysMethod
-
-Untrusted repository
-You are installing the modules from an untrusted repository. If you trust this
-repository, change its InstallationPolicy value by running the Set-PSRepository
- cmdlet. Are you sure you want to install the modules from 'PSGallery'?
-[Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help
-(default is "N"):Y
+PS > Install-Module Invoke-MetasysMethod -Repository PSGallery
 ```
 
 ## Help
@@ -48,7 +46,7 @@ You can type
 
 To see the list of parameters that are supported.
 
-## How To Use
+## Quick Start
 
 This section will show you the basics of using `Invoke-MetasysMethod`
 
@@ -56,7 +54,7 @@ This section will show you the basics of using `Invoke-MetasysMethod`
 
 To get started you need to get logged into a site.
 
-To do this, simply call `Invoke-MetasysMethod` with no parameters. You'll be prompted for your `Site host`, `username` and `password`. Your credentials which will be securely stored in your OS keychain. After that you'll never need to enter your credentials for that site again. (If your credentials change, you'll want to clear them from your keychain. See [Clearing Credentials from your Keychain]() )
+To do this, simply call `Invoke-MetasysMethod` with no parameters. You'll be prompted for your `Site host`, `username` and `password`.
 
 ```bash
 PS > Invoke-MetasysMethod
@@ -72,7 +70,6 @@ Password: *********
 
 When you want to read information from Metasys you'll normally be doing a `GET` request. These are the easiest to work with because they only require a URL and nothing else. You can use a relative or absolute url.
 
-
 ```bash
 PS > Invoke-MetasysMethod /objects
 
@@ -81,7 +78,7 @@ UserName: api
 Password: *********
 ```
 
-The result of this command will return the root of the objects collection and it's direct descendants:
+This will invoke the `/objects` endpoint and display the response body.
 
 <!-- markdownlint-disable no-inline-html -->
 
@@ -187,6 +184,219 @@ The result of this command will return the root of the objects collection and it
 
 An *absolute url* looks like `https://{hostname}/api/v4/objects`. Many API endpoints return absolute URLs in their response payloads. These are used to provide information about other useful resources on the system. So it's convenient to be able to copy and paste those to make another request.
 
+In the example above, the `self` property of the last objects is `https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b`. Let's use that absolute url to read the default view of that object.
+
+```bash
+PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b
+```
+
+<details><summary>Click to See Response</summary>
+
+```json
+{
+  "self": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b?includeSchema=false&viewId=viewNameEnumSet.focusView",
+  "objectType": "objectTypeEnumSet.oasClass",
+  "parentUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+  "objectsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/objects",
+  "networkDeviceUrl": null,
+  "pointsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/points",
+  "trendedAttributesUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/trendedAttributes",
+  "alarmsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/alarms",
+  "auditsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/audits",
+  "item": {
+    "id": "8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
+    "name": "welchoas",
+    "description": null,
+    "bacnetObjectType": "objectTypeEnumSet.bacdeviceClass",
+    "objectCategory": "objectCategoryEnumSet.generalCategory",
+    "modelName": "OAS",
+    "localTime": {
+      "hour": 16,
+      "minute": 58,
+      "second": 41,
+      "hundredth": 56
+    },
+    "localDate": {
+      "year": 2021,
+      "month": 7,
+      "dayOfMonth": 5,
+      "dayOfWeek": 1
+    },
+    "firmwareVersion": "12.0.0.6218",
+    "itemReference": "welchoas:welchoas",
+    "version": {
+      "major": 37,
+      "minor": 0
+    },
+    "archiveDate": {
+      "year": 2021,
+      "month": 7,
+      "dayOfMonth": 5,
+      "dayOfWeek": 1
+    },
+    "maxMessageBuffer": 994.0,
+    "maxApduLength": 1024.0,
+    "apduSegmentTimeout": 10000.0,
+    "apduTimeout": 10000.0,
+    "apduRetries": 4.0,
+    "internodeCommTimer": 120.0,
+    "unboundReferences": [],
+    "duplicateReferences": [],
+    "fipsComplianceStatus": "noOfComplianceStateEnumSet.nonCompliantUnlicensed",
+    "almSnoozeTime": 5.0,
+    "enableApplicationGenAudit": false,
+    "auditEnabledClasLev": 2.0,
+    "addAdsrepos": [],
+    "adsRepositoriesStatus": [],
+    "allowOffSiteRepositoryStorage": false,
+    "sampleRate": 0.0,
+    "serviceTime": 66.0,
+    "numberOfNxesReporting": 1.0,
+    "transferBufferFullWorstNxe": 0.0,
+    "hostName": "",
+    "jciExceptionSchedule": "weeklySchedPurgeEnumSet.wsAutoDelete31Days",
+    "isValidated": false,
+    "bacnetObjectCacheExposed": "bacnetObjectCacheExposedEnumSet.boceIncludeInList",
+    "jciSystemStatus": "jciSystemStatusEnumSet.jciOperational",
+    "status": "objectStatusEnumSet.osNormal",
+    "attrChangeCount": 201.0,
+    "defaultAttribute": "attributeEnumSet.jciSystemStatus"
+  },
+  "effectivePermissions": {
+    "canDelete": false,
+    "canModify": true
+  },
+  "views": [
+    {
+      "title": "Focus",
+      "views": [
+        {
+          "title": "Basic",
+          "views": [
+            {
+              "title": "Object",
+              "properties": [
+                "name",
+                "description",
+                "bacnetObjectType",
+                "objectCategory",
+                "modelName"
+              ],
+              "id": "viewGroupEnumSet.objectGrp"
+            },
+            {
+              "title": "Time",
+              "properties": [
+                "localTime",
+                "localDate"
+              ],
+              "id": "viewGroupEnumSet.timeGrp"
+            }
+          ],
+          "id": "groupTypeEnumSet.basicGrpType"
+        },
+        {
+          "title": "Advanced",
+          "views": [
+            {
+              "title": "Engineering Values",
+              "properties": [
+                "firmwareVersion",
+                "itemReference",
+                "version",
+                "archiveDate",
+                "maxMessageBuffer",
+                "maxApduLength",
+                "apduSegmentTimeout",
+                "apduTimeout",
+                "apduRetries",
+                "internodeCommTimer",
+                "unboundReferences",
+                "duplicateReferences",
+                "fipsComplianceStatus",
+                "id"
+              ],
+              "id": "viewGroupEnumSet.engValuesGrp"
+            },
+            {
+              "title": "Alarms",
+              "properties": [
+                "almSnoozeTime"
+              ],
+              "id": "viewGroupEnumSet.alarmsGrp"
+            },
+            {
+              "title": "Audit Trail",
+              "properties": [
+                "enableApplicationGenAudit",
+                "auditEnabledClasLev"
+              ],
+              "id": "viewGroupEnumSet.auditTrailGrp"
+            },
+            {
+              "title": "Repository Storage",
+              "properties": [
+                "addAdsrepos",
+                "adsRepositoriesStatus",
+                "allowOffSiteRepositoryStorage",
+                "sampleRate",
+                "serviceTime",
+                "numberOfNxesReporting",
+                "transferBufferFullWorstNxe",
+                "hostName"
+              ],
+              "id": "viewGroupEnumSet.repositoryStorageGrp"
+            },
+            {
+              "title": "Weekly Scheduling",
+              "properties": [
+                "jciExceptionSchedule"
+              ],
+              "id": "viewGroupEnumSet.weeklySchedGrp"
+            },
+            {
+              "title": "Validated Environment",
+              "properties": [
+                "isValidated"
+              ],
+              "id": "viewGroupEnumSet.validatedEnvironmentGrp"
+            },
+            {
+              "title": "BACnet Routing",
+              "properties": [
+                "bacnetObjectCacheExposed"
+              ],
+              "id": "viewGroupEnumSet.routingGrp"
+            }
+          ],
+          "id": "groupTypeEnumSet.advancedGrpType"
+        },
+        {
+          "title": "Key",
+          "views": [
+            {
+              "title": "None",
+              "properties": [
+                "jciSystemStatus",
+                "status",
+                "attrChangeCount",
+                "defaultAttribute"
+              ],
+              "id": "viewGroupEnumSet.noGrp"
+            }
+          ],
+          "id": "groupTypeEnumSet.keyGrpType"
+        }
+      ],
+      "id": "viewNameEnumSet.focusView"
+    }
+  ],
+  "condition": {}
+}
+```
+
+</details>
+
 A *relative url* looks like `/objects`. In other words, it's everything after `https://{hostname}/api/v4`.
 
 In this next example we'll read the `presentValue` of an object. I happen to know the `id` for this object is `ce820989-5617-50bd-90ea-2fd95d1402ba`.
@@ -240,22 +450,21 @@ We'll change the value to be `Zone 3 Temperature Setpoint`. We are going to send
 }
 ```
 
-Assume this is saved in a file named `write-description.json` which is stored in the same director that we are currently executing `Invoke-MetasysMethod` from. Then we can do the following.
+One way to create this JSON is to use Powershell Hashtable literals and then convert them to JSON. We'll do this in two steps. The first line below create the JSON. The second line invokes the appropriate endpoint, passing the JSON as the `Body`.
 
 ```bash
-> Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba -Method Patch -Body (Get-Content -Raw ./write-description.json)
+PS > $json = ConvertTo-Json -Depth 20 @{ item = @{ description = "Zone 3 Temperature Setpoint" } }
+PS > Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba -Method Patch -Body $json
 ```
 
-In this example, we used `Get-Content` to read our file
+> **Note:** Be careful with the `ConvertTo-Json` cmdlet. By default it doesn't convert the entire object it is given. Normally you'll want to use the `Depth` parameter to ensure your whole object is serialized to JSON like shown above.
 
-> **Note:** Be sure to use the `Raw` switch with `Get-Content` so that the contents of the file are returned as a single string, rather than as an array of strings.
-
-It can be a little tricky dealing with large JSON strings. There's many ways to construct them. See [Tips and Tricks](docs/tips-and-tricks.md) for examples of working with JSON strings.
+It can be a little tricky dealing with large JSON strings. There are many ways to construct them. See [Tips and Tricks](docs/tips-and-tricks.md) for examples of working with JSON strings.
 
 When your JSON string is short you can also just type it out as in this alternative:
 
 ```bash
-> Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba -Method Patch -Body "{ 'item': { 'description': 'Zone 3 Temperature Setpoint' } }"
+> Invoke-MetasysMethod -Method Patch /objects/ce820989-5617-50bd-90ea-2fd95d1402ba  -Body "{ 'item': { 'description': 'Zone 3 Temperature Setpoint' } }"
 ```
 
 ### Sending a Command to an Object (PUT)
@@ -868,10 +1077,27 @@ The details of the response are outside of the scope of this tutorial, but we do
 "Success"
 ```
 
+### Using PowerShell to find an Object
+
+In these examples, I'll show some simple scripts to work the the results to find an object. This is handy when I want to create a new object and I need to know the id of a location where I can create.
+
+First I 
+
+
+
 ### Creating an Object (POST)
 
 For our last example we'll create a new AV.
 
+Use Show-LastMetasysFullResponse to see the Location header of the newly created object
+
+### Delete an Object (DELETE)
+
+
+
+
+
+#### Find the OAS Object
 
 
 

@@ -72,3 +72,10 @@ Another trick for longer examples is to use Hashtables and convert them to JSON.
   }
 }
 ```
+
+## Credential Management
+
+* Microsoft.PowerShell.SecretManagement (if you wish for your credentials to be securely saved)
+* A Secret Vault of your choice
+  * Microsoft.PowerShell.SecretStore (recommended, cross-platform)
+  *
