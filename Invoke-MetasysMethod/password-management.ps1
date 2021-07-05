@@ -5,6 +5,8 @@ $prefix = "imm"
 $prefixLength = $prefix.Length + 1
 
 Set-StrictMode -Version 3
+
+
 function Get-MetasysUsers {
     param (
         [string]$SiteHost
@@ -100,7 +102,7 @@ function Set-MetasysPassword {
         [SecureString]$Password
     )
 
-    Set-Secret -Name "${prefix}:${SiteHost}:$UserName" -SecureStringSecret $Password -Metadata @{ UserName = $UserName }
+    Set-Secret -Name "${prefix}:${SiteHost}:$UserName" -SecureStringSecret $Password
 }
 
 Export-ModuleMember -Function "Get-MetasysUsers", "Get-MetasysPassword", "Remove-MetasysPassword", "Set-MetasysPassword"
