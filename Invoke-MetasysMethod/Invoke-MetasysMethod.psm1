@@ -167,14 +167,11 @@ function Invoke-MetasysMethod {
             $ForceLogin = $true
         }
         else {
+
             # attempt to renew the token to keep it fresh
-            $refreshRequest = @{
-                Method               = "Get"
-                Uri                  = buildUri -path "/refreshToken"
-                Authentication       = "bearer"
-                Token                = [MetasysEnvVars]::getToken()
-                SkipCertificateCheck = $SkipCertificateCheck
-            }
+            $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken") `
+                -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
+
             try {
                 Write-Verbose -Message "Attempting to refresh access token"
                 $refreshResponse = Invoke-RestMethod @refreshRequest
@@ -183,7 +180,7 @@ function Invoke-MetasysMethod {
                 Write-Verbose -Message "Refresh token successful"
             }
             catch {
-                Write-Debug "Error attemplting to refresh token"
+                Write-Debug "Error attempting to refresh token"
                 Write-Debug $_
             }
 
@@ -234,13 +231,8 @@ function Invoke-MetasysMethod {
         }
         $json = (ConvertTo-Json $jsonObject)
 
-        $loginRequest = @{
-            Method               = "Post"
-            Uri                  = buildUri -siteHost $SiteHost -version $Version -path "login"
-            Body                 = $json
-            ContentType          = "application/json"
-            SkipCertificateCheck = $SkipCertificateCheck
-        }
+        $loginRequest = buildRequest -method "Post" -uri (buildUri -siteHost $SiteHost -version $Version -path "login") `
+            -body $json -skipCertificateCheck:$SkipCertificateCheck
 
         try {
             $loginResponse = Invoke-RestMethod @loginRequest
@@ -266,7 +258,8 @@ function Invoke-MetasysMethod {
 
 
 
-    $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version $Version -token ([MetasysEnvVars]::getToken())
+    $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version  `
+        $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
     $response = $null
     $responseObject = $null
