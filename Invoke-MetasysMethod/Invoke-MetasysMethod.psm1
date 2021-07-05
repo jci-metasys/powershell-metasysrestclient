@@ -301,7 +301,7 @@ function Invoke-MetasysMethod {
 }
 
 function Show-LastMetasysAccessToken {
-    Write-Output $(ConvertTo-SecureString -String ([MetasysEnvVars]::getToken()) | ConvertFrom-SecureString -AsPlainText)
+    ConvertFrom-SecureString -AsPlainText -SecureString ([MetasysEnvVars]::getToken()) | Write-Output
 }
 
 function Show-LastMetasysHeaders {
