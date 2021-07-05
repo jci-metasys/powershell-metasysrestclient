@@ -1077,39 +1077,237 @@ The details of the response are outside of the scope of this tutorial, but we do
 "Success"
 ```
 
-### Using PowerShell to find an Object
-
-In these examples, I'll show some simple scripts to work the the results to find an object. This is handy when I want to create a new object and I need to know the id of a location where I can create.
-
-First I 
-
-
-
 ### Creating an Object (POST)
 
-For our last example we'll create a new AV.
+For this example we'll create a new AV. A typical payload to create an AV might look something like this:
 
-Use Show-LastMetasysFullResponse to see the Location header of the newly created object
+```json
+{
+  "localUniqueIdentifier": "Setpoint",
+  "parentId": "8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
+  "objectType": "objectTypeEnumSet.avClass",
+  "item": {
+    "name": "Setpoint",
+    "objectCategory": "objectCategoryEnumSet.hvacCategory",
+    "minPresValue": -50,
+    "maxPresValue": 150,
+    "units": "unitEnumSet.degF"
+  }
+}
+```
+
+We'll assume that JSON is stored in a file call `new-av.json` which is in the same director that we are running our commands from.
+
+```bash
+PS > > Invoke-MetasysMethod /objects -Method Post -Body (Get-Content -Path new-av.json -Raw)
+
+```
+
+Notice that currently the creation of a new object doesn't return anything. So how do we know if it was successful? There are some helper functions that allow us to inspect the last response. I'll demonstrate three of them `Show-LastMetasysStatus`,
+`Show-LastMetasysHeaders` and `Show-LastMetasysFullResponse`
+
+```bash
+# Show the status of last call
+> Show-LastMetasysStatus
+200 (OK)
+
+# Show the headers of the last call
+# Notice the Location header tells us the URL of the new object
+> Show-LastMetasysHeaders
+Content-Length: 0
+Strict-Transport-Security: max-age=31536000
+Date: Mon, 05 Jul 2021 23:07:21 GMT
+Location: https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+X-Content-Type-Options: nosniff
+Pragma: no-cache,no-cache
+X-XSS-Protection: 1; mode=block
+Expires: -1
+Cache-Control: private
+Set-Cookie: Secure; HttpOnly
+
+# Show the entire last response: status, headers, body
+> Show-LastMetasysFullResponse
+200 (OK)
+Content-Length: 0
+Strict-Transport-Security: max-age=31536000
+Date: Mon, 05 Jul 2021 23:07:21 GMT
+Location: https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+X-Content-Type-Options: nosniff
+Pragma: no-cache,no-cache
+X-XSS-Protection: 1; mode=block
+Expires: -1
+Cache-Control: private
+Set-Cookie: Secure; HttpOnly
+```
+
+**Note:** The `Location` header from above gives the url we can use to read the object back.
+
+```bash
+PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+```
+
+<details><summary>Click to see response</summary>
+
+```json
+
+{
+  "self": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84?includeSchema=false&viewId=viewNameEnumSet.focusView",
+  "objectType": "objectTypeEnumSet.avClass",
+  "parentUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
+  "objectsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/objects",
+  "networkDeviceUrl": "https://welchoas/api/v4/networkDevices/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
+  "pointsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/points",
+  "trendedAttributesUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/trendedAttributes",
+  "alarmsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/alarms",
+  "auditsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/audits",
+  "item": {
+    "id": "3fdb754b-4f6e-592e-9c1e-8b72ad51cb84",
+    "name": "Setpoint",
+    "description": null,
+    "bacnetObjectType": "objectTypeEnumSet.bacAvClass",
+    "objectCategory": "objectCategoryEnumSet.hvacCategory",
+    "outOfService": false,
+    "reliability": "reliabilityEnumSet.reliable",
+    "currentCommandPriority": null,
+    "alarmState": "objectStatusEnumSet.osNormal",
+    "overrideExpirationTime": {
+      "date": null,
+      "time": null
+    },
+    "presentValueWritable": "objectModeEnumSet.presentValueWritableWithPriority",
+    "itemReference": "welchoas:welchoas/Setpoint",
+    "version": {
+      "major": 1,
+      "minor": 0
+    },
+    "prioritySupported": true,
+    "minPresValue": -50.0,
+    "maxPresValue": 150.0,
+    "units": "unitEnumSet.degF",
+    "displayPrecision": "displayPrecisionEnumSet.displayPrecisionPt1",
+    "covIncrement": 0.01,
+    "connectedToInternalApplication": "noYesEnumSet.fanNo",
+    "presentValue": 0.0,
+    "status": "objectStatusEnumSet.osNormal",
+    "attrChangeCount": 50.0,
+    "defaultAttribute": "attributeEnumSet.presentValue"
+  },
+  "effectivePermissions": {
+    "canDelete": true,
+    "canModify": true
+  },
+  "views": [
+    {
+      "title": "Focus",
+      "views": [
+        {
+          "title": "Basic",
+          "views": [
+            {
+              "title": "Object",
+              "properties": [
+                "name",
+                "description",
+                "bacnetObjectType",
+                "objectCategory"
+              ],
+              "id": "viewGroupEnumSet.objectGrp"
+            },
+            {
+              "title": "Status",
+              "properties": [
+                "outOfService",
+                "reliability",
+                "currentCommandPriority",
+                "alarmState",
+                "overrideExpirationTime",
+                "presentValueWritable"
+              ],
+              "id": "viewGroupEnumSet.statusGrp"
+            }
+          ],
+          "id": "groupTypeEnumSet.basicGrpType"
+        },
+        {
+          "title": "Advanced",
+          "views": [
+            {
+              "title": "Engineering Values",
+              "properties": [
+                "itemReference",
+                "version",
+                "prioritySupported",
+                "minPresValue",
+                "maxPresValue",
+                "id"
+              ],
+              "id": "viewGroupEnumSet.engValuesGrp"
+            },
+            {
+              "title": "Display",
+              "properties": [
+                "units",
+                "displayPrecision",
+                "covIncrement"
+              ],
+              "id": "viewGroupEnumSet.displayGrp"
+            },
+            {
+              "title": "Internal Logic Interface",
+              "properties": [
+                "connectedToInternalApplication"
+              ],
+              "id": "viewGroupEnumSet.internalLogicIfGrp"
+            }
+          ],
+          "id": "groupTypeEnumSet.advancedGrpType"
+        },
+        {
+          "title": "Key",
+          "views": [
+            {
+              "title": "None",
+              "properties": [
+                "presentValue",
+                "status",
+                "attrChangeCount",
+                "defaultAttribute"
+              ],
+              "id": "viewGroupEnumSet.noGrp"
+            }
+          ],
+          "id": "groupTypeEnumSet.keyGrpType"
+        }
+      ],
+      "id": "viewNameEnumSet.focusView"
+    }
+  ],
+  "condition": {}
+}
+```
+
+</details>
 
 ### Delete an Object (DELETE)
 
-
-
-
-
-#### Find the OAS Object
-
-
-
-
-### Clearing Credentials
-
-Once you've authenticated against a site, your credentials are securely stored in your operating systems keychain. If your credentials ever change, you'll want to remove the saved credentials from the keychain. You can do this with the `DeleteCredentials` parameter. For example, if your credentials for the host named `adx32` have changed you'd run this command to delete them.
+Let's delete the previous object
 
 ```bash
-> Invoke-MetasysMethod -DeleteCredentials adx32
-```
+# This is no response body to this payload
+PS > Invoke-MetasysMethod -Method Delete https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 
+# Use Show-LastMetasysFullResponse to verify success (204 status)
+PS > Show-LastMetasysFullResponse
+204 (NoContent)
+X-XSS-Protection: 1; mode=block
+Date: Mon, 05 Jul 2021 23:26:28 GMT
+Pragma: no-cache,no-cache
+Strict-Transport-Security: max-age=31536000
+Expires: -1
+Cache-Control: no-store, must-revalidate, no-cache, max-age=0, s-maxage=0, pre-check=0, post-check=0
+X-Content-Type-Options: nosniff
+Set-Cookie: Secure; HttpOnly
+```
 
 ### Clearing a Session
 
@@ -1133,43 +1331,5 @@ Site host: welchoas
 
 This command will fail to execute if the server you are executing against doesn't have a valid certificate. A parameter is provided, `SkipCertificateCheck`, which causes all validation checks to be skipped. This includes all validations such as expiration, revocation, trusted root authority, etc. **WARNING** Using this parameter is not secure and is not recommended. This switch is intended to be used against known hosts using a self-signed certificate for testing purposes. *Use at your own risk*.
 
-
-
-
-
 ## Known Limitations
 
-### Session Timeout
-
-`Invoke-MetasysMethod` tries to ensure your session doesn't timeout. But if you don't issue a command for a certain amount of time, your session will expire. After that point any calls will fail with an `Unauthorized` error. For example this following call would normally work if my session was still active.
-
-```bash
-Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba
-
-Invoke-MetasysMethod: Status: 401 (Unauthorized)
-Cache-Control: no-store, must-revalidate, no-cache, max-age=0, s-maxage=0, pre-check=0, post-check=0
-Pragma: no-cache no-cache
-Set-Cookie: Secure; HttpOnly
-Strict-Transport-Security: max-age=31536000
-X-Content-Type-Options: nosniff
-X-XSS-Protection: 1; mode=block
-Date: Fri, 02 Jul 2021 14:26:09 GMT
-Content-Type: application/vnd.metasysapi.v4+json
-Expires: -1
-Content-Length: 61
-{"Message":"Authorization has been denied for this request."}
-```
-
-To resolve this issue simply run `Invoke-MetasysMethod` with the `Login` switch to force a new login and new session.
-
-```bash
-> Invoke-MetasysMethod -Login
-
-Site host: welchoas
-```
-
-Since your credentials are cached a future release of `Invoke-MetasysMethod` should be able to do this for you.
-
-### Only supports One Account Per Site
-
-Only one set of credentials are saved per site. So if you are testing with multiple user accounts, you'll need to specify which user you are using with the `UserName` parameter.
