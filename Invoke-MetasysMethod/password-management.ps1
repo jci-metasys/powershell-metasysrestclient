@@ -62,7 +62,8 @@ function Get-MetasysPassword {
         [Parameter(Mandatory=$true)]
         [string]$SiteHost,
         [Parameter(Mandatory=$true)]
-        [string]$UserName
+        [string]$UserName,
+        [switch]$AsPlainText
     )
 
     $secretInfo = Get-SecretInfo -Name "${prefix}:${SiteHost}:$UserName" -ErrorAction SilentlyContinue
@@ -76,6 +77,10 @@ function Get-MetasysPassword {
     }
 
     $secret = Get-Secret -Name $secretInfo.Name -Vault $secretInfo.VaultName
+
+    if ($AsPlainText.IsPresent) {
+        return $secret | ConvertFrom-SecureString -AsPlainText
+    }
 
     return $secret
 }
