@@ -1,64 +1,106 @@
 
+using namespace Microsoft.PowerShell.SecretManagement
 
-function find-internet-user {
+$prefix = "imm"
+$prefixLength = $prefix.Length + 1
+
+Set-StrictMode -Version 3
+function Get-MetasysUsers {
     param (
-        [string]$siteHost
+        [string]$SiteHost
     )
 
-    if (!$IsMacOS) {
+    $searchFor = "${prefix}:$siteHost*"
+
+    $secretInfo = Get-SecretInfo -Name $searchFor -ErrorAction SilentlyContinue
+
+    if (!$secretInfo) {
         return
     }
 
-    $cred = Invoke-Expression "security find-internet-password -s $siteHost 2>/dev/null"
-    if ($cred) {
-        $userNameLine = $cred | Where-Object { $_.StartsWith("    ""acct") }
-        if ($userNameLine) {
-            $userName = $userNameLine.Split('=')[1].Trim('"')
-            return $userName
+    if ($SiteHost) {
+        $UserName = @{label = "UserName"; expression = { $_.Name.Substring($prefixLength + $SiteHost.Length + 1) } }
+        return $secretInfo | Select-Object $UserName
+    }
+    else {
+        $userNameExpression = {
+            $lastColon = $_.Name.LastIndexOf(":")
+            if ($lastColon -lt 0) {
+                return $null
+            }
+            return $_.Name.Substring($lastColon + 1)
         }
+        $siteHostExpression = {
+
+            $firstColon = $_.Name.IndexOf(":")
+            $lastColon = $_.Name.LastIndexOf(":")
+
+            if ($firstColon -eq $lastColon) {
+                return $null
+            }
+
+            return $_.Name.Substring($firstColon + 1, $lastColon - $firstColon - 1)
+        }
+
+        $userNameSelector = @{label = "UserName"; expression = $userNameExpression }
+        $hostSelector = @{label = "SiteHost"; expression = $siteHostExpression }
+
+        $regex = [System.Text.RegularExpressions.Regex]::new("^${prefix}:[^:]+:[^:]+$")
+
+        return $secretInfo | Where-Object { $regex.Match($_.Name).Success } |  Select-Object $hostSelector, $userNameSelector #| Where-Object { $null -ne $_.UserName } | Where-Object { $null -ne $_.SiteHost }
+
+
     }
+
+
 }
 
-function find-internet-password {
+function Get-MetasysPassword {
     param (
-        [string]$siteHost,
-        [string]$userName
+        [Parameter(Mandatory=$true)]
+        [string]$SiteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$UserName
     )
 
-    if (!$IsMacOS) {
+    $secretInfo = Get-SecretInfo -Name "${prefix}:${SiteHost}:$UserName" -ErrorAction SilentlyContinue
+
+    if (!$secretInfo) {
         return
     }
 
-    $passwordEntry = Invoke-Expression "security find-internet-password -s $siteHost -a $userName -w 2>/dev/null"
-    if ($passwordEntry) {
-        return ConvertTo-SecureString $passwordEntry -AsPlainText
+    if ($secretInfo -is [System.Object[]]) {
+        $secretInfo = $secretInfo[0]
     }
+
+    $secret = Get-Secret -Name $secretInfo.Name -Vault $secretInfo.VaultName
+
+    return $secret
 }
 
-function clear-internet-password {
+function Remove-MetasysPassword {
     param(
-        [String]$siteHost
+        [Parameter(Mandatory=$true)]
+        [String]$SiteHost,
+        [Parameter(Mandatory=$true)]
+        [String]$UserName
     )
 
-    if (!$IsMacOS) {
-        return
-    }
+    Get-SecretInfo -Name "${prefix}:${SiteHost}:$UserName" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Secret -Name $_.Name }
 
-    Invoke-Expression "security delete-internet-password -s $siteHost 1>/dev/null"
 }
-function add-internet-password {
+
+function Set-MetasysPassword {
     param(
-        [string]$siteHost,
-        [string]$userName,
-        [SecureString]$password
+        [Parameter(Mandatory=$true)]
+        [string]$SiteHost,
+        [Parameter(Mandatory=$true)]
+        [string]$UserName,
+        [Parameter(Mandatory=$true)]
+        [SecureString]$Password
     )
 
-    if (!$IsMacOS) {
-        return
-    }
-
-    $plainText = ConvertFrom-SecureString -SecureString $password -AsPlainText
-
-    Invoke-Expression "security add-internet-password -U -s $siteHost -a $userName -w $plainText -c mgw1  "
-
+    Set-Secret -Name "${prefix}:${SiteHost}:$UserName" -SecureStringSecret $Password -Metadata @{ UserName = $UserName }
 }
+
+Export-ModuleMember -Function "Get-MetasysUsers", "Get-MetasysPassword", "Remove-MetasysPassword", "Set-MetasysPassword"

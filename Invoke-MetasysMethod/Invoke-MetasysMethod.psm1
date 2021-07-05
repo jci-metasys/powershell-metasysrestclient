@@ -3,6 +3,10 @@ using namespace System.IO
 using namespace System.Security
 using namespace Microsoft.PowerShell.Commands
 
+# HACK: https://stackoverflow.com/a/49859001
+# Otherwise on Linux I get "Unable to find type [WebRequestMethod]" error
+Start-Sleep -Milliseconds 1
+
 function assertPowershellCore {
     if ($PSVersionTable.PSEdition -ne "Core") {
         Write-Error "Windows Powershell is not supported. Please install PowerShell Core"
@@ -32,16 +36,6 @@ function handleClearSwitch {
         [MetasysEnvVars]::clear()
         Write-Output "Environment variables cleared"
         exit # end the program
-    }
-}
-
-function handleDeleteCredentialsFor {
-    param (
-        [string]$DeleteCredentialsFor
-    )
-    if ($DeleteCredentialsFor) {
-        clear-internet-password $DeleteCredentialsFor
-        exit
     }
 }
 
@@ -117,7 +111,7 @@ function Invoke-MetasysMethod {
         [Parameter(ValueFromPipeline = $true)]
         [string]$Body,
         # The HTTP Method you are sending.
-        [WebRequestMethod]$Method = "Get",
+        [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
         # The version of the API you intent to use
         [Int]$Version,
         # Skips certificate validation checks. This includes all validations
@@ -128,8 +122,6 @@ function Invoke-MetasysMethod {
         [switch]$SkipCertificateCheck,
         # A collection of headers to include in the request
         [hashtable]$Headers,
-        # Erase credentials for the specified host
-        [string]$DeleteCredentialsFor,
         # TODO: Add support for password to be passed in
         [SecureString]$Password
     )
@@ -143,9 +135,6 @@ function Invoke-MetasysMethod {
     assertValidVersion $Version
 
     handleClearSwitch -Clear:$Clear
-
-    handleDeleteCredentialsFor $DeleteCredentialsFor
-
 
     if (!$SkipCertificateCheck.IsPresent) {
         $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
@@ -187,10 +176,11 @@ function Invoke-MetasysMethod {
                 SkipCertificateCheck = $SkipCertificateCheck
             }
             try {
+                Write-Verbose -Message "Attempting to refresh access token"
                 $refreshResponse = Invoke-RestMethod @refreshRequest
                 [MetasysEnvVars]::setExpires($refreshResponse.expires)
                 [MetasysEnvVars]::setToken((ConvertTo-SecureString $refreshResponse.accessToken -AsPlainText))
-
+                Write-Verbose -Message "Refresh token successful"
             }
             catch {
                 Write-Debug "Error attemplting to refresh token"
@@ -213,22 +203,27 @@ function Invoke-MetasysMethod {
 
         $UserName = $UserName ? $UserName : [MetasysEnvVars]::getUserName()
         if (!$UserName) {
-            # attempt to find a user name in keychain
-            $UserName = find-internet-user($SiteHost)
+            # attempt to find a user name in secret store
+            $users = Get-MetasysUsers -SiteHost $SiteHost
+
+            if ($users -is [System.Object[]]) {
+                Write-Output "Multiple UserNames found for this host. Please enter one below."
+                $users | ForEach-Object { Write-Output "$($_.UserName)" }
+
+            } elseif ($null -ne $Users) {
+                $UserName = $users.UserName
+            }
 
             if (!$UserName) {
                 $UserName = Read-Host -Prompt "UserName"
             }
         }
 
-        $password = find-internet-password $SiteHost $UserName
+        Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
+        $password = Get-MetasysPassword -SiteHost $SiteHost -UserName $UserName
 
         if (!$password) {
             $password = Read-Host -Prompt "Password" -AsSecureString
-
-            ## Attempt to store credentials
-            # TODO: Should only do this if successful
-            add-internet-password $SiteHost  $UserName  $password
         }
 
         $jsonObject = @{
@@ -253,6 +248,8 @@ function Invoke-MetasysMethod {
             [MetasysEnvVars]::setExpires($loginResponse.expires)
             [MetasysEnvVars]::setVersion($Version)
             [MetasysEnvVars]::setUserName($UserName)
+            Set-MetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
+            Write-Verbose -Message "Login successful"
         }
         catch {
             Write-Host "An error occurred:"
@@ -272,6 +269,7 @@ function Invoke-MetasysMethod {
     $response = $null
     $responseObject = $null
     try {
+        Write-Verbose -Message "Attempting request"
         $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
         if ($responseObject.StatusCode -ge 400) {
             $body = [String]::new($responseObject.Content)
@@ -290,7 +288,7 @@ function Invoke-MetasysMethod {
                 }
             }
         }
-    }
+    }   
     catch {
         Write-Output "An unhandled error condition occurred:"
         Write-Error $_
