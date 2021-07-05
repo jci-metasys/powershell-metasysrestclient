@@ -4,13 +4,13 @@ param(
     [string]$SiteHost,
     [string]$UserName,
     [switch]$Login,
-    [Parameter(Position=0)] 
+    [Parameter(Position=0)]
     [string]$Path,
     [switch]$Clear,
     [string]$Body,
     [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
     [Int]$Version,
-    [switch]$SkipCertificateCheck,  
+    [switch]$SkipCertificateCheck,
     [hashtable]$Headers,
     [SecureString]$Password
 

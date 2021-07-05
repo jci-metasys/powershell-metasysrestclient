@@ -79,7 +79,7 @@ function Invoke-MetasysMethod {
         Invoke-MetasysMethod -Method Put /objects/$id/commands/adjust -Body '{ "parameters": [72.5] }'
 
         This example will send the adjust command to the specified object (assuming
-        a valid id is stored in $id).
+        a valid id is stored in $id, and v4 of the API).
 
     .LINK
 
@@ -126,177 +126,180 @@ function Invoke-MetasysMethod {
         [SecureString]$Password
     )
 
-    setBackgroundColorsToMatchConsole
+    PROCESS {
 
-    Set-StrictMode -Version 2
 
-    assertPowershellCore
+        setBackgroundColorsToMatchConsole
 
-    assertValidVersion $Version
+        Set-StrictMode -Version 2
 
-    handleClearSwitch -Clear:$Clear
+        assertPowershellCore
 
-    if (!$SkipCertificateCheck.IsPresent) {
-        $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
-    }
+        assertValidVersion $Version
 
-    $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
-    if ($uri.IsAbsoluteUri) {
-        $versionSegment = $uri.Segments[2]
-        $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
-        if ($Version -gt 0 -and $versionNumber -ne $Version) {
-            Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
-            return
+        handleClearSwitch -Clear:$Clear
+
+        if (!$SkipCertificateCheck.IsPresent) {
+            $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
         }
-    }
 
-    If ($Version -eq 0) {
-        # Default to the latest version
-        # TODO: Also check a environment variable or even a config file for reasonable defaults.
-        $Version = 4
-    }
-
-    # Login Region
-
-    $ForceLogin = $false
-
-    if ([MetasysEnvVars]::getExpires()) {
-        $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
-        if ([Datetime]::UtcNow -gt $expiration) {
-            # Token is expired, require login
-            $ForceLogin = $true
+        $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
+        if ($uri.IsAbsoluteUri) {
+            $versionSegment = $uri.Segments[2]
+            $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
+            if ($Version -gt 0 -and $versionNumber -ne $Version) {
+                Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
+                return
+            }
         }
-        else {
 
-            # attempt to renew the token to keep it fresh
-            $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken") `
-                -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
+        If ($Version -eq 0) {
+            # Default to the latest version
+            # TODO: Also check a environment variable or even a config file for reasonable defaults.
+            $Version = 4
+        }
+
+        # Login Region
+
+        $ForceLogin = $false
+
+        if ([MetasysEnvVars]::getExpires()) {
+            $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
+            if ([Datetime]::UtcNow -gt $expiration) {
+                # Token is expired, require login
+                $ForceLogin = $true
+            }
+            else {
+
+                # attempt to renew the token to keep it fresh
+                $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken") `
+                    -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
+
+                try {
+                    Write-Verbose -Message "Attempting to refresh access token"
+                    $refreshResponse = Invoke-RestMethod @refreshRequest
+                    [MetasysEnvVars]::setExpires($refreshResponse.expires)
+                    [MetasysEnvVars]::setToken((ConvertTo-SecureString $refreshResponse.accessToken -AsPlainText))
+                    Write-Verbose -Message "Refresh token successful"
+                }
+                catch {
+                    Write-Debug "Error attempting to refresh token"
+                    Write-Debug $_
+                }
+
+
+            }
+        }
+
+        # TODO: Also force login if $UserName -ne saved user name
+        # TODO: Could also support multiple sessions by storing multiple access tokens keyed on username
+        # TODO: When token expires but we have the credentials cached we could try to login again
+        if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost()))) {
+
+            $SiteHost = $SiteHost ? $SiteHost : [MetasysEnvVars]::getSiteHost()
+            if (!$SiteHost) {
+                $SiteHost = Read-Host -Prompt "Site host"
+            }
+
+            $UserName = $UserName ? $UserName : [MetasysEnvVars]::getUserName()
+            if (!$UserName) {
+                # attempt to find a user name in secret store
+                $users = Get-MetasysUsers -SiteHost $SiteHost
+
+                if ($users -is [System.Object[]]) {
+                    Write-Output "Multiple UserNames found for this host. Please enter one below."
+                    $users | ForEach-Object { Write-Output "$($_.UserName)" }
+
+                }
+                elseif ($null -ne $Users) {
+                    $UserName = $users.UserName
+                }
+
+                if (!$UserName) {
+                    $UserName = Read-Host -Prompt "UserName"
+                }
+            }
+
+            if (!$Password) {
+                Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
+                $password = Get-MetasysPassword -SiteHost $SiteHost -UserName $UserName
+
+                if (!$password) {
+                    $password = Read-Host -Prompt "Password" -AsSecureString
+                }
+            }
+
+            $jsonObject = @{
+                username = $UserName
+                password = ConvertFrom-SecureString -SecureString $password -AsPlainText
+            }
+            $json = (ConvertTo-Json $jsonObject)
+
+            $loginRequest = buildRequest -method "Post" -uri (buildUri -siteHost $SiteHost -version $Version -path "login") `
+                -body $json -skipCertificateCheck:$SkipCertificateCheck
 
             try {
-                Write-Verbose -Message "Attempting to refresh access token"
-                $refreshResponse = Invoke-RestMethod @refreshRequest
-                [MetasysEnvVars]::setExpires($refreshResponse.expires)
-                [MetasysEnvVars]::setToken((ConvertTo-SecureString $refreshResponse.accessToken -AsPlainText))
-                Write-Verbose -Message "Refresh token successful"
+                $loginResponse = Invoke-RestMethod @loginRequest
+                $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
+                [MetasysEnvVars]::setToken($secureToken)
+                [MetasysEnvVars]::setSiteHost($SiteHost)
+                [MetasysEnvVars]::setExpires($loginResponse.expires)
+                [MetasysEnvVars]::setVersion($Version)
+                [MetasysEnvVars]::setUserName($UserName)
+                Set-MetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
+                Write-Verbose -Message "Login successful"
             }
             catch {
-                Write-Debug "Error attempting to refresh token"
-                Write-Debug $_
-            }
-
-
-        }
-    }
-
-    # TODO: Also force login if $UserName -ne saved user name
-    # TODO: Could also support multiple sessions by storing multiple access tokens keyed on username
-    # TODO: When token expires but we have the credentials cached we could try to login again
-    if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost()))) {
-
-        $SiteHost = $SiteHost ? $SiteHost : [MetasysEnvVars]::getSiteHost()
-        if (!$SiteHost) {
-            $SiteHost = Read-Host -Prompt "Site host"
-        }
-
-        $UserName = $UserName ? $UserName : [MetasysEnvVars]::getUserName()
-        if (!$UserName) {
-            # attempt to find a user name in secret store
-            $users = Get-MetasysUsers -SiteHost $SiteHost
-
-            if ($users -is [System.Object[]]) {
-                Write-Output "Multiple UserNames found for this host. Please enter one below."
-                $users | ForEach-Object { Write-Output "$($_.UserName)" }
-
-            } elseif ($null -ne $Users) {
-                $UserName = $users.UserName
-            }
-
-            if (!$UserName) {
-                $UserName = Read-Host -Prompt "UserName"
+                Write-Error $_
+                exit
             }
         }
 
-        if (!$Password) {
-            Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
-            $password = Get-MetasysPassword -SiteHost $SiteHost -UserName $UserName
-
-            if (!$password) {
-                $password = Read-Host -Prompt "Password" -AsSecureString
-            }
-        }
-
-        $jsonObject = @{
-            username = $UserName
-            password = ConvertFrom-SecureString -SecureString $password -AsPlainText
-        }
-        $json = (ConvertTo-Json $jsonObject)
-
-        $loginRequest = buildRequest -method "Post" -uri (buildUri -siteHost $SiteHost -version $Version -path "login") `
-            -body $json -skipCertificateCheck:$SkipCertificateCheck
-
-        try {
-            $loginResponse = Invoke-RestMethod @loginRequest
-            $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
-            [MetasysEnvVars]::setToken($secureToken)
-            [MetasysEnvVars]::setSiteHost($SiteHost)
-            [MetasysEnvVars]::setExpires($loginResponse.expires)
-            [MetasysEnvVars]::setVersion($Version)
-            [MetasysEnvVars]::setUserName($UserName)
-            Set-MetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
-            Write-Verbose -Message "Login successful"
-        }
-        catch {
-            Write-Host "An error occurred:"
-            Write-Host $_
+        if (!$Path) {
             return
         }
-    }
 
-    if (!$Path) {
-        return
-    }
-
+        $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version  `
+            $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
+            -headers $Headers
 
 
-    $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version  `
-        $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
-        -headers $Headers
-
-    $response = $null
-    $responseObject = $null
-    try {
-        Write-Verbose -Message "Attempting request"
-        $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
-        if ($responseObject.StatusCode -ge 400) {
-            $body = [String]::new($responseObject.Content)
-            Write-Error -Message ("Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")")
-            $responseObject.Headers.Keys | ForEach-Object { $_ + ": " + $responseObject.Headers[$_] | Write-Output }
-            Write-Output $body
-        }
-        else {
-            if ($responseObject) {
-                if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*")) {
-                    $response = [String]::new($responseObject.Content)
-                }
-                else {
-                    Write-Output "An unexpected content type was found:"
-                    Write-Output $([String]::new($responseObject.Content))
+        $response = $null
+        $responseObject = $null
+        try {
+            Write-Verbose -Message "Attempting request"
+            $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
+            if ($responseObject.StatusCode -ge 400) {
+                $body = [String]::new($responseObject.Content)
+                Write-Error -Message ("Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")")
+                $responseObject.Headers.Keys | ForEach-Object { $_ + ": " + $responseObject.Headers[$_] | Write-Output }
+                Write-Output $body
+            }
+            else {
+                if ($responseObject) {
+                    if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*")) {
+                        $response = [String]::new($responseObject.Content)
+                    }
+                    else {
+                        Write-Output "An unexpected content type was found:"
+                        Write-Output $([String]::new($responseObject.Content))
+                    }
                 }
             }
         }
-    }
-    catch {
-        Write-Output "An unhandled error condition occurred:"
-        Write-Error $_
-    }
-    # Only overwrite the last response if $response is not null
-    if ($null -ne $response) {
-        [MetasysEnvVars]::setLast($response)
-        [MetasysEnvVars]::setHeaders($responseObject.Headers)
-        [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
-    }
+        catch {
+            Write-Output "An unhandled error condition occurred:"
+            Write-Error $_
+        }
+        # Only overwrite the last response if $response is not null
+        if ($null -ne $response) {
+            [MetasysEnvVars]::setLast($response)
+            [MetasysEnvVars]::setHeaders($responseObject.Headers)
+            [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
+        }
 
-    return Show-LastMetasysResponseBody $response
+        return Show-LastMetasysResponseBody $response
+    }
 
 }
 
@@ -325,7 +328,7 @@ function ConvertFrom-JsonSafely {
         return ConvertFrom-Json $json
     }
     catch {
-        return ConvertFrom-Json -AsHashtable $json
+        return ConvertFrom-Json -AsHashtable -InputObject $json
     }
 }
 

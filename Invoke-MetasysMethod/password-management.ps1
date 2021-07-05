@@ -8,7 +8,30 @@ Set-StrictMode -Version 3
 
 
 function Get-MetasysUsers {
+    <#
+    .SYNOPSIS
+        Finds and returns user names associated with saved Metasys credentials.
+
+    .DESCRIPTION
+        The Invoke-MetasysMethod module includes functions that may update a secret vault.
+        This cmdlet finds and returns the user names of Metasys accounts for a host that
+        matches the provided 'SiteHost'. If no 'SiteHost' parameter argument is provided
+        then all user names for all hosts will be returned.
+
+        Note: This cmdlet only returns user names associated with Metasys credentials that
+        have been added using this or other cmdlets of Invoke-MetasysMethod module.
+
+    .OUTPUTS
+        The list of matching user names.
+
+    .EXAMPLE
+        PS > Get-MetasysUsers -SiteHost adx55
+
+        Gets the list of users that have been saved for the site host adx55
+
+    #>
     param (
+        # The host name or ip address of the site host
         [string]$SiteHost
     )
 
@@ -58,11 +81,41 @@ function Get-MetasysUsers {
 }
 
 function Get-MetasysPassword {
+    <#
+    .SYNOPSIS
+        Finds and returns the password associated with saved Metasys credentials.
+
+    .DESCRIPTION
+        The Invoke-MetasysMethod module includes functions that may update a secret vault.
+        This cmdlet finds and returns the password of a Metasys account for a host that
+        matches the provided 'SiteHost' and a user that matches 'UserName'. The password
+        is returned as a SecureString object unless the '-AsPlainText' parameter switch
+        is used, in which ase the password is returned in plain text.
+
+    .OUTPUTS
+        System.Object
+
+    .EXAMPLE
+        PS > Get-MetasysPassword -SiteHost adx55 -UserName fred
+        System.Security.SecureString
+
+        Gets the password for fred on host adx55
+
+    .EXAMPLE
+        PS > Get-MetasysPassword -SiteHost adx55 -UserName fred -AsPlainText
+        PlainTextPassword
+
+        Gets the password for fred on host adx55 and returns it as plain text
+
+    #>
     param (
+        # The host name or ip address of the site host to search for
         [Parameter(Mandatory=$true)]
         [string]$SiteHost,
         [Parameter(Mandatory=$true)]
+        # The user name to search for
         [string]$UserName,
+        # Return the password back as plain text
         [switch]$AsPlainText
     )
 
@@ -86,9 +139,26 @@ function Get-MetasysPassword {
 }
 
 function Remove-MetasysPassword {
+    <#
+    .SYNOPSIS
+        Finds and removes the password associated with saved Metasys credentials.
+
+    .DESCRIPTION
+        The Invoke-MetasysMethod module includes functions that may update a secret vault.
+        This cmdlet finds and removes the Metasys credentials for a host that
+        matches the provided 'SiteHost' and a user that matches 'UserName'.
+
+    .EXAMPLE
+        PS > Remove-MetasysPassword -SiteHost adx55 -UserName fred
+
+        Finds and removes the password for fred on adx55
+
+    #>
     param(
+        # The host name or ip address of the site host to search for
         [Parameter(Mandatory=$true)]
         [String]$SiteHost,
+        # The user name to search for
         [Parameter(Mandatory=$true)]
         [String]$UserName
     )
@@ -98,6 +168,20 @@ function Remove-MetasysPassword {
 }
 
 function Set-MetasysPassword {
+    <#
+    .SYNOPSIS
+        Saves Metasys credentials
+
+    .DESCRIPTION
+        This cmdlet saves Metasys credentials into the default secret vault
+
+    .EXAMPLE
+        PS > Set-MetasysPassword -SiteHost adx55 -UserName fred -Password $password
+
+        Assuming $password is a SecureString that contains the password, this example
+        saves fred's password for adx55.
+
+    #>
     param(
         [Parameter(Mandatory=$true)]
         [string]$SiteHost,
