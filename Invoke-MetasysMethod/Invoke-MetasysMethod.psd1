@@ -8,125 +8,128 @@
 
 @{
 
-# Script module or binary module file associated with this manifest.
-RootModule = 'Invoke-MetasysMethod.psm1'
+    # Script module or binary module file associated with this manifest.
+    RootModule           = 'Invoke-MetasysMethod.psm1'
 
-# Version number of this module.
-ModuleVersion = '0.0.20'
+    NestedModules        = @("metasys-env-vars.ps1", "password-management.ps1", "build-uri.ps1", "build-request.ps1")
 
-# Supported PSEditions
-# CompatiblePSEditions = @()
-CompatiblePSEditions = @("Core")
+    # Version number of this module.
+    ModuleVersion        = '0.0.21'
 
-# ID used to uniquely identify this module
-GUID = '2e2d8299-f305-4a33-9db8-a1d41e78d840'
+    # Supported PSEditions
+    # CompatiblePSEditions = @()
+    CompatiblePSEditions = @("Core")
 
-# Author of this module
-Author = 'Michael Welch'
+    # ID used to uniquely identify this module
+    GUID                 = '2e2d8299-f305-4a33-9db8-a1d41e78d840'
 
-# Company or vendor of this module
-CompanyName = 'Johnson Controls'
+    # Author of this module
+    Author               = 'Michael Welch'
 
-# Copyright statement for this module
-Copyright = '(c) Johnson Controls. All rights reserved.'
+    # Company or vendor of this module
+    CompanyName          = 'Johnson Controls'
 
-# Description of the functionality provided by this module
-Description = 'Allow you to interact with Metasys REST API'
+    # Copyright statement for this module
+    Copyright            = '(c) Johnson Controls. All rights reserved.'
 
-# Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '7.0.0'
+    # Description of the functionality provided by this module
+    Description          = 'Allow you to interact with Metasys REST API'
 
-# Name of the PowerShell host required by this module
-# PowerShellHostName = ''
+    # Minimum version of the PowerShell engine required by this module
+    PowerShellVersion    = '7.0.0'
 
-# Minimum version of the PowerShell host required by this module
-# PowerShellHostVersion = ''
+    # Name of the PowerShell host required by this module
+    # PowerShellHostName = ''
 
-# Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-# DotNetFrameworkVersion = ''
+    # Minimum version of the PowerShell host required by this module
+    # PowerShellHostVersion = ''
 
-# Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-# ClrVersion = ''
+    # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+    # DotNetFrameworkVersion = ''
 
-# Processor architecture (None, X86, Amd64) required by this module
-# ProcessorArchitecture = ''
+    # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+    # ClrVersion = ''
 
-# Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+    # Processor architecture (None, X86, Amd64) required by this module
+    # ProcessorArchitecture = ''
 
-# Assemblies that must be loaded prior to importing this module
-# RequiredAssemblies = @()
+    # Modules that must be imported into the global environment prior to importing this module
+    # RequiredModules = @()
 
-# Script files (.ps1) that are run in the caller's environment prior to importing this module.
-# ScriptsToProcess = @()
+    # Assemblies that must be loaded prior to importing this module
+    # RequiredAssemblies = @()
 
-# Type files (.ps1xml) to be loaded when importing this module
-# TypesToProcess = @()
+    # Script files (.ps1) that are run in the caller's environment prior to importing this module.
+    # ScriptsToProcess = @()
 
-# Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
+    # Type files (.ps1xml) to be loaded when importing this module
+    # TypesToProcess = @()
 
-# Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-# NestedModules = @()
+    # Format files (.ps1xml) to be loaded when importing this module
+    # FormatsToProcess = @()
 
-# Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-FunctionsToExport = 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus'
+    # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
+    # NestedModules = @()
 
-# Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-CmdletsToExport = '*'
+    # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
+    FunctionsToExport    = 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse',
+        'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-MetasysUsers", "Get-MetasysPassword", "Remove-MetasysPassword", "Set-MetasysPassword"
 
-# Variables to export from this module
-VariablesToExport = '*'
+    # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
+    CmdletsToExport      = @()
 
-# Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
+    # Variables to export from this module
+    VariablesToExport    = @()
 
-# DSC resources to export from this module
-# DscResourcesToExport = @()
+    # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
 
-# List of all modules packaged with this module
-# ModuleList = @()
+    # DSC resources to export from this module
+    # DscResourcesToExport = @()
 
-# List of all files packaged with this module
-# FileList = @()
+    # List of all modules packaged with this module
+    # ModuleList = @()
 
-# Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
-PrivateData = @{
+    # List of all files packaged with this module
+    # FileList = @()
 
-    PSData = @{
+    # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
+    PrivateData          = @{
 
-        # Tags applied to this module. These help with module discovery in online galleries.
-        # Tags = @()
+        PSData = @{
 
-        # A URL to the license for this module.
-        LicenseUri = 'https://github.com/metasys-server/invoke-metasysmethod/blob/master/LICENSE'
+            # Tags applied to this module. These help with module discovery in online galleries.
+            # Tags = @()
 
-        # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/metasys-server/invoke-metasysmethod'
+            # A URL to the license for this module.
+            LicenseUri = 'https://github.com/metasys-server/invoke-metasysmethod/blob/master/LICENSE'
 
-        # A URL to an icon representing this module.
-        # IconUri = ''
+            # A URL to the main website for this project.
+            ProjectUri = 'https://github.com/metasys-server/invoke-metasysmethod'
 
-        # ReleaseNotes of this module
-        # ReleaseNotes = ''
+            # A URL to an icon representing this module.
+            # IconUri = ''
 
-        # Prerelease string of this module
-        # Prerelease = 'alpha'
+            # ReleaseNotes of this module
+            # ReleaseNotes = ''
 
-        # Flag to indicate whether the module requires explicit user acceptance for install/update/save
-        # RequireLicenseAcceptance = $false
+            # Prerelease string of this module
+            # Prerelease = 'alpha'
 
-        # External dependent modules of this module
-        # ExternalModuleDependencies = @()
+            # Flag to indicate whether the module requires explicit user acceptance for install/update/save
+            # RequireLicenseAcceptance = $false
 
-    } # End of PSData hashtable
+            # External dependent modules of this module
+            # ExternalModuleDependencies = @()
 
-} # End of PrivateData hashtable
+        } # End of PSData hashtable
 
-# HelpInfo URI of this module
-# HelpInfoURI = ''
+    } # End of PrivateData hashtable
 
-# Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-# DefaultCommandPrefix = ''
+    # HelpInfo URI of this module
+    # HelpInfoURI = ''
+
+    # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
+    # DefaultCommandPrefix = ''
 
 }
 
