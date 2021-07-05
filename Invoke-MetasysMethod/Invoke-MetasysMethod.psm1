@@ -219,11 +219,13 @@ function Invoke-MetasysMethod {
             }
         }
 
-        Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
-        $password = Get-MetasysPassword -SiteHost $SiteHost -UserName $UserName
-
-        if (!$password) {
-            $password = Read-Host -Prompt "Password" -AsSecureString
+        if (!$Password) {
+            Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
+            $password = Get-MetasysPassword -SiteHost $SiteHost -UserName $UserName
+    
+            if (!$password) {
+                $password = Read-Host -Prompt "Password" -AsSecureString
+            }
         }
 
         $jsonObject = @{
