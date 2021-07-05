@@ -359,7 +359,11 @@ function Get-LastMetasysResponseBodyAsObject {
     return ConvertFrom-JsonSafely ([MetasysEnvVars]::getLast())
 }
 
+function Get-LastMetasysHeadersAsObject {
+    return ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
+}
 
 
-Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus'
+
+Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', 'Get-LastMetasysHeadersAsObject'
 
