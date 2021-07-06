@@ -173,7 +173,7 @@ function Invoke-MetasysMethod {
             else {
 
                 # attempt to renew the token to keep it fresh
-                $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken") `
+                $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken" -version $Version) `
                     -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                 try {
@@ -260,7 +260,7 @@ function Invoke-MetasysMethod {
             return
         }
 
-        $request = buildRequest -uri (buildUri -path $Path) -method $Method -body $Body -version  `
+        $request = buildRequest -uri (buildUri -path $Path -version $Version) -method $Method -body $Body -version  `
             $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
             -headers $Headers
 
