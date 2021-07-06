@@ -3,39 +3,17 @@ using namespace System.IO
 using namespace System.Security
 using namespace Microsoft.PowerShell.Commands
 
+Set-StrictMode -Version 3
+
 # HACK: https://stackoverflow.com/a/49859001
 # Otherwise on Linux I get "Unable to find type [WebRequestMethod]" error
 Start-Sleep -Milliseconds 1
 
 function assertPowershellCore {
     if ($PSVersionTable.PSEdition -ne "Core") {
-        Write-Error "Windows Powershell is not supported. Please install PowerShell Core"
-        Write-Error "See https://github.com/powershell/powershell"
-        exit
-    }
-}
 
-function assertValidVersion {
-    param(
-        [Int]$Version
-    )
-    If (($Version -lt 2) -or ($Version -gt 4)) {
-        If ($Version -ne 0) {
-            Write-Error -Message "Version out of range. Should be 2, 3 or 4" -Category InvalidArgument
-            exit
-        }
-    }
-}
-
-function handleClearSwitch {
-    param (
-        [Switch]$Clear
-    )
-
-    if ($Clear.IsPresent) {
-        [MetasysEnvVars]::clear()
-        Write-Output "Environment variables cleared"
-        exit # end the program
+        $errorString = "Windows Powershell is not supported. Please install PowerShell Core" + "`n" + "Windows Powershell is not supported. Please install PowerShell Core"
+        throw $errorString
     }
 }
 
@@ -103,16 +81,13 @@ function Invoke-MetasysMethod {
         # All of the urls are listed in the API Documentation
         [Parameter(Position = 0)]
         [string]$Path,
-        # Session information is stored in environment variables. To force a
-        # cleanup use this switch to remove all environment variables. The next
-        # time you invoke this function you'll need to provide a SiteHost
-        [switch]$Clear,
         # The payload to send with your request.
         [Parameter(ValueFromPipeline = $true)]
         [string]$Body,
         # The HTTP Method you are sending.
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
         # The version of the API you intent to use
+        [ValidateRange(2,4)]
         [Int]$Version,
         # Skips certificate validation checks. This includes all validations
         # such as expiration, revocation, trusted root authority, etc.
@@ -132,13 +107,8 @@ function Invoke-MetasysMethod {
 
         setBackgroundColorsToMatchConsole
 
-        Set-StrictMode -Version 2
 
         assertPowershellCore
-
-        assertValidVersion $Version
-
-        handleClearSwitch -Clear:$Clear
 
         if (!$SkipCertificateCheck.IsPresent) {
             $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
@@ -239,21 +209,15 @@ function Invoke-MetasysMethod {
             $loginRequest = buildRequest -method "Post" -uri (buildUri -siteHost $SiteHost -version $Version -path "login") `
                 -body $json -skipCertificateCheck:$SkipCertificateCheck
 
-            try {
-                $loginResponse = Invoke-RestMethod @loginRequest
-                $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
-                [MetasysEnvVars]::setToken($secureToken)
-                [MetasysEnvVars]::setSiteHost($SiteHost)
-                [MetasysEnvVars]::setExpires($loginResponse.expires)
-                [MetasysEnvVars]::setVersion($Version)
-                [MetasysEnvVars]::setUserName($UserName)
-                Set-MetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
-                Write-Verbose -Message "Login successful"
-            }
-            catch {
-                Write-Error $_
-                exit
-            }
+            $loginResponse = Invoke-RestMethod @loginRequest
+            $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
+            [MetasysEnvVars]::setToken($secureToken)
+            [MetasysEnvVars]::setSiteHost($SiteHost)
+            [MetasysEnvVars]::setExpires($loginResponse.expires)
+            [MetasysEnvVars]::setVersion($Version)
+            [MetasysEnvVars]::setUserName($UserName)
+            Set-MetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
+            Write-Verbose -Message "Login successful"
         }
 
         if (!$Path) {
@@ -363,7 +327,11 @@ function Get-LastMetasysHeadersAsObject {
     return ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
 }
 
+function Clear-MetasysEnvVariables {
+    [MetasysEnvVars]::clear()
+    "The environment variables related to the current Metasys sessions have been cleared."
+}
 
-
-Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', 'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', 'Get-LastMetasysHeadersAsObject'
+Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', `
+    'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', 'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables'
 
