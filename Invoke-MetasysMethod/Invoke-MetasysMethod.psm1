@@ -25,7 +25,6 @@ function setBackgroundColorsToMatchConsole {
     $Host.PrivateData.WarningBackgroundColor = $backgroundColor
     $Host.PrivateData.VerboseBackgroundColor = $backgroundColor
 
-    Write-Output ""
 }
 
 function Invoke-MetasysMethod {
@@ -178,8 +177,8 @@ function Invoke-MetasysMethod {
                 $users = Get-MetasysUsers -SiteHost $SiteHost
 
                 if ($users -is [System.Object[]]) {
-                    Write-Output "Multiple UserNames found for this host. Please enter one below."
-                    $users | ForEach-Object { Write-Output "$($_.UserName)" }
+                    Write-Information "Multiple UserNames found for this host. Please enter one below."
+                    $users | ForEach-Object { Write-Information "$($_.UserName)" }
 
                 }
                 elseif ($null -ne $Users) {
@@ -231,31 +230,26 @@ function Invoke-MetasysMethod {
 
         $response = $null
         $responseObject = $null
-        try {
-            Write-Verbose -Message "Attempting request"
-            $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
-            if ($responseObject.StatusCode -ge 400) {
-                $body = [String]::new($responseObject.Content)
-                Write-Error -Message ("Status: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")")
-                $responseObject.Headers.Keys | ForEach-Object { $_ + ": " + $responseObject.Headers[$_] | Write-Output }
-                Write-Output $body
-            }
-            else {
-                if ($responseObject) {
-                    if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*") -or ($responseObject.StatusCode -eq 204)) {
-                        $response = [String]::new($responseObject.Content)
-                    }
-                    else {
-                        Write-Output "An unexpected content type was found:"
-                        Write-Output $([String]::new($responseObject.Content))
-                    }
+
+        Write-Verbose -Message "Attempting request"
+        $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
+        if ($responseObject.StatusCode -ge 400) {
+            Write-Error "The status code indicates an error"
+            Write-Error (createErrorStringFromResponseObject -responseObject $responseObject)
+        }
+        else {
+            if ($responseObject) {
+                if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*") -or ($responseObject.StatusCode -eq 204)) {
+                    $response = [String]::new($responseObject.Content)
+                }
+                else {
+                    Write-Error "An unexpected content type was found"
+                    Write-Error (createErrorStringFromResponseObject -responseObject $responseObject)
                 }
             }
         }
-        catch {
-            Write-Output "An unhandled error condition occurred:"
-            Write-Error $_
-        }
+
+
         # Only overwrite the last response if $response is not null
         if ($null -ne $response) {
             [MetasysEnvVars]::setLast($response)
@@ -264,28 +258,31 @@ function Invoke-MetasysMethod {
         }
 
         if ($ReturnBodyAsObject.IsPresent -and $null -ne $response) {
-            return Get-LastMetasysResponseBodyAsObject
-        } else {
-            return Show-LastMetasysResponseBody $response
+            Get-LastMetasysResponseBodyAsObject
+        }
+        else {
+            Show-LastMetasysResponseBody $response
         }
     }
 
 }
 
 function Show-LastMetasysAccessToken {
-    ConvertFrom-SecureString -AsPlainText -SecureString ([MetasysEnvVars]::getToken()) | Write-Output
+    ConvertFrom-SecureString -AsPlainText -SecureString ([MetasysEnvVars]::getToken())
 }
 
 function Show-LastMetasysHeaders {
 
+    $response = @()
     $headers = ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
     foreach ($header in $headers.PSObject.Properties) {
-        Write-Output "$($header.Name): $($header.Value -join ',')"
+        $response += "$($header.Name): $($header.Value -join ',')"
     }
+    $response
 }
 
 function Show-LastMetasysStatus {
-    Write-Output ([MetasysEnvVars]::getStatus())
+    ([MetasysEnvVars]::getStatus())
 }
 
 function ConvertFrom-JsonSafely {
@@ -294,10 +291,10 @@ function ConvertFrom-JsonSafely {
     )
 
     try {
-        return ConvertFrom-Json $json
+        ConvertFrom-Json -InputObject $json
     }
     catch {
-        return ConvertFrom-Json -AsHashtable -InputObject $json
+        ConvertFrom-Json -AsHashtable -InputObject $json
     }
 }
 
@@ -307,24 +304,21 @@ function Show-LastMetasysResponseBody {
     )
 
     if ($null -eq $body -or $body -eq "") {
-        Write-Output ""
         return
     }
-    ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20 | Write-Output
+    ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
 }
 
 function Show-LastMetasysFullResponse {
-    Show-LastMetasysStatus
-    Show-LastMetasysHeaders
-    Show-LastMetasysResponseBody
+    (Show-LastMetasysStatus), (Show-LastMetasysHeaders), (Show-LastMetasysResponseBody) | Join-String -Separator `n
 }
 
 function Get-LastMetasysResponseBodyAsObject {
-    return ConvertFrom-JsonSafely ([MetasysEnvVars]::getLast())
+    ConvertFrom-JsonSafely ([MetasysEnvVars]::getLast())
 }
 
 function Get-LastMetasysHeadersAsObject {
-    return ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
+    ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
 }
 
 function Clear-MetasysEnvVariables {
