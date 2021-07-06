@@ -27,6 +27,18 @@ function setBackgroundColorsToMatchConsole {
 
 }
 
+function createErrorStringFromResponseObject {
+    param(
+        [WebResponseObject]$responseObject
+    )
+
+    $body = [String]::new($responseObject.Content)
+    $errorMessage = "`nStatus: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")"
+    $responseObject.Headers.Keys | ForEach-Object { $errorMessage += "`n" + $_ + ": " + $responseObject.Headers[$_] }
+    $errorMessage += "`n$body"
+    return $errorMessage
+}
+
 function Invoke-MetasysMethod {
     <#
     .SYNOPSIS
@@ -86,7 +98,7 @@ function Invoke-MetasysMethod {
         # The HTTP Method you are sending.
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
         # The version of the API you intent to use
-        [ValidateRange(2,4)]
+        [ValidateRange(2, 4)]
         [Int]$Version,
         # Skips certificate validation checks. This includes all validations
         # such as expiration, revocation, trusted root authority, etc.
