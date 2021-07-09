@@ -252,7 +252,7 @@ function Invoke-MetasysMethod {
         else {
             if ($responseObject) {
                 if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*") -or ($responseObject.StatusCode -eq 204)) {
-                    $response = [String]::new($responseObject.Content)
+                    $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
                 }
                 else {
                     Write-Error "An unexpected content type was found"
