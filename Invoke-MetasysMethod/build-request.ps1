@@ -19,7 +19,7 @@ function buildRequest {
         Uri                  = $uri ?? (buildUri -path $Path -version $version)
         Body                 = $body
         SkipCertificateCheck = $skipCertificateCheck
-        ContentType          = "application/json"
+        ContentType          = "application/json; charset=utf-8"
         Headers              = @{}
     }
 
