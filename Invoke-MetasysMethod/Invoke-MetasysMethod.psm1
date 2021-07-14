@@ -113,6 +113,7 @@ function Invoke-MetasysMethod {
         [Switch]$ReturnBodyAsObject
     )
 
+    # PROCESS block is needed if you accept input from pipeline like Body in this function
     PROCESS {
 
 
