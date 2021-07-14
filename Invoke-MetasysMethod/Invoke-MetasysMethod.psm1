@@ -45,13 +45,21 @@ function Invoke-MetasysMethod {
         Invokes methods of the Metasys REST API
 
     .DESCRIPTION
-        This function allows you to invoke various methods of the Metasys REST API.
+        This function allows you to call methods of the Metasys REST API.
         Once a session is established (on the first invocation) the session state
         is maintained in the terminal session. This allows you to make additional
         calls with less boilerplate text necessary for each call.
 
     .OUTPUTS
-        The payloads from Metasys as formatted JSON strings.
+        System.String
+            The payloads from Metasys are formatted JSON strings. This is the
+            default return type for this function.
+
+        PSObject, Hashtable
+            If the switch `ReturnBodyAsObject` is set then this function attempts
+            to convert the response to a custom object. In some cases, the JSON string
+            may contain properties that only differ in casing and can't be converted
+            to a PSObject. In such cases, a Hashtable is returned instead.
 
     .EXAMPLE
         Invoke-MetasysMethod /objects/$id
@@ -72,11 +80,10 @@ function Invoke-MetasysMethod {
 
     .LINK
 
-        https://github.jci.com/cwelchmi/metasys-powershell-tutorial/blob/main/invoke-metasys-method.md
+        https://github.com/metasys-server/powershell-metasysrestapi
 
     #>
 
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', 'DeleteCredentialsFor', Justification = "This parameter doesn't actually contain a secret", Scope = 'Function')]
     [CmdletBinding(PositionalBinding = $false)]
     param(
         # The hostname or ip address of the site you wish to interact with
@@ -110,6 +117,7 @@ function Invoke-MetasysMethod {
         [hashtable]$Headers,
         # TODO: Add support for password to be passed in
         [SecureString]$Password,
+        # Return the response as PSObject or Hashtable instead of JSON string
         [Switch]$ReturnBodyAsObject
     )
 
