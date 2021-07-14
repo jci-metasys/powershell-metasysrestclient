@@ -1,13 +1,15 @@
-# Invoke-MetasysMethod
+# MetasysRestClient
 
-A light weight wrapper around the PowerShell `Invoke-WebRequest` cmdlet.
+A PowerShell module that sends HTTPS request to a Metasys device running Metasys REST API.
 
 Features:
 
-* Establishes a "session" with a Metasys device so you don't need to send credentials on each call or explicitly managed the access token
-* Securely stores credentials in OS keychain after your first successful login to a Metasys device (requires SecretManagement module annd a Secret Vault implementationn)
-* Provides some helper cmdlets to inspect all the results of the previous command
-* Provides helper cmdlets to deal with responses as PowerShell objects rather than JSON
+* Establishes a "session" with a Metasys device so you don't need to send credentials on each call or explicitly manage the access token
+* Sets boiler plate like `Content-Type` header for you on each request
+* Securely stores credentials in secret vault after your first successful login to a Metasys device (requires SecretManagement module and a Secret Vault to be installed and registered)
+* Provides helper functions to inspect all the results of the previous command
+* Provides helper functions to deal with responses as PowerShell objects rather than JSON
+* Provides helper functions to make calling common methods even easier (in progress)
 
 ## Dependencies
 
@@ -15,9 +17,12 @@ Features:
 
     **Note:** Windows PowerShell is not supported
 
+* (Optional) Microsoft.PowerShell.SecretManagement
+* (Optional) Microsoft.PowerShell.SecretStore (or other SecretVault implementation)
+
 ## Credential Management
 
-If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. Documentation on how to do this coming soon.
+If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Mangement](secret-management.md).
 
 ## Prerequisites
 
@@ -33,31 +38,59 @@ Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod
 
 ## Installation
 
-From a powershell shell:
+From a powershell command prompt:
 
 ```bash
-PS > Install-Module Invoke-MetasysMethod -Repository PSGallery
+PS > Install-Module MetasysRestClient -Repository PSGallery
 ```
 
 ## Help
 
-You can type
+You can discover the commands in the module by ensuring it has been loaded and then inspecting it's contents:
+
+```bash
+PS > Import-Module MetasysRestClient
+PS > (Get-Module MetasysRestClient).ExportedCommands
+
+Key                                 Value
+---                                 -----
+Clear-MetasysEnvVariables           Clear-MetasysEnvVariables
+Get-LastMetasysHeadersAsObject      Get-LastMetasysHeadersAsObject
+Get-LastMetasysResponseBodyAsObject Get-LastMetasysResponseBodyAsObject
+Get-MetasysPassword                 Get-MetasysPassword
+Get-MetasysUsers                    Get-MetasysUsers
+Invoke-MetasysMethod                Invoke-MetasysMethod
+Remove-MetasysPassword              Remove-MetasysPassword
+Set-MetasysPassword                 Set-MetasysPassword
+Show-LastMetasysAccessToken         Show-LastMetasysAccessToken
+Show-LastMetasysFullResponse        Show-LastMetasysFullResponse
+Show-LastMetasysHeaders             Show-LastMetasysHeaders
+Show-LastMetasysResponseBody        Show-LastMetasysResponseBody
+Show-LastMetasysStatus              Show-LastMetasysStatus
+imm                                 imm
+```
+
+You can find help on any of the commands using `help`
 
 ```bash
 PS > help Invoke-MetasysMethod
 ```
 
-To see the list of parameters that are supported.
-
 ## Quick Start
 
-This section will show you the basics of using `Invoke-MetasysMethod`
+This section will show you the basics of using `Invoke-MetasysMethod`. We will cover
+
+* Starting a Session
+* Discovering objects
+* Reading an object and an attribute
+* Sending a command
+* Creating an object
 
 ### Starting a Session
 
 To get started you need to get logged into a site.
 
-To do this, simply call `Invoke-MetasysMethod` with no parameters. You'll be prompted for your `Site host`, `username` and `password`.
+To do this, simply call `Invoke-MetasysMethod` with no parameters. You'll be prompted for your `Site host`, `UserName` and `Password`.
 
 ```bash
 PS > Invoke-MetasysMethod
@@ -415,6 +448,13 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/ce820989-5617-50bd-90e
 
 This time we showed the use of an absolute url. We could have just used `/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/presentValue` instead. Either type of url is fine.
 
+Another good tip is to save identifiers in variables so you don't have to type them multiple times or copy/paste them:
+
+```bash
+PS > $Id = "ce820989-5617-50bd-90ea-2fd95d1402ba"
+PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/$Id/attributes/presentValue
+```
+
 Examples of other urls that support `GET`
 
 * `/alarms` - Get first page of alarms
@@ -424,12 +464,12 @@ Examples of other urls that support `GET`
 
 ### Writing An Object Attribute (PATCH)
 
-In this example we'll change the value of an object attribute. This requires us to use two nenw parameters. First we'll use the `Method` parameter to specify we are sending a `PATCH` request, and next we'll use the `Body` parameter to specify the content we want to send to the server.
+In this example we'll change the value of an object attribute. This requires us to use two new parameters. First we'll use the `Method` parameter to specify we are sending a `PATCH` request, and we'll use the `Body` parameter to specify the content we want to send.
 
-In this example we'll change the `description` attribute of an AV. Let's first read it to confirm it's currently `null`.
+In this example we'll change the `description` attribute of the AV from the previous section. Let's first read it to confirm it's currently `null`. Recall that we've saved the identifier in the variable `$Id`.
 
 ```bash
-PS > Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/description
+PS > Invoke-MetasysMethod /objects/$Id/attributes/description
 
 {
   "item": {
@@ -439,32 +479,41 @@ PS > Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attribut
 }
 ```
 
-We'll change the value to be `Zone 3 Temperature Setpoint`. We are going to send this body to do that:
+We'll change the value to be `Zone 3 Temperature Set Point`. We are going to send this body to do that:
 
 ```json
 {
   "item": {
-    "description": "Zone 3 Temperature Setpoint"
+    "description": "Zone 3 Temperature Set Point"
   }
 }
 ```
 
-One way to create this JSON is to use Powershell Hashtable literals and then convert them to JSON. We'll do this in two steps. The first line below creates the JSON. The second line invokes the appropriate endpoint, passing the JSON as the `Body`.
+It can be a little tricky dealing with large JSON strings.. There are many ways to construct them. See Tips and Tricks (coming soon) for examples of working with JSON strings.
+
+When the JSON string is relatively short like in this example you can just type it all on one line:
 
 ```bash
-PS > $json = ConvertTo-Json -Depth 20 @{ item = @{ description = "Zone 3 Temperature Setpoint" } }
-PS > Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba -Method Patch -Body $json
+PS > Invoke-MetasysMethod -Method Patch /objects/$Id  -Body "{ 'item': { 'description': 'Zone 3 Temperature Set Point' } }"
 ```
 
-> **Note:** Be careful with the `ConvertTo-Json` cmdlet. By default it doesn't convert the entire object it is given. Normally you'll want to use the `Depth` parameter to ensure your whole object is serialized to JSON like shown above.
-
-It can be a little tricky dealing with large JSON strings. There are many ways to construct them. See Tips and Tricks (coming soon) for examples of working with JSON strings.
-
-When your JSON string is short you can also just type it out as in this alternative:
+We'll read it back to ensure it changed:
 
 ```bash
-PS > Invoke-MetasysMethod -Method Patch /objects/ce820989-5617-50bd-90ea-2fd95d1402ba  -Body "{ 'item': { 'description': 'Zone 3 Temperature Setpoint' } }"
+PS > Invoke-MetasysMethod /objects/$Id/attributes/description
+{
+  "item": {
+    "description": "Zone 3 Temperature Set Point"
+  },
+  "condition": {
+    "description": {}
+  }
+}
 ```
+
+### Using an Alias
+
+Many of the built-in PowerShell commands have long names just like `Invoke-WebRequest`. Many of those also have aliases that are much shorter (eg. `iwr` for `Invoke-WebRequest`). The command `Invoke-MetasysMethod` also has an alias, `imm`, which you can use instead of the full name. For the remainder of this README we'll use `imm` instead of `Invoke-MetasysMethod`.
 
 ### Sending a Command to an Object (PUT)
 
@@ -473,7 +522,7 @@ In this example we'll send an `adjustCommand` command to an AV.
 We can discover that the object supports `adjustCommand` by requesting the list of commands:
 
 ```bash
-Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands
+PS > imm /objects/$Id/commands
 ```
 
 <details><summary> Click to see response</summary>
@@ -1070,7 +1119,7 @@ Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands
 The details of the response are outside of the scope of this tutorial, but we do see the `adjustCommand` in the response and we see that it's body is expected to be an object with a `parameters` property. The definition of `parameters` tells us it needs to be an array with one numeric value. So we can do the following.
 
 ```bash
-PS > Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/adjustCommand -Method Put -Body "{ 'parameters': [ 72.5 ] }"
+PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body "{ 'parameters': [ 72.5 ] }"
 
 "Success"
 ```
@@ -1078,8 +1127,8 @@ PS > Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands
 We could also add an annotation to the command:
 
 ```bash
-PS > $json = '{ "parameters": [72.5], "annotation": "Adjust setpoint for the afternoon" }'
-PS > Invoke-MetasysMethod /objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/adjustCommand -Method Put -Body $json
+PS > $json = '{ "parameters": [72.5], "annotation": "Adjust Set Point for the afternoon" }'
+PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body $json
 ```
 
 ### Creating an Object (POST)
@@ -1088,11 +1137,11 @@ For this example we'll create a new AV. A typical payload to create an AV might 
 
 ```json
 {
-  "localUniqueIdentifier": "Setpoint",
+  "localUniqueIdentifier": "Set Point",
   "parentId": "8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
   "objectType": "objectTypeEnumSet.avClass",
   "item": {
-    "name": "Setpoint",
+    "name": "Set Point",
     "objectCategory": "objectCategoryEnumSet.hvacCategory",
     "minPresValue": -50,
     "maxPresValue": 150,
@@ -1101,11 +1150,10 @@ For this example we'll create a new AV. A typical payload to create an AV might 
 }
 ```
 
-We'll assume that JSON is stored in a file call `new-av.json` which is in the same directory that we are running our commands from.
+We'll assume that JSON is stored in a file call `new-av.json` which is in the same directory that we are running our commands from. (We'll use the `Get-Content` command to read that file and provide it as the body. Be sure to use the `Raw` switch so that `Get-Content` returns the whole file as one string, rather than an array of strings -- one string per line).
 
 ```bash
-PS > Invoke-MetasysMethod /objects -Method Post -Body (Get-Content -Path new-av.json -Raw)
-
+PS > imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw)
 ```
 
 Notice that currently the creation of a new object doesn't return anything. So how do we know if it was successful? There are some helper functions that allow us to inspect the last response. I'll demonstrate three of them `Show-LastMetasysStatus`,
@@ -1145,10 +1193,10 @@ Cache-Control: private
 Set-Cookie: Secure; HttpOnly
 ```
 
-**Note:** The `Location` header from above gives the url we can use to read the object back.
+**Note:** The status of `200` tells us everything was good and the `Location` header from above gives the url we can use to read the object back.
 
 ```bash
-PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 ```
 
 <details><summary>Click to see response</summary>
@@ -1167,7 +1215,7 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1
   "auditsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/audits",
   "item": {
     "id": "3fdb754b-4f6e-592e-9c1e-8b72ad51cb84",
-    "name": "Setpoint",
+    "name": "Set Point",
     "description": null,
     "bacnetObjectType": "objectTypeEnumSet.bacAvClass",
     "objectCategory": "objectCategoryEnumSet.hvacCategory",
@@ -1180,7 +1228,7 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1
       "time": null
     },
     "presentValueWritable": "objectModeEnumSet.presentValueWritableWithPriority",
-    "itemReference": "welchoas:welchoas/Setpoint",
+    "itemReference": "welchoas:welchoas/Set Point",
     "version": {
       "major": 1,
       "minor": 0
@@ -1299,7 +1347,7 @@ Let's delete the previous object
 
 ```bash
 # This is no response body to this payload
-PS > Invoke-MetasysMethod -Method Delete https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+PS > imm -Method Delete https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 
 # Use Show-LastMetasysFullResponse to verify success (204 status)
 PS > Show-LastMetasysFullResponse
@@ -1319,7 +1367,8 @@ Set-Cookie: Secure; HttpOnly
 Sometimes you want to talk to another site. This can be done by running `Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset your session by doing the following:
 
 ```bash
-PS > Invoke-MetasysMethod -Clear
+PS > Clear-MetasysEnvVariables
+The environment variables related to the current Metasys sessions have been cleared
 ```
 
 This clears all session saved variables. The next call you make you'll again be prompted for a site:
@@ -1337,4 +1386,3 @@ Site host: welchoas
 This command will fail to execute if the server you are executing against doesn't have a valid certificate. A parameter is provided, `SkipCertificateCheck`, which causes all validation checks to be skipped. This includes all validations such as expiration, revocation, trusted root authority, etc. **WARNING** Using this parameter is not secure and is not recommended. This switch is intended to be used against known hosts using a self-signed certificate for testing purposes. *Use at your own risk*.
 
 ## Known Limitations
-
