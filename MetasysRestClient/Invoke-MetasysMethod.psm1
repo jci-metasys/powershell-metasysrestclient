@@ -320,10 +320,10 @@ function ConvertFrom-JsonSafely {
 }
 
 function Show-LastMetasysResponseBody {
-    if ($null -eq $body -or $body -eq "") {
-        return
+    $body = [MetasysEnvVars]::getLast()
+    if ($body) {
+        ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
     }
-    ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
 }
 
 function Show-LastMetasysFullResponse {
