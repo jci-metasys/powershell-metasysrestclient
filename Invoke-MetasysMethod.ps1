@@ -8,7 +8,7 @@ param(
     [string]$Path,
     [string]$Body,
     [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
-    [Int]$Version,
+    [Int]$Version = 4,
     [switch]$SkipCertificateCheck,
     [hashtable]$Headers,
     [SecureString]$Password
