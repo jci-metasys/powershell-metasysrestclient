@@ -7,7 +7,7 @@ $prefixLength = $prefix.Length + 1
 Set-StrictMode -Version 3
 
 
-function Get-MetasysUsers {
+function Get-SavedMetasysUsers {
     <#
     .SYNOPSIS
         Finds and returns user names associated with saved Metasys credentials.
@@ -25,7 +25,7 @@ function Get-MetasysUsers {
         The list of matching user names.
 
     .EXAMPLE
-        PS > Get-MetasysUsers -SiteHost adx55
+        PS > Get-SavedMetasysUsers -SiteHost adx55
 
         Gets the list of users that have been saved for the site host adx55
 
@@ -80,7 +80,7 @@ function Get-MetasysUsers {
 
 }
 
-function Get-MetasysPassword {
+function Get-SavedMetasysPassword {
     <#
     .SYNOPSIS
         Finds and returns the password associated with saved Metasys credentials.
@@ -96,13 +96,13 @@ function Get-MetasysPassword {
         System.Object
 
     .EXAMPLE
-        PS > Get-MetasysPassword -SiteHost adx55 -UserName fred
+        PS > Get-SavedMetasysPassword -SiteHost adx55 -UserName fred
         System.Security.SecureString
 
         Gets the password for fred on host adx55
 
     .EXAMPLE
-        PS > Get-MetasysPassword -SiteHost adx55 -UserName fred -AsPlainText
+        PS > Get-SavedMetasysPassword -SiteHost adx55 -UserName fred -AsPlainText
         PlainTextPassword
 
         Gets the password for fred on host adx55 and returns it as plain text
@@ -138,7 +138,7 @@ function Get-MetasysPassword {
     return $secret
 }
 
-function Remove-MetasysPassword {
+function Remove-SavedMetasysPassword {
     <#
     .SYNOPSIS
         Finds and removes the password associated with saved Metasys credentials.
@@ -149,7 +149,7 @@ function Remove-MetasysPassword {
         matches the provided 'SiteHost' and a user that matches 'UserName'.
 
     .EXAMPLE
-        PS > Remove-MetasysPassword -SiteHost adx55 -UserName fred
+        PS > Remove-SavedMetasysPassword -SiteHost adx55 -UserName fred
 
         Finds and removes the password for fred on adx55
 
@@ -167,7 +167,7 @@ function Remove-MetasysPassword {
 
 }
 
-function Set-MetasysPassword {
+function Set-SavedMetasysPassword {
     <#
     .SYNOPSIS
         Saves Metasys credentials
@@ -176,7 +176,7 @@ function Set-MetasysPassword {
         This cmdlet saves Metasys credentials into the default secret vault
 
     .EXAMPLE
-        PS > Set-MetasysPassword -SiteHost adx55 -UserName fred -Password $password
+        PS > Set-SavedMetasysPassword -SiteHost adx55 -UserName fred -Password $password
 
         Assuming $password is a SecureString that contains the password, this example
         saves fred's password for adx55.
@@ -194,4 +194,4 @@ function Set-MetasysPassword {
     Set-Secret -Name "${prefix}:${SiteHost}:$UserName" -SecureStringSecret $Password
 }
 
-Export-ModuleMember -Function "Get-MetasysUsers", "Get-MetasysPassword", "Remove-MetasysPassword", "Set-MetasysPassword"
+Export-ModuleMember -Function "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword"

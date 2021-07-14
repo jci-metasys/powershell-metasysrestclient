@@ -195,7 +195,7 @@ function Invoke-MetasysMethod {
             $UserName = $UserName ? $UserName : [MetasysEnvVars]::getUserName()
             if (!$UserName) {
                 # attempt to find a user name in secret store
-                $users = Get-MetasysUsers -SiteHost $SiteHost
+                $users = Get-SavedMetasysUsers -SiteHost $SiteHost
 
                 if ($users -is [System.Object[]]) {
                     Write-Information "Multiple UserNames found for this host. Please enter one below."
@@ -213,7 +213,7 @@ function Invoke-MetasysMethod {
 
             if (!$Password) {
                 Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
-                $password = Get-MetasysPassword -SiteHost $SiteHost -UserName $UserName
+                $password = Get-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName
 
                 if (!$password) {
                     $password = Read-Host -Prompt "Password" -AsSecureString
@@ -236,7 +236,7 @@ function Invoke-MetasysMethod {
             [MetasysEnvVars]::setExpires($loginResponse.expires)
             [MetasysEnvVars]::setVersion($Version)
             [MetasysEnvVars]::setUserName($UserName)
-            Set-MetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
+            Set-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
             Write-Verbose -Message "Login successful"
         }
 
