@@ -42,7 +42,7 @@ function createErrorStringFromResponseObject {
 function Invoke-MetasysMethod {
     <#
     .SYNOPSIS
-        Invokes methods of the Metasys REST API
+        Sends an HTTPS request to a Metasys device running Metasys REST API
 
     .DESCRIPTION
         This function allows you to call methods of the Metasys REST API.
