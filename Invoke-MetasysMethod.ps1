@@ -14,7 +14,7 @@ param(
     [SecureString]$Password
 
 )
-Import-Module -Force -Name ./Invoke-MetasysMethod
+Import-Module -Force -Name ./MetasysRestClient
 
 #Get-MetasysUsers
 
