@@ -14,7 +14,7 @@
     NestedModules        = @("metasys-env-vars.ps1", "password-management.ps1", "build-uri.ps1", "build-request.ps1")
 
     # Version number of this module.
-    ModuleVersion        = '0.0.27'
+    ModuleVersion        = '0.0.30'
     # Supported PSEditions
     # CompatiblePSEditions = @()
     CompatiblePSEditions = @("Core")
@@ -82,6 +82,7 @@
     VariablesToExport    = @()
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
+    AliasesToExport = 'imm'
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
