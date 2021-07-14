@@ -281,8 +281,8 @@ function Invoke-MetasysMethod {
         if ($ReturnBodyAsObject.IsPresent -and $null -ne $response) {
             Get-LastMetasysResponseBodyAsObject
         }
-        else {
-            Show-LastMetasysResponseBody $response
+        elseif ($null -ne $reponse) {
+            Show-LastMetasysResponseBody
         }
     }
 
@@ -320,10 +320,6 @@ function ConvertFrom-JsonSafely {
 }
 
 function Show-LastMetasysResponseBody {
-    param (
-        [string]$body = ([MetasysEnvVars]::getLast())
-    )
-
     if ($null -eq $body -or $body -eq "") {
         return
     }
