@@ -281,7 +281,7 @@ function Invoke-MetasysMethod {
         if ($ReturnBodyAsObject.IsPresent -and $null -ne $response) {
             Get-LastMetasysResponseBodyAsObject
         }
-        elseif ($null -ne $reponse) {
+        elseif ($null -ne $response) {
             Show-LastMetasysResponseBody
         }
     }
