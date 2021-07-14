@@ -338,6 +338,10 @@ function Clear-MetasysEnvVariables {
     "The environment variables related to the current Metasys sessions have been cleared."
 }
 
+New-Alias -Name imm -Value Invoke-MetasysMethod
+
 Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse', `
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', 'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables'
+
+Export-ModuleMember -Alias 'imm'
 
