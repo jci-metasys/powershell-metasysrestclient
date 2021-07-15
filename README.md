@@ -22,7 +22,7 @@ Features:
 
 ## Credential Management
 
-If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Mangement](secret-management.md).
+If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Management](secret-management.md).
 
 ## Prerequisites
 
@@ -34,7 +34,9 @@ To become really proficient with this tool you'll want to learn PowerShell. But 
 
 ## Metasys REST API Versions
 
-Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to explicitly include the `-Version` parameter when making calls. Else `Invoke-MetasysMethod` assumes `v4`.
+Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to explicitly include the `-Version` parameter when making calls. Else `Invoke-MetasysMethod` assumes the latest version released.
+
+However, you only need to specify `Version` on the first call you invoke. `Invoke-MetasysMethod` will remember what version you requested and use it for all subsequent calls.
 
 ## Installation
 
@@ -101,6 +103,17 @@ Password: *********
 ```
 
 > **Note** You don't need to explicitly do this login step separately. It's safe to call `Invoke-MetasysMethod` with a request and if you haven't already established a session, you'll be prompted for your credentials.
+
+#### Starting a Session without Prompts
+
+If you want to start a session without being prompted for `SiteHost`, `UserName`, and `Password` you can supply them all as parameters. You should also specify the `Version` on this first call to be explicit about which version of the API you want. The default value of this parameter is `4`.
+
+```bash
+PS > $password = Get-SavedMetasysPassword -SiteName welchoas -UserName api
+PS > Invoke-MetasysMethod -SiteName welchoas -UserName api -Password $password -Version 3
+```
+
+This will start a session using version 3 of the API. You don't need to specify the version for other calls made during this session. `Invoke-MetasysMethod` remembers what version you requested and uses it for future calls. The `Password` parameter takes as input a `SecureString`. Typically you'd want to retrieve it from some secret storage that returns a `SecureString`. In this example we looked it up using `Get-SavedMetasysPassword`. See [SecretManagement](./secret-management.md) for more details.
 
 ### Reading Information (GET)
 
@@ -1364,20 +1377,20 @@ Set-Cookie: Secure; HttpOnly
 
 ### Clearing a Session
 
-Sometimes you want to talk to another site. This can be done by running `Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset your session by doing the following:
+Sometimes you want to talk to another site. This can be done by running `Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset your session by doing one of the following:
 
 ```bash
-PS > Clear-MetasysEnvVariables
-The environment variables related to the current Metasys sessions have been cleared
+# Start a new session (without making a data request)
+PS > imm -Login /objects
+SiteHost: welchoas
+UserName: api
+
+# Start a new session and make a data request
+PS > imm -Login /objects
+SiteHost: welchoas
+UserName: api
 ```
 
-This clears all session saved variables. The next call you make you'll again be prompted for a site:
-
-```bash
-PS > Invoke-MetasysMethod /enumerations
-
-Site host: welchoas
-```
 
 ## Troubleshooting
 
