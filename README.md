@@ -1366,20 +1366,20 @@ Set-Cookie: Secure; HttpOnly
 
 ### Clearing a Session
 
-Sometimes you want to talk to another site. This can be done by running `Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset your session by doing the following:
+Sometimes you want to talk to another site. This can be done by running `Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset your session by doing one of the following:
 
 ```bash
-PS > Clear-MetasysEnvVariables
-The environment variables related to the current Metasys sessions have been cleared
+# Start a new session (without making a data request)
+PS > imm -Login /objects
+SiteHost: welchoas
+UserName: api
+
+# Start a new session and make a data request
+PS > imm -Login /objects
+SiteHost: welchoas
+UserName: api
 ```
 
-This clears all session saved variables. The next call you make you'll again be prompted for a site:
-
-```bash
-PS > Invoke-MetasysMethod /enumerations
-
-Site host: welchoas
-```
 
 ## Troubleshooting
 
