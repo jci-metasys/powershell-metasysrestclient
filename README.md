@@ -22,7 +22,7 @@ Features:
 
 ## Credential Management
 
-If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Mangement](secret-management.md).
+If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Management](secret-management.md).
 
 ## Prerequisites
 
