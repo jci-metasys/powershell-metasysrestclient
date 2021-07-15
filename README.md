@@ -104,6 +104,17 @@ Password: *********
 
 > **Note** You don't need to explicitly do this login step separately. It's safe to call `Invoke-MetasysMethod` with a request and if you haven't already established a session, you'll be prompted for your credentials.
 
+#### Starting a Session without Prompts
+
+If you want to start a session without being prompted for `SiteHost`, `UserName`, and `Password` you can supply them all as parameters. You should also specify the `Version` on this first call to be explicit about which version of the API you want. The default value of this parameter is `4`.
+
+```bash
+PS > $password = Get-SavedMetasysPassword -SiteName welchoas -UserName api
+PS > Invoke-MetasysMethod -SiteName welchoas -UserName api -Password $password -Version 3
+```
+
+This will start a session using version 3 of the API. You don't need to specify the version for other calls made during this session. `Invoke-MetasysMethod` remembers what version you requested and uses it for future calls. The `Password` parameter takes as input a `SecureString`. Typically you'd want to retrieve it from some secret storage that returns a `SecureString`. In this example we looked it up using `Get-SavedMetasysPassword`. See [SecretManagement](./secret-management.md) for more details.
+
 ### Reading Information (GET)
 
 When you want to read information from Metasys you'll normally be doing a `GET` request. These are the easiest to work with because they only require a URL and nothing else. You can use a relative or absolute url.
