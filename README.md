@@ -34,7 +34,9 @@ To become really proficient with this tool you'll want to learn PowerShell. But 
 
 ## Metasys REST API Versions
 
-Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to explicitly include the `-Version` parameter when making calls. Else `Invoke-MetasysMethod` assumes `v4`.
+Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to explicitly include the `-Version` parameter when making calls. Else `Invoke-MetasysMethod` assumes the latest version released.
+
+However, you only need to specify `Version` on the first call you invoke. `Invoke-MetasysMethod` will remember what version you requested and use it for all subsequent calls.
 
 ## Installation
 
