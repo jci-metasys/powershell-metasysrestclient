@@ -183,7 +183,7 @@ function Invoke-MetasysMethod {
 
         if ([MetasysEnvVars]::getExpires()) {
             $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
-            if ([Datetime]::UtcNow -gt $expiration) {
+            if ([DateTime]::UtcNow -gt $expiration) {
                 # Token is expired, require login
                 $ForceLogin = $true
             }
@@ -194,11 +194,11 @@ function Invoke-MetasysMethod {
                     -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                 try {
-                    Write-Verbose -Message "Attempting to refresh access token"
+                    Write-Information -Message "Attempting to refresh access token"
                     $refreshResponse = Invoke-RestMethod @refreshRequest
                     [MetasysEnvVars]::setExpires($refreshResponse.expires)
                     [MetasysEnvVars]::setToken((ConvertTo-SecureString $refreshResponse.accessToken -AsPlainText))
-                    Write-Verbose -Message "Refresh token successful"
+                    Write-Information -Message "Refresh token successful"
                 }
                 catch {
                     Write-Debug "Error attempting to refresh token"
@@ -240,7 +240,7 @@ function Invoke-MetasysMethod {
             }
 
             if (!$Password) {
-                Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
+                Write-Information -Message "Attempting to get password for $SiteHost $UserName"
 
                 $password = invokeWithWarningsOff -script { Get-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName }
 
@@ -269,7 +269,7 @@ function Invoke-MetasysMethod {
 
             invokeWithWarningsOff -script { Set-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password }
 
-            Write-Verbose -Message "Login successful"
+            Write-Information -Message "Login successful"
         }
 
         if (!$Path) {
@@ -284,7 +284,7 @@ function Invoke-MetasysMethod {
         $response = $null
         $responseObject = $null
 
-        Write-Verbose -Message "Attempting request"
+        Write-Information -Message "Attempting request"
         $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
         if ($responseObject.StatusCode -ge 400) {
             Write-Error "The status code indicates an error"
