@@ -150,6 +150,7 @@ function Invoke-MetasysMethod {
     # PROCESS block is needed if you accept input from pipeline like Body in this function
     PROCESS {
 
+        Set-Variable -Name fiveMinutes -Value ([TimeSpan]::FromMinutes(5)) -Option Constant
 
         setBackgroundColorsToMatchConsole
 
@@ -186,7 +187,7 @@ function Invoke-MetasysMethod {
                 # Token is expired, require login
                 $ForceLogin = $true
             }
-            else {
+            elseif ([DateTime]::UtcNow -gt $expiration - $fiveMinutes) {
 
                 # attempt to renew the token to keep it fresh
                 $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken" -version $Version) `
