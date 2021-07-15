@@ -208,18 +208,48 @@ function Invoke-MetasysMethod {
 
             }
         }
+        if ($Login) {
+            # This is either first login, or user was logged in and forcing a new login
+            # So clear the saved host and username
 
-        # TODO: Also force login if $UserName -ne saved user name
-        # TODO: Could also support multiple sessions by storing multiple access tokens keyed on username
-        # TODO: When token expires but we have the credentials cached we could try to login again
-        if (($Login) -or (![MetasysEnvVars]::getToken()) -or ($ForceLogin) -or ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost()))) {
+            $ForceLogin = $true
+            # Don't automatically use the saved site host
+            if (!$SiteHost) {
+                [MetasysEnvVars]::setSiteHost($null)
+            }
+            # Don't automatically use the saved user name
+            if (!$UserName) {
+                [MetasysEnvVars]::setUserName($null)
+            }
+        } elseif ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost())) {
+            # If user specified a new host, force a login
+            $ForceLogin = $true
 
-            $SiteHost = $SiteHost ? $SiteHost : [MetasysEnvVars]::getSiteHost()
+            # Don't automatically use the saved user name
+            if (!$UserName) {
+                [MetasysEnvVars]::setUserName($null)
+            }
+        }
+        elseif ($UserName -and $UserName -ne ([MetasysEnvVars]::getUserName())) {
+            # If user is choosing a new user name force a login
+            $ForceLogin = $true
+
+            # Don't automatically use the saved site host
+            if (!$SiteHost) {
+                [MetasysEnvVars]::setSiteHost($null)
+            }
+        } elseif (![MetasysEnvVars]::getToken()) {
+            $ForceLogin = $true
+        }
+
+        if ($ForceLogin) {
+
+            $SiteHost = $SiteHost ?? [MetasysEnvVars]::getSiteHost()
             if (!$SiteHost) {
                 $SiteHost = Read-Host -Prompt "Site host"
             }
 
-            $UserName = $UserName ? $UserName : [MetasysEnvVars]::getUserName()
+            $UserName = $UserName ?? [MetasysEnvVars]::getUserName()
             if (!$UserName) {
                 # attempt to find a user name in secret store
                 $users = invokeWithWarningsOff -script { Get-SavedMetasysUsers -SiteHost $SiteHost }
