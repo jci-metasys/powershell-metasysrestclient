@@ -2,6 +2,7 @@ using namespace System
 using namespace System.IO
 using namespace System.Security
 using namespace Microsoft.PowerShell.Commands
+using namespace System.Management.Automation
 
 Set-StrictMode -Version 3
 
@@ -38,6 +39,31 @@ function createErrorStringFromResponseObject {
     $errorMessage += "`n$body"
     return $errorMessage
 }
+
+function invokeWithWarningsOff {
+    <#
+        .SYNOPOSIS
+            Invokes a script block with warning preference set to SilentlyContinue
+            This is used in this file to invoke the password management functions that
+            write warnings when called directly by a client. But for which we'd rather
+            not see warnings if they are called by Invoke-MetasysMethod.
+
+            It seems that I should just be able to invoke my password management functions with
+            -WarningAction SilentlyContinue but that doesn't seem to work. This is my work around
+            for now.
+    #>
+    param (
+        [ScriptBlock]$script
+    )
+    $oldWarningPref = $WarningPreference
+    $WarningPreference = "SilentlyContinue"
+    try {
+        & $script
+    } finally {
+        $WarningPreference = $oldWarningPref
+    }
+}
+
 
 function Invoke-MetasysMethod {
     <#
@@ -195,7 +221,8 @@ function Invoke-MetasysMethod {
             $UserName = $UserName ? $UserName : [MetasysEnvVars]::getUserName()
             if (!$UserName) {
                 # attempt to find a user name in secret store
-                $users = Get-SavedMetasysUsers -SiteHost $SiteHost
+                $users = invokeWithWarningsOff -script { Get-SavedMetasysUsers -SiteHost $SiteHost }
+
 
                 if ($users -is [System.Object[]]) {
                     Write-Information "Multiple UserNames found for this host. Please enter one below."
@@ -213,7 +240,9 @@ function Invoke-MetasysMethod {
 
             if (!$Password) {
                 Write-Verbose -Message "Attempting to get password for $SiteHost $UserName"
-                $password = Get-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName
+
+                $password = invokeWithWarningsOff -script { Get-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName }
+
 
                 if (!$password) {
                     $password = Read-Host -Prompt "Password" -AsSecureString
@@ -236,7 +265,9 @@ function Invoke-MetasysMethod {
             [MetasysEnvVars]::setExpires($loginResponse.expires)
             [MetasysEnvVars]::setVersion($Version)
             [MetasysEnvVars]::setUserName($UserName)
-            Set-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password
+
+            invokeWithWarningsOff -script { Set-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password }
+
             Write-Verbose -Message "Login successful"
         }
 

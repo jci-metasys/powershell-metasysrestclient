@@ -1,10 +1,36 @@
 
 using namespace Microsoft.PowerShell.SecretManagement
 
+Set-StrictMode -Version 3
+
 $prefix = "imm"
 $prefixLength = $prefix.Length + 1
 
-Set-StrictMode -Version 3
+
+function aSecretVaultIsAvailable {
+    [OutputType([Boolean])]
+    param()
+
+    $vaultAvailable = $false
+    try {
+        # if this works we know we have a registered vault
+        $secretVault = Get-SecretVault
+
+        # let's see if we can import the module for the vault
+        $module = Import-Module -Name $secretVault.ModuleName -EA SilentlyContinue -PassThru
+
+        if ($module) {
+            $vaultAvailable = $true
+        }
+
+    } catch {
+    }
+
+    if (!$vaultAvailable) {
+        Write-Warning "There are currently no secret vaults available."
+    }
+    $vaultAvailable
+}
 
 
 function Get-SavedMetasysUsers {
@@ -34,6 +60,10 @@ function Get-SavedMetasysUsers {
         # The host name or ip address of the site host
         [string]$SiteHost
     )
+
+    if (!(aSecretVaultIsAvailable)) {
+        return
+    }
 
     $searchFor = "${prefix}:$siteHost*"
 
@@ -119,6 +149,10 @@ function Get-SavedMetasysPassword {
         [switch]$AsPlainText
     )
 
+    if (!(aSecretVaultIsAvailable)) {
+        return
+    }
+
     $secretInfo = Get-SecretInfo -Name "${prefix}:${SiteHost}:$UserName" -ErrorAction SilentlyContinue
 
     if (!$secretInfo) {
@@ -162,6 +196,9 @@ function Remove-SavedMetasysPassword {
         [Parameter(Mandatory=$true)]
         [String]$UserName
     )
+    if (!(aSecretVaultIsAvailable)) {
+        return
+    }
 
     Get-SecretInfo -Name "${prefix}:${SiteHost}:$UserName" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Secret -Name $_.Name }
 
@@ -190,6 +227,9 @@ function Set-SavedMetasysPassword {
         [Parameter(Mandatory=$true)]
         [SecureString]$Password
     )
+    if (!(aSecretVaultIsAvailable)) {
+        return
+    }
 
     Set-Secret -Name "${prefix}:${SiteHost}:$UserName" -SecureStringSecret $Password
 }
