@@ -23,7 +23,7 @@ There are three steps to follow
 
 Install the two modules
 
-```bash
+```powershell
 PS > Install-Module Microsoft.PowerShell.SecretStore -Repository PSGallery
 PS > Install-Module Microsoft.PowerShell.SecretManagement -Repository PSGallery
 ```
@@ -36,7 +36,7 @@ Now you need to configure and register the SecretStore vault. You need to decide
 
 If you are using this only in a test environment with fake/test accounts you may not feel the need to password protect your vault. In that case you can use the following command to configure SecretStore. *Use at your own risk.*
 
-```bash
+```powershell
 PS > Set-SecretStoreConfiguration -Authentication None -Interaction None
 ```
 
@@ -44,7 +44,7 @@ PS > Set-SecretStoreConfiguration -Authentication None -Interaction None
 
 If your vault will store sensitive passwords you'll want to set a password for the vault. Set the timeout (in seconds) to a value you are comfortable with.
 
-```bash
+```powershell
 PS > Set-SecretStoreConfiguration -Authentication Password -PasswordTimeout 1800 -Interaction None
 ```
 
@@ -52,7 +52,7 @@ This configuration will never prompt you for a password. So when using `Invoke-M
 
 To unlock the secret store
 
-```bash
+```powershell
 PS > Unlock-SecretStore
 
 cmdlet Unlock-SecretStore at command pipeline position 1
@@ -64,7 +64,7 @@ Password: ********
 
 Now you need to register the SecretStore with the SecretManagement module:
 
-```bash
+```powershell
 PS > Register-SecretVault -Name SecretStore -Module Microsoft.PowerShell.SecretStore
 ```
 
@@ -72,7 +72,7 @@ PS > Register-SecretVault -Name SecretStore -Module Microsoft.PowerShell.SecretS
 
 To test your installation is working correctly try to add a new secret
 
-```bash
+```powershell
 # Create a secret
 PS > Set-Secret -Name test-secret -Secret thisIsASecret
 
@@ -98,7 +98,7 @@ What happens if your password is saved in your secret vault but you recently cha
 
 In this first example we'll use `Get-SecretInfo` which is a function defined by the SecretManagement module:
 
-```bash
+```powershell
 PS > Get-SecretInfo
 
 Name                  Type         VaultName
@@ -114,7 +114,7 @@ All of the secrets saved by `Invoke-MetasysMethod` are prefixed with `imm`, and 
 
 It's a little more user friendly to use `Get-SavedMetasysUsers` which will display all the UserNames that have been saved by this module.
 
-```bash
+```powershell
 PS > Get-SavedMetasysUsers
 SiteHost      UserName
 --------      --------
@@ -133,14 +133,14 @@ Perhaps you want to see what the saved password is. You can use `Get-SavedMetasy
 
 To look up a password provide the `UserName` and `SiteHost`:
 
-```bash.
+```powershell.
 PS > Get-SavedMetasysPassword -UserName api -SiteHost welchoas
 System.Security.SecureString
 ```
 
 Notice, by default th password will not display on the console. It is stored securely in a `SecureString`. If you need to see it you can convert it to plain text using `ConvertFrom-SecureString` or pass the `AsPlainText` switch to `Get-SavedMetasysPassword`:
 
-```bash
+```powershell
 PS > Get-SavedMetasysPassword -UserName api -SiteHost welchoas -AsPlainText
 mysupersecretpassword
 ```
@@ -151,7 +151,7 @@ Finally let's say you need to delete a set of credentials because the password i
 
 > **NOTE** This command does not and cannot delete credentials from a Metasys site. It only removes any credentials you have saved locally in your secret vault.
 
-```bash
+```powershell
 PS > Remove-SavedMetasysPassword -UserName api -SiteHost welchoas
 Supply values for the following parameters:
 Vault: SecretStore
@@ -163,7 +163,7 @@ Notice that it prompted me for the name of my Vault. When we registered our vaul
 
 Rather than deleting a saved set of credentials you could instead just change the saved password using `Set-SavedMetasysPassword`:
 
-```bash
+```powershell
 PS > Set-SavedMetasysPassword -UserName api -SiteHost welchoas
 Supply values for the following parameters:
 Password: *********
