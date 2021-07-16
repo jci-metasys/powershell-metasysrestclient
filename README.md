@@ -507,7 +507,7 @@ We'll change the value to be `Zone 3 Temperature Set Point`. We are going to sen
 }
 ```
 
-It can be a little tricky dealing with large JSON strings.. There are many ways to construct them. See Tips and Tricks (coming soon) for examples of working with JSON strings.
+It can be a little tricky dealing with large JSON strings.. There are many ways to construct them. See [Tips for Working With PowerShell](docs/tips.md) for examples of working with JSON strings.
 
 When the JSON string is relatively short like in this example you can just type it all on one line:
 
