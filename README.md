@@ -22,7 +22,7 @@ Features:
 
 ## Credential Management
 
-If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Management](secret-management.md).
+If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Management](docs/secret-management.md).
 
 ## Prerequisites
 
@@ -118,7 +118,7 @@ PS > $password = Get-SavedMetasysPassword -SiteName welchoas -UserName api
 PS > Invoke-MetasysMethod -SiteName welchoas -UserName api -Password $password -Version 3
 ```
 
-This will start a session using version 3 of the API. You don't need to specify the version for other calls made during this session. `Invoke-MetasysMethod` remembers what version you requested and uses it for future calls. The `Password` parameter takes as input a `SecureString`. Typically you'd want to retrieve it from some secret storage that returns a `SecureString`. In this example we looked it up using `Get-SavedMetasysPassword`. See [SecretManagement](./secret-management.md) for more details.
+This will start a session using version 3 of the API. You don't need to specify the version for other calls made during this session. `Invoke-MetasysMethod` remembers what version you requested and uses it for future calls. The `Password` parameter takes as input a `SecureString`. Typically you'd want to retrieve it from some secret storage that returns a `SecureString`. In this example we looked it up using `Get-SavedMetasysPassword`. See [SecretManagement](docs/secret-management.md) for more details.
 
 ### Reading Information (GET)
 
