@@ -38,6 +38,11 @@ Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod
 
 However, you only need to specify `Version` on the first call you invoke. `Invoke-MetasysMethod` will remember what version you requested and use it for all subsequent calls.
 
+## PowerShell References
+
+* [Learning PowerShell](https://github.com/PowerShell/PowerShell/tree/master/docs/learning-powershell)
+* [PowerShell Beginner’s Guide](https://github.com/PowerShell/PowerShell/blob/master/docs/learning-powershell/powershell-beginners-guide.md)
+
 ## Installation
 
 From a powershell command prompt:
