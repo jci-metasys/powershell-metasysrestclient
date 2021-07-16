@@ -47,7 +47,7 @@ However, you only need to specify `Version` on the first call you invoke. `Invok
 
 From a powershell command prompt:
 
-```bash
+```powershell
 PS > Install-Module MetasysRestClient -Repository PSGallery
 ```
 
@@ -55,7 +55,7 @@ PS > Install-Module MetasysRestClient -Repository PSGallery
 
 You can discover the commands in the module by ensuring it has been loaded and then inspecting it's contents:
 
-```bash
+```powershell
 PS > Import-Module MetasysRestClient
 PS > (Get-Module MetasysRestClient).ExportedCommands
 
@@ -79,7 +79,7 @@ imm                                 imm
 
 You can find help on any of the commands using `help`
 
-```bash
+```powershell
 PS > help Invoke-MetasysMethod
 ```
 
@@ -99,7 +99,7 @@ To get started you need to get logged into a site.
 
 To do this, simply call `Invoke-MetasysMethod` with no parameters. You'll be prompted for your `Site host`, `UserName` and `Password`.
 
-```bash
+```powershell
 PS > Invoke-MetasysMethod
 
 Site host: welchoas
@@ -113,7 +113,7 @@ Password: *********
 
 If you want to start a session without being prompted for `SiteHost`, `UserName`, and `Password` you can supply them all as parameters. You should also specify the `Version` on this first call to be explicit about which version of the API you want. The default value of this parameter is `4`.
 
-```bash
+```powershell
 PS > $password = Get-SavedMetasysPassword -SiteName welchoas -UserName api
 PS > Invoke-MetasysMethod -SiteName welchoas -UserName api -Password $password -Version 3
 ```
@@ -124,7 +124,7 @@ This will start a session using version 3 of the API. You don't need to specify 
 
 When you want to read information from Metasys you'll normally be doing a `GET` request. These are the easiest to work with because they only require a URL and nothing else. You can use a relative or absolute url.
 
-```bash
+```powershell
 PS > Invoke-MetasysMethod /objects
 ```
 
@@ -236,7 +236,7 @@ An *absolute url* looks like `https://{hostname}/api/v4/objects`. Many API endpo
 
 In the example above, the `self` property of the last object is `https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b`. Let's use that absolute url to read the default view of that object.
 
-```bash
+```powershell
 PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b
 ```
 
@@ -451,7 +451,7 @@ A *relative url* looks like `/objects`. In other words, it's everything after `h
 
 In this next example we'll read the `presentValue` of an object. I happen to know the `id` for this object is `ce820989-5617-50bd-90ea-2fd95d1402ba`.
 
-```bash
+```powershell
 PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/presentValue
 
 {
@@ -468,7 +468,7 @@ This time we showed the use of an absolute url. We could have just used `/object
 
 Another good tip is to save identifiers in variables so you don't have to type them multiple times or copy/paste them:
 
-```bash
+```powershell
 PS > $Id = "ce820989-5617-50bd-90ea-2fd95d1402ba"
 PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/$Id/attributes/presentValue
 ```
@@ -486,7 +486,7 @@ In this example we'll change the value of an object attribute. This requires us 
 
 In this example we'll change the `description` attribute of the AV from the previous section. Let's first read it to confirm it's currently `null`. Recall that we've saved the identifier in the variable `$Id`.
 
-```bash
+```powershell
 PS > Invoke-MetasysMethod /objects/$Id/attributes/description
 
 {
@@ -511,13 +511,13 @@ It can be a little tricky dealing with large JSON strings.. There are many ways 
 
 When the JSON string is relatively short like in this example you can just type it all on one line:
 
-```bash
+```powershell
 PS > Invoke-MetasysMethod -Method Patch /objects/$Id  -Body "{ 'item': { 'description': 'Zone 3 Temperature Set Point' } }"
 ```
 
 We'll read it back to ensure it changed:
 
-```bash
+```powershell
 PS > Invoke-MetasysMethod /objects/$Id/attributes/description
 {
   "item": {
@@ -539,7 +539,7 @@ In this example we'll send an `adjustCommand` command to an AV.
 
 We can discover that the object supports `adjustCommand` by requesting the list of commands:
 
-```bash
+```powershell
 PS > imm /objects/$Id/commands
 ```
 
@@ -1136,7 +1136,7 @@ PS > imm /objects/$Id/commands
 
 The details of the response are outside of the scope of this tutorial, but we do see the `adjustCommand` in the response and we see that it's body is expected to be an object with a `parameters` property. The definition of `parameters` tells us it needs to be an array with one numeric value. So we can do the following.
 
-```bash
+```powershell
 PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body "{ 'parameters': [ 72.5 ] }"
 
 "Success"
@@ -1144,7 +1144,7 @@ PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body "{ 'parameters': 
 
 We could also add an annotation to the command:
 
-```bash
+```powershell
 PS > $json = '{ "parameters": [72.5], "annotation": "Adjust Set Point for the afternoon" }'
 PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body $json
 ```
@@ -1170,14 +1170,14 @@ For this example we'll create a new AV. A typical payload to create an AV might 
 
 We'll assume that JSON is stored in a file call `new-av.json` which is in the same directory that we are running our commands from. (We'll use the `Get-Content` command to read that file and provide it as the body. Be sure to use the `Raw` switch so that `Get-Content` returns the whole file as one string, rather than an array of strings -- one string per line).
 
-```bash
+```powershell
 PS > imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw)
 ```
 
 Notice that currently the creation of a new object doesn't return anything. So how do we know if it was successful? There are some helper functions that allow us to inspect the last response. I'll demonstrate three of them `Show-LastMetasysStatus`,
 `Show-LastMetasysHeaders` and `Show-LastMetasysFullResponse`
 
-```bash
+```powershell
 # Show the status of last call
 PS > Show-LastMetasysStatus
 200 (OK)
@@ -1213,7 +1213,7 @@ Set-Cookie: Secure; HttpOnly
 
 **Note:** The status of `200` tells us everything was good and the `Location` header from above gives the url we can use to read the object back.
 
-```bash
+```powershell
 PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 ```
 
@@ -1363,7 +1363,7 @@ PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 
 Let's delete the previous object
 
-```bash
+```powershell
 # This is no response body to this payload
 PS > imm -Method Delete https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 
@@ -1384,7 +1384,7 @@ Set-Cookie: Secure; HttpOnly
 
 Sometimes you want to talk to another site. This can be done by running `Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset your session by doing one of the following:
 
-```bash
+```powershell
 # Start a new session (without making a data request)
 PS > imm -Login /objects
 SiteHost: welchoas
