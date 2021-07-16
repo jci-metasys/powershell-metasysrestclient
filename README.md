@@ -38,6 +38,11 @@ Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod
 
 However, you only need to specify `Version` on the first call you invoke. `Invoke-MetasysMethod` will remember what version you requested and use it for all subsequent calls.
 
+## PowerShell References
+
+* [Learning PowerShell](https://github.com/PowerShell/PowerShell/tree/master/docs/learning-powershell)
+* [PowerShell Beginner’s Guide](https://github.com/PowerShell/PowerShell/blob/master/docs/learning-powershell/powershell-beginners-guide.md)
+
 ## Installation
 
 From a powershell command prompt:
@@ -59,11 +64,11 @@ Key                                 Value
 Clear-MetasysEnvVariables           Clear-MetasysEnvVariables
 Get-LastMetasysHeadersAsObject      Get-LastMetasysHeadersAsObject
 Get-LastMetasysResponseBodyAsObject Get-LastMetasysResponseBodyAsObject
-Get-MetasysPassword                 Get-MetasysPassword
-Get-MetasysUsers                    Get-MetasysUsers
+Get-SavedMetasysPassword            Get-SavedMetasysPassword
+Get-SavedMetasysUsers               Get-SavedMetasysUsers
 Invoke-MetasysMethod                Invoke-MetasysMethod
-Remove-MetasysPassword              Remove-MetasysPassword
-Set-MetasysPassword                 Set-MetasysPassword
+Remove-SavedMetasysPassword         Remove-SavedMetasysPassword
+Set-SavedMetasysPassword            Set-SavedMetasysPassword
 Show-LastMetasysAccessToken         Show-LastMetasysAccessToken
 Show-LastMetasysFullResponse        Show-LastMetasysFullResponse
 Show-LastMetasysHeaders             Show-LastMetasysHeaders
@@ -1390,7 +1395,6 @@ PS > imm -Login /objects
 SiteHost: welchoas
 UserName: api
 ```
-
 
 ## Troubleshooting
 
