@@ -289,7 +289,14 @@ function Invoke-MetasysMethod {
             $loginRequest = buildRequest -method "Post" -uri (buildUri -siteHost $SiteHost -version $Version -path "login") `
                 -body $json -skipCertificateCheck:$SkipCertificateCheck
 
-            $loginResponse = Invoke-RestMethod @loginRequest
+            try {
+                $loginResponse = Invoke-RestMethod -ErrorAction Stop @loginRequest
+            } catch {
+                # Catches errors like host name can't be found and also 4xx, 5xx http errors
+                Write-Error $_
+                return
+            }
+
             $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
             [MetasysEnvVars]::setToken($secureToken)
             [MetasysEnvVars]::setSiteHost($SiteHost)
