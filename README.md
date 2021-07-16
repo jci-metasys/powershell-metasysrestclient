@@ -64,11 +64,11 @@ Key                                 Value
 Clear-MetasysEnvVariables           Clear-MetasysEnvVariables
 Get-LastMetasysHeadersAsObject      Get-LastMetasysHeadersAsObject
 Get-LastMetasysResponseBodyAsObject Get-LastMetasysResponseBodyAsObject
-Get-MetasysPassword                 Get-MetasysPassword
-Get-MetasysUsers                    Get-MetasysUsers
+Get-SavedMetasysPassword            Get-SavedMetasysPassword
+Get-SavedMetasysUsers               Get-SavedMetasysUsers
 Invoke-MetasysMethod                Invoke-MetasysMethod
-Remove-MetasysPassword              Remove-MetasysPassword
-Set-MetasysPassword                 Set-MetasysPassword
+Remove-SavedMetasysPassword         Remove-SavedMetasysPassword
+Set-SavedMetasysPassword            Set-SavedMetasysPassword
 Show-LastMetasysAccessToken         Show-LastMetasysAccessToken
 Show-LastMetasysFullResponse        Show-LastMetasysFullResponse
 Show-LastMetasysHeaders             Show-LastMetasysHeaders
@@ -1395,7 +1395,6 @@ PS > imm -Login /objects
 SiteHost: welchoas
 UserName: api
 ```
-
 
 ## Troubleshooting
 
