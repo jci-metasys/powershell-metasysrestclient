@@ -322,23 +322,24 @@ function Invoke-MetasysMethod {
         $responseObject = $null
 
         Write-Information -Message "Attempting request"
-        $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
-        if ($responseObject.StatusCode -ge 400) {
-            Write-Error "The status code indicates an error"
-            Write-Error (createErrorStringFromResponseObject -responseObject $responseObject)
-        }
-        else {
-            if ($responseObject) {
-                if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*") -or ($responseObject.StatusCode -eq 204)) {
-                    $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
-                }
-                else {
-                    Write-Error "An unexpected content type was found"
-                    Write-Error (createErrorStringFromResponseObject -responseObject $responseObject)
-                }
-            }
+
+        try {
+            $responseObject = Invoke-WebRequest @request
+        } catch {
+            # Catches errors like host name can't be found and also 4xx, 5xx http errors
+            Write-Error $_
+            return
         }
 
+        if ($responseObject) {
+            if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*") -or ($responseObject.StatusCode -eq 204)) {
+                $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
+            }
+            else {
+                Write-Error "An unexpected content type was found"
+                Write-Error (createErrorStringFromResponseObject -responseObject $responseObject)
+            }
+        }
 
         # Only overwrite the last response if $response is not null
         if ($null -ne $response) {
