@@ -69,8 +69,8 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse',
-        'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
-        'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables'
+    'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
+    'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables'
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport      = @()
@@ -79,7 +79,7 @@
     VariablesToExport    = @()
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport = 'imm'
+    AliasesToExport      = 'imm'
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
@@ -111,7 +111,7 @@
             # ReleaseNotes = ''
 
             # Prerelease string of this module
-            Prerelease = 'alpha1'
+            Prerelease = 'alpha2'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false

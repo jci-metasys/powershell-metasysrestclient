@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add support for a config file with preferences
 * Add changelog
 
+## [1.0.0-alpha2] - 2021-07-24
+
+### Added
+
+* Added a changelog
+
+### Changed
+
+* If a request to a site throws an exception, `Invoke-MetasysMethod` will now print error
+  and halt immediately. Previously, it would continue leading to more reported errors
+
 ## [1.0.0-alpha1] - 2021-07-16
 
 ### Added
@@ -23,5 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Optional use of `SecretManagement` if it's installed and configured to save credentials
 * Secret management functions like `Get-SavedMetasysUsers` and `Set-SavedMetasysPassword`
 
-[Unreleased]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha1...HEAD
+[Unreleased]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha2...HEAD
+[1.0.0-alpha2]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha1...v1.0.0-alpha2
 [1.0.0-alpha1]: https://github.com/metasys-server/powershell-metasysrestclient/releases/tag/v1.0.0-alpha1
