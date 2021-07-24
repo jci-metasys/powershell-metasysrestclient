@@ -9,11 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-* Create aliases for all functions in package
 * Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`, `Send-MetasysCommand`, ...)
 * Add more informational messages (primarily to help in debugging) using `Write-Information`
 * Add support for a config file with preferences
-* Add changelog
 
 ## [1.0.0-alpha3] - 2021-07-24
 
