@@ -59,7 +59,8 @@ function invokeWithWarningsOff {
     $WarningPreference = "SilentlyContinue"
     try {
         & $script
-    } finally {
+    }
+    finally {
         $WarningPreference = $oldWarningPref
     }
 }
@@ -113,24 +114,31 @@ function Invoke-MetasysMethod {
     [CmdletBinding(PositionalBinding = $false)]
     param(
         # The hostname or ip address of the site you wish to interact with
+        [Alias("host", "h", "ip")]
         [string]$SiteHost,
         # The username of the account you wish to use on this Site
+        [Alias("u", "user")]
         [string]$UserName,
         # A switch used to force Login. This isn't normally needed except
         # when you wish to switch accounts or switch sites. By using this
         # switch you will be prompted for the site or your credentials if
         # not supplied on the command line.
+        [Alias("l")]
         [switch]$Login,
         # The relative or absolute url for an endpont. For example: /alarms
         # All of the urls are listed in the API Documentation
+        [Alias("p")]
         [Parameter(Position = 0)]
         [string]$Path,
         # The payload to send with your request.
         [Parameter(ValueFromPipeline = $true)]
+        [Alias("b")]
         [string]$Body,
         # The HTTP Method you are sending.
+        [Alias("verb", "m")]
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
         # The version of the API you intent to use
+        [Alias("v")]
         [ValidateRange(2, 4)]
         [Int]$Version,
         # Skips certificate validation checks. This includes all validations
@@ -140,10 +148,12 @@ function Invoke-MetasysMethod {
         # self-signed certificate for testing purposes. Use at your own risk.
         [switch]$SkipCertificateCheck,
         # A collection of headers to include in the request
+        [Alias("hd")]
         [hashtable]$Headers,
         # TODO: Add support for password to be passed in
         [SecureString]$Password,
         # Return the response as PSObject or Hashtable instead of JSON string
+        [Alias("o", "object")]
         [Switch]$ReturnBodyAsObject
     )
 
@@ -221,7 +231,8 @@ function Invoke-MetasysMethod {
             if (!$UserName) {
                 [MetasysEnvVars]::setUserName($null)
             }
-        } elseif ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost())) {
+        }
+        elseif ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost())) {
             # If user specified a new host, force a login
             $ForceLogin = $true
 
@@ -238,7 +249,8 @@ function Invoke-MetasysMethod {
             if (!$SiteHost) {
                 [MetasysEnvVars]::setSiteHost($null)
             }
-        } elseif (![MetasysEnvVars]::getToken()) {
+        }
+        elseif (![MetasysEnvVars]::getToken()) {
             $ForceLogin = $true
         }
 
@@ -291,7 +303,8 @@ function Invoke-MetasysMethod {
 
             try {
                 $loginResponse = Invoke-RestMethod -ErrorAction Stop @loginRequest
-            } catch {
+            }
+            catch {
                 # Catches errors like host name can't be found and also 4xx, 5xx http errors
                 Write-Error $_
                 return
@@ -325,7 +338,8 @@ function Invoke-MetasysMethod {
 
         try {
             $responseObject = Invoke-WebRequest @request
-        } catch {
+        }
+        catch {
             # Catches errors like host name can't be found and also 4xx, 5xx http errors
             Write-Error $_
             return
