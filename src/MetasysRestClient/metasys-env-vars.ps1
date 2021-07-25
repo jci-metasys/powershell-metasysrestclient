@@ -1,10 +1,10 @@
 class MetasysEnvVars {
     static [string] getSiteHost() {
-        return $env:METASYS_SITE_HOST
+        return $env:METASYS_HOST
     }
 
     static [void] setSiteHost([string]$siteHost) {
-        $env:METASYS_SITE_HOST = $siteHost
+        $env:METASYS_HOST = $siteHost
     }
 
     static [int] getVersion() {
@@ -24,8 +24,8 @@ class MetasysEnvVars {
     }
 
     static [SecureString] getToken() {
-        if ($env:METASYS_SECURE_TOKEN) {
-            return ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
+        if ($env:METASYS_ACCESS_TOKEN) {
+            return ConvertTo-SecureString $env:METASYS_ACCESS_TOKEN
         }
         return $null
     }
@@ -40,7 +40,7 @@ class MetasysEnvVars {
     }
 
     static [void] setToken([SecureString]$token) {
-        $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $token
+        $env:METASYS_ACCESS_TOKEN = ConvertFrom-SecureString -SecureString $token
     }
 
     static [string] getLast() {
@@ -52,8 +52,8 @@ class MetasysEnvVars {
     }
 
     static [void] clear() {
-        $env:METASYS_SECURE_TOKEN = $null
-        $env:METASYS_SITE_HOST = $null
+        $env:METASYS_ACCESS_TOKEN = $null
+        $env:METASYS_HOST = $null
         $env:METASYS_VERSION = $null
         $env:METASYS_LAST_RESPONSE = $null
         $env:METASYS_EXPIRES = $null
