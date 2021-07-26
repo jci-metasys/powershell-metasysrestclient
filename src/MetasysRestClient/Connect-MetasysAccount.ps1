@@ -51,7 +51,7 @@ function Connect-MetasysAccount {
         [Switch]$SkipCertificateCheck
     )
 
-    Clear-MetasysEnvVariables
+    Clear-MetasysEnvVariables | Out-Null
 
     if (!$MetasysHost) {
         $MetasysHost = Read-Host -Prompt "Metasys Host"
