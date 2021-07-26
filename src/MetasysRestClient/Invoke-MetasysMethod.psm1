@@ -137,7 +137,7 @@ function Invoke-MetasysMethod {
         # The HTTP Method you are sending.
         [Alias("verb", "m")]
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
-        # The version of the API you intent to use
+        # The version of the API you intend to use
         [Alias("v")]
         [ValidateRange(2, 4)]
         [Int]$Version,

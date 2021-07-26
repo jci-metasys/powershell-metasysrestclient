@@ -4,17 +4,40 @@ function Connect-MetasysAccount {
     <#
     .Synopsis
     Connect to Metasys with an authenticated account for use with functions in MetasysRestClient module
+
+    .DESCRIPTION
+    The `Connect-MetasysAccount` function connects to a Metasys site with an authenticated account for use with
+    functions from the MetasysRestClient PowerShell module.
+
+    .Example
+        Connect-MetasysAccount
+
+        Prompts for `MetasysHost`, `UserName` and `Password` and attempts to authenticate with the host using
+        the username and password as credentials.
     #>
+    [CmdLetBinding(PositionalBinding = $false)]
     param(
-        [Alias("h", "host")]
+        # A hostname or ip address. This is the device `Connect-MetasysAccount` will athenticated with.
+        #
+        # Aliases: -h, -host, -SiteHost
+        [Alias("h", "host", "SiteHost")]
         [String]$MetasysHost,
+        # The username of an account on the host
+        #
+        # Alias: -u
         [Alias("u")]
         [String]$UserName,
+        # The password of an account on the host. Note: `Password` takes a `SecureString`
+        #
+        # Alias: -p
         [Alias("p")]
         [SecureString]$Password,
+        # The API version to use on the host.
+        #
+        # Alias: -v
         [Alias("v")]
         [ValidateRange(2, 4)]
-        [Int32]$Version
+        [Int32]$Version = 4
     )
 
     Clear-MetasysEnvVariables
