@@ -17,27 +17,38 @@ function Connect-MetasysAccount {
     #>
     [CmdLetBinding(PositionalBinding = $false)]
     param(
+
         # A hostname or ip address. This is the device `Connect-MetasysAccount` will athenticated with.
         #
         # Aliases: -h, -host, -SiteHost
         [Alias("h", "host", "SiteHost")]
         [String]$MetasysHost,
+
         # The username of an account on the host
         #
         # Alias: -u
         [Alias("u")]
         [String]$UserName,
+
         # The password of an account on the host. Note: `Password` takes a `SecureString`
         #
         # Alias: -p
         [Alias("p")]
         [SecureString]$Password,
+
         # The API version to use on the host.
         #
         # Alias: -v
         [Alias("v")]
         [ValidateRange(2, 4)]
-        [Int32]$Version = 4
+        [Int32]$Version = 4,
+
+        # Skips certificate validation checks. This includes all validations
+        # such as expiration, revocation, trusted root authority, etc.
+        # [!WARNING] Using this parameter is not secure and is not recommended.
+        # This switch is only intended to be used against known hosts using a
+        # self-signed certificate for testing purposes. Use at your own risk.
+        [Switch]$SkipCertificateCheck
     )
 
     Clear-MetasysEnvVariables
@@ -72,7 +83,7 @@ function Connect-MetasysAccount {
     } |  ConvertTo-Json
 
     $uri = "https://$MetasysHost/api/v$Version/login"
-    $response = Invoke-RestMethod -Uri $uri -Method Post -ContentType 'application/json' -Body $body
+    $response = Invoke-RestMethod -Uri $uri -Method Post -ContentType 'application/json' -Body $body -SkipCertificateCheck:$SkipCertificateCheck
     $env:METASYS_ACCESS_TOKEN = $response.accessToken | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
     $env:METASYS_EXPIRES = $response.expires
     $env:METASYS_HOST = $MetasysHost
