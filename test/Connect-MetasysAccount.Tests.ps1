@@ -341,4 +341,26 @@ Describe "Connect-Metasys" -Tag "Unit" {
         }
 
     }
+
+    Describe "Error Processing" {
+        Context "When the request throws an exception" {
+            It "Should stop processing immediately to avoid additional errors" {
+
+
+                Mock Invoke-RestMethod -ModuleName MetasysRestClient {
+                    throw [System.Net.Http.HttpRequestException]::new()
+                }
+
+                Mock Write-Information -ModuleName MetasysRestClient
+
+                {
+                    Connect-MetasysAccount -h oas -u user -p (password | ConvertTo-SecureString -AsPlainText)
+                } | Should -Throw
+
+                Should -Invoke Write-Information -ModuleName MetasysRestClient -Exactly -Times 0 -ParameterFilter {
+                    $MessageData -match "Login was successful.*"
+                }
+            }
+        }
+    }
 }
