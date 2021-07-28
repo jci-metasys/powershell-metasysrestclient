@@ -1,5 +1,10 @@
+
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "", Justification = "The access token comes back in plain text, to convert to secure string I must use -AsPlainText", Scope = 'Function', Target = 'Connect-MetasysAccount')]
+param()
+
 Set-StrictMode -Version 3
 Set-Variable -Name LatestVersion -Value 4 -Option Constant
+
 function Connect-MetasysAccount {
     <#
     .Synopsis
