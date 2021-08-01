@@ -23,7 +23,8 @@ function aSecretVaultIsAvailable {
             $vaultAvailable = $true
         }
 
-    } catch {
+    }
+    catch {
     }
 
     if (!$vaultAvailable) {
@@ -65,7 +66,7 @@ function Get-SavedMetasysUsers {
         return
     }
 
-    $searchFor = "${prefix}:$siteHost*"
+    $searchFor = ($SiteHost) ? "$prefix`:$siteHost`:*" : "$prefix`:*"
 
     $secretInfo = Get-SecretInfo -Name $searchFor -ErrorAction SilentlyContinue
 
@@ -74,8 +75,14 @@ function Get-SavedMetasysUsers {
     }
 
     if ($SiteHost) {
-        $UserName = @{label = "UserName"; expression = { $_.Name.Substring($prefixLength + $SiteHost.Length + 1) } }
-        return $secretInfo | Select-Object $UserName
+        $UserName = @{label = "UserName"; expression = { ($_.Name -split ":")[2] } }
+        $HostName = @{label = "Host"; expression = { ($_.Name -split ":")[1] } }
+        if ($secretInfo -is [Object[]]) {
+            return $secretInfo | Select-Object $HostName, $UserName | Where-Object { $_.Host -eq $SiteHost } | Select-Object $UserName
+        }
+        else {
+            return $secretInfo | Select-Object $UserName
+        }
     }
     else {
         $userNameExpression = {
@@ -98,7 +105,7 @@ function Get-SavedMetasysUsers {
         }
 
         $userNameSelector = @{label = "UserName"; expression = $userNameExpression }
-        $hostSelector = @{label = "SiteHost"; expression = $siteHostExpression }
+        $hostSelector = @{label = "Host"; expression = $siteHostExpression }
 
         $regex = [System.Text.RegularExpressions.Regex]::new("^${prefix}:[^:]+:[^:]+$")
 
@@ -140,9 +147,9 @@ function Get-SavedMetasysPassword {
     #>
     param (
         # The host name or ip address of the site host to search for
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$SiteHost,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         # The user name to search for
         [string]$UserName,
         # Return the password back as plain text
@@ -190,10 +197,10 @@ function Remove-SavedMetasysPassword {
     #>
     param(
         # The host name or ip address of the site host to search for
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String]$SiteHost,
         # The user name to search for
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String]$UserName
     )
     if (!(aSecretVaultIsAvailable)) {
@@ -220,11 +227,11 @@ function Set-SavedMetasysPassword {
 
     #>
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$SiteHost,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]$UserName,
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [SecureString]$Password
     )
     if (!(aSecretVaultIsAvailable)) {
