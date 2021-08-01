@@ -83,7 +83,7 @@ BeforeAll {
         )
         @{
             accessToken = $accessToken;
-            expires     = $expires.ToString("o")
+            expires     = $expires
         }
     }
 }
@@ -153,7 +153,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
             }
 
             It 'Should set $env:METASYS_EXPIRES' {
-                $env:METASYS_EXPIRES | Should -Be $loginResponse.expires
+                $env:METASYS_EXPIRES | Should -Be ($loginResponse.expires.ToString("o"))
             }
 
             It 'Should set $env:METASYS_HOST' {
@@ -214,7 +214,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
             }
 
             It 'Should set $env:METASYS_EXPIRES' {
-                $env:METASYS_EXPIRES | Should -Be $loginResponse.expires
+                $env:METASYS_EXPIRES | Should -Be ($loginResponse.expires.ToString("o"))
             }
 
             It 'Should set $env:METASYS_HOST' {

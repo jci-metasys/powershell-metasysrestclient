@@ -1,3 +1,4 @@
+Set-StrictMode -Version 3
 class MetasysEnvVars {
     static [string] getSiteHost() {
         return $env:METASYS_HOST
@@ -15,12 +16,16 @@ class MetasysEnvVars {
         $env:METASYS_VERSION = $version
     }
 
-    static [string] getExpires() {
-        return $env:METASYS_EXPIRES
+    static [DateTime] getExpires() {
+        $aDate = [DateTime]::Now
+        if ([DateTime]::TryParse($env:METASYS_EXPIRES, [ref]$aDate)) {
+            return $aDate
+        }
+        return $null
     }
 
-    static [void] setExpires([string]$expires) {
-        $env:METASYS_EXPIRES = $expires
+    static [void] setExpires([DateTime]$expires) {
+        $env:METASYS_EXPIRES = $expires.ToString("o")
     }
 
     static [SecureString] getToken() {
@@ -28,6 +33,10 @@ class MetasysEnvVars {
             return ConvertTo-SecureString $env:METASYS_ACCESS_TOKEN
         }
         return $null
+    }
+
+    static [void] setToken([SecureString]$token) {
+        $env:METASYS_ACCESS_TOKEN = ConvertFrom-SecureString -SecureString $token
     }
 
     static [String] getTokenAsPlainText() {
@@ -39,8 +48,8 @@ class MetasysEnvVars {
         return $null
     }
 
-    static [void] setToken([SecureString]$token) {
-        $env:METASYS_ACCESS_TOKEN = ConvertFrom-SecureString -SecureString $token
+    static [void] setTokenAsPlainText([String]$token) {
+        [MetasysEnvVars]::setToken(($token | ConvertTo-SecureString -AsPlainText))
     }
 
     static [string] getLast() {
