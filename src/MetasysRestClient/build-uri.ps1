@@ -3,9 +3,11 @@
 # * absolute (eg https://hostname/api/v{next}/objects/{id}/attributes/presentValue)
 function buildUri {
     param (
-        [string]$siteHost = [MetasysEnvVars]::getSiteHost(),
-        [int]$version = [MetasysEnvVars]::getVersion(),
-        [string]$baseUri = "api",
+        [Parameter(Mandatory = $true)]
+        [string]$siteHost,
+        [Parameter(Mandatory = $true)]
+        [int]$version,
+        [Parameter(Mandatory = $true)]
         [string]$path
     )
 
@@ -14,6 +16,6 @@ function buildUri {
         return $uri
     }
 
-    $fullPath = "https://$siteHost/$([Path]::Join($baseUri, "v" + $version, $path))"
+    $fullPath = "https://$siteHost/$([Path]::Join("api", "v" + $version, $path))"
     return [Uri]::new($fullPath)
 }
