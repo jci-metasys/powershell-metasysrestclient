@@ -6,17 +6,17 @@ Set-StrictMode -Version 3
 function buildRequest {
     param (
         [string]$method = "Get",
-        [string]$uri = $null,
+        [Parameter(Mandatory = $true)]
+        [string]$uri,
         [string]$body = $null,
         [SecureString]$token,
-        [string]$version,
         [switch]$skipCertificateCheck,
         [Hashtable]$headers
     )
 
     $request = @{
         Method               = $method
-        Uri                  = $uri ?? (buildUri -path $Path -version $version)
+        Uri                  = $uri
         Body                 = $body
         SkipCertificateCheck = $skipCertificateCheck
         ContentType          = "application/json; charset=utf-8"

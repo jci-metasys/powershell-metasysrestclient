@@ -200,7 +200,8 @@ function Invoke-MetasysMethod {
             elseif ([DateTime]::UtcNow -gt $expiration - $fiveMinutes) {
 
                 # attempt to renew the token to keep it fresh
-                $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken" -version $Version) `
+                $uri = buildUri -path "/refreshToken" -version ([MetasysEnvVars]::getVersion()) -siteHost ([MetasysEnvVars]::getSiteHost())
+                $refreshRequest = buildRequest -method "Get" -uri $uri `
                     -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                 try {
@@ -326,8 +327,8 @@ function Invoke-MetasysMethod {
             return
         }
 
-        $request = buildRequest -uri (buildUri -path $Path -version $Version) -method $Method -body $Body -version  `
-            $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
+        $uri = buildUri -path $Path -version $Version -siteHost ([MetasysEnvVars]::getSiteHost())
+        $request = buildRequest -uri $uri -method $Method -body $Body -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
             -headers $Headers
 
 
