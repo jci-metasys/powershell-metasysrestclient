@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add more informational messages (primarily to help in debugging) using `Write-Information`
 * Add support for a config file with preferences
 
+## [1.0.0] - 2021-08-11
+
+No changes since alpha 3
+
 ## [1.0.0-alpha3] - 2021-07-24
 
 ### Added
@@ -40,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Optional use of `SecretManagement` if it's installed and configured to save credentials
 * Secret management functions like `Get-SavedMetasysUsers` and `Set-SavedMetasysPassword`
 
-[Unreleased]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha2...HEAD
+[Unreleased]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha3...v1.0.0
 [1.0.0-alpha3]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha2...v1.0.0-alpha3
 [1.0.0-alpha2]: https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha1...v1.0.0-alpha2
 [1.0.0-alpha1]: https://github.com/metasys-server/powershell-metasysrestclient/releases/tag/v1.0.0-alpha1
