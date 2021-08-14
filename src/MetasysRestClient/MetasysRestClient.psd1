@@ -11,7 +11,7 @@
     NestedModules        = @("metasys-env-vars.ps1", "password-management.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1")
 
     # Version number of this module.
-    ModuleVersion        = '1.0.0'
+    ModuleVersion        = '2.0.0'
     # Supported PSEditions
     # CompatiblePSEditions = @()
     CompatiblePSEditions = @("Core")

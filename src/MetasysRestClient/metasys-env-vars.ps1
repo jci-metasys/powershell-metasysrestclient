@@ -16,15 +16,15 @@ class MetasysEnvVars {
         $env:METASYS_VERSION = $version
     }
 
-    static [DateTime] getExpires() {
-        $aDate = [DateTime]::Now
-        if ([DateTime]::TryParse($env:METASYS_EXPIRES, [ref]$aDate)) {
+    static [DateTimeOffset] getExpires() {
+        $aDate = [DateTimeOffset]::Now
+        if ([DateTimeOffset]::TryParse($env:METASYS_EXPIRES, [ref]$aDate)) {
             return $aDate
         }
         return $null
     }
 
-    static [void] setExpires([DateTime]$expires) {
+    static [void] setExpires([DateTimeOffset]$expires) {
         $env:METASYS_EXPIRES = $expires.ToString("o")
     }
 

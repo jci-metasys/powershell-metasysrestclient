@@ -116,7 +116,7 @@ function Invoke-MetasysMethod {
         # The relative or absolute url for an endpont. For example: /alarms
         # All of the urls are listed in the API Documentation
         [Alias("p")]
-        [Parameter(Position = 0, Mandatory = $true)]
+        [Parameter(Position = 0)]
         [string]$Path,
         # The payload to send with your request.
         [Parameter(ValueFromPipeline = $true)]
@@ -153,6 +153,11 @@ function Invoke-MetasysMethod {
 
         assertPowershellCore
 
+        if (!$Path) {
+            Write-Information "Path not supplied. Please enter a path"
+            $Path = Read-Host -Prompt "Path"
+        }
+
         if (!$SkipCertificateCheck.IsPresent) {
             $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
         }
@@ -163,7 +168,7 @@ function Invoke-MetasysMethod {
             $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
             if ($Version -gt 0 -and $versionNumber -ne $Version) {
                 Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
-                return
+                continue
             }
         }
 
@@ -177,22 +182,28 @@ function Invoke-MetasysMethod {
 
         if ($null -eq ([MetasysEnvVars]::getToken()) ) {
             Write-Error "No connection to a Metasys site exists. Please connect using Connect-MetasysAccount"
-            return
+            continue
         }
         else {
             if ([MetasysEnvVars]::getExpires()) {
-                $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
-                if ([DateTime]::UtcNow -gt $expiration) {
+                $expiration = [MetasysEnvVars]::getExpires()
+                if ([DateTimeOffset]::UtcNow -gt $expiration) {
                     # Token is expired, attempt to connect with previously used site host and user name
-                    Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version ([MetasysEnvVars]::getVersion()) `
-                        -SkipCertificateCheck:$SkipCertificateCheck
+                    try {
+                        Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version ([MetasysEnvVars]::getVersion()) `
+                            -SkipCertificateCheck:$SkipCertificateCheck
+                    }
+                    catch {
+                        Write-Error "Session expired and attempt to re-connect failed"
+                        continue
+                    }
                 }
-                elseif ([DateTime]::UtcNow -gt $expiration - $fiveMinutes) {
+                elseif ([DateTimeOffset]::UtcNow -gt ($expiration - $fiveMinutes)) {
 
                     # attempt to renew the token as it will expire soon
                     $uri = buildUri -siteHost ([MetasysEnvVars]::getSiteHost()) -version ([MetasysEnvVars]::getVersion()) -path "/refreshToken"
                     $refreshRequest = buildRequest -uri $uri`
-                -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
+                        -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                     try {
                         Write-Information -Message "Attempting to refresh access token"
@@ -204,6 +215,7 @@ function Invoke-MetasysMethod {
                     catch {
                         Write-Debug "Error attempting to refresh token"
                         Write-Debug $_
+                        continue
                     }
                 }
             }

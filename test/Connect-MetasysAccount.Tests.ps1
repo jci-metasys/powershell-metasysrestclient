@@ -4,7 +4,7 @@ Tests for ConnectMetasys
 [ ] If Vault is not specified, don't use vault
 [ ] If Host is not specified, prompt
 [ ] If UserName is not specified, and unique username for host not found in vault, prompt
-[ ] If Passowrd is not specified, and password for host/user not found in value, prompt
+[ ] If Password is not specified, and password for host/user not found in value, prompt
 [ ] If Version is not specified, default to latest
 
 [ ] Expect Invoke-RestMethod https://$host/api/v$version/api/log -Method Post -Body '{ "usernaem": "$username", "password": "$passwordPlainText"}
@@ -27,7 +27,7 @@ BeforeAll {
     function CreateLoginResponse {
         param(
             [string]$accessToken = "test token",
-            [DateTime]$expires = [DateTime]::UtcNow
+            [DateTimeOffset]$expires = [DateTimeOffset]::UtcNow
         )
         @{
             accessToken = $accessToken;
@@ -53,6 +53,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
 
                 Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient
                 Mock Get-SavedMetasysUsers -ModuleName MetasysRestClient
+                Mock Set-SavedMetasysPassword -ModuleName MetasysRestClient
 
                 # qualify with $script to avoid unused-vars warnings from PSScriptAnalyzer
                 $script:response = Connect-MetasysAccount
@@ -110,6 +111,14 @@ Describe "Connect-Metasys" -Tag "Unit" {
 
             It 'Should return nothing' {
                 $script:response | Should -BeNullOrEmpty
+            }
+
+            It 'Should save credentials if vault is available' {
+                Should -Invoke Set-SavedMetasysPassword -ModuleName MetasysRestClient -ParameterFilter {
+                    $SiteHost -eq $mockConsole.GetMetasysHost() -and
+                    $UserName -eq $mockConsole.GetUserName() -and
+                    (ConvertFrom-SecureString -AsPlainText $Password) -eq $mockConsole.GetPasswordAsPlainText()
+                } -Scope Context -Times 1 -Exactly
             }
 
         }
@@ -240,11 +249,11 @@ Describe "Connect-Metasys" -Tag "Unit" {
         BeforeAll {
             Clear-MetasysEnvVariables
             Mock Read-Host -ModuleName MetasysRestClient {
-                if ($AsSecureString) {
-                    "password" | ConvertTo-SecureString -AsPlainText
+                if ($Prompt -eq "Metasys Host") {
+                    "hostname"
                 }
                 else {
-                    "hostname"
+                    "password" | ConvertTo-SecureString -AsPlainText
                 }
             }
         }

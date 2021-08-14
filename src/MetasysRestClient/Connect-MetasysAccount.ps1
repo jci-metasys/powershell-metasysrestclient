@@ -109,10 +109,13 @@ function Connect-MetasysAccount {
         return
     }
     Write-Information "Login was successful. Saving environment variables."
-    [MetasysEnvVars]::setTokenAsPlainText($response.accessToken)
     [MetasysEnvVars]::setExpires($response.expires)
+    [MetasysEnvVars]::setTokenAsPlainText($response.accessToken)
     [MetasysEnvVars]::setSiteHost($MetasysHost)
     [MetasysEnvVars]::setVersion($Version)
+
+    Write-Information "Saving credentials to vault"
+    Set-SavedMetasysPassword -SiteHost $MetasysHost -UserName $UserName -Password $Password
 }
 
 Set-Alias -Name cma -Value Connect-MetasysAccount
