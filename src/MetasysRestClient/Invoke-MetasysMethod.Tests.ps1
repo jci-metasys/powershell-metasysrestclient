@@ -47,7 +47,7 @@ Invoke-MetasysMethod spec
 #>
 
 BeforeAll {
-    $mod = Import-Module -Name ../src/MetasysRestClient -Force -PassThru
+    $mod = Import-Module -Name ./ -Force -PassThru
 
     . ./MockConsole.ps1
 
