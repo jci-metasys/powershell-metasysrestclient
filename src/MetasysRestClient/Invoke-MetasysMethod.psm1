@@ -115,17 +115,22 @@ function Invoke-MetasysMethod {
     param(
         # The relative or absolute url for an endpont. For example: /alarms
         # All of the urls are listed in the API Documentation
-        [Alias("p")]
         [Parameter(Position = 0)]
         [string]$Path,
         # The payload to send with your request.
+        #
+        # Alias: -b
         [Parameter(ValueFromPipeline = $true)]
         [Alias("b")]
         [string]$Body,
         # The HTTP Method you are sending.
+        #
+        # Aliases: -m, -verb
         [Alias("verb", "m")]
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
         # The version of the API you intend to use
+        #
+        # Alias: -v
         [Alias("v")]
         [ValidateRange(2, 4)]
         [Int]$Version,
@@ -136,13 +141,24 @@ function Invoke-MetasysMethod {
         # self-signed certificate for testing purposes. Use at your own risk.
         [switch]$SkipCertificateCheck,
         # A collection of headers to include in the request
-        [Alias("hd")]
+        #
+        # Alias: -h
+        [Alias("h")]
         [hashtable]$Headers,
-        # TODO: Add support for password to be passed in
+        # Add support for password to be passed in
+        #
+        # Alias: -p
+        [Alias("p")]
         [SecureString]$Password,
         # Return the response as PSObject or Hashtable instead of JSON string
+        # Aliases: -o, -object
         [Alias("o", "object")]
-        [Switch]$ReturnBodyAsObject
+        [Switch]$ReturnBodyAsObject,
+        # Includes the response headers in the output
+        #
+        # Alias: -rh
+        [Alias("rh")]
+        [Switch]$IncludeResponseHeaders
     )
 
     BEGIN {
@@ -275,7 +291,7 @@ function Invoke-MetasysMethod {
             Get-LastMetasysResponseBodyAsObject
         }
         elseif ($null -ne $response) {
-            if ($responseObject.StatusCode -ge 400) {
+            if ($IncludeResponseHeaders) {
                 Show-LastMetasysFullResponse
             }
             else {

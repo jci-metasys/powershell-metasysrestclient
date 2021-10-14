@@ -257,8 +257,48 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
         }
     }
 
+    Describe 'When -IncludeResponseHeaders with success response' {
 
-    Describe 'When server returns an error' {
+        It "Should display response headers and then the response body" {
+            BeforeAll {
+                Clear-MetasysEnvVariables
+                $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
+                $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+                $env:METASYS_VERSION = $LatestVersion
+                $env:METASYS_HOST = "oas12"
+            }
+
+
+            $response = @{
+                StatusCode        = 200;
+                StatusDescription = "OK"
+                Headers           = @{
+                    Header1        = "This is header 1";
+                    Header2        = "Header 2";
+                    "Content-Type" = "application/json"
+                };
+                Content           = 123, 10, 32, 32, 34, 105, 116, 101, 109, 34, 58, 32, 123, 10, 32, 32, 32, 32, 34, 112, 114, 101, 115, 101, 110, 116, 86, 97, 108, 117, 101, 34, 58, 32, 55, 50, 46, 53, 10, 32, 32, 125, 10, 125
+            }
+            Mock Invoke-WebRequest -ModuleName MetasysRestClient {
+                # Mocking Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject
+                $response
+            }
+            $expectedString = @"
+200 (OK)
+Content-Type: application/json
+Header2: Header 2
+Header1: This is header 1
+
+
+"@
+            $expectedString += [System.Text.Encoding]::UTF8.GetString($response.Content)
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders
+            $actual | Should -Be  $expectedString
+        }
+    }
+
+
+    Describe 'When -IncludeResponseHeaders with response error' {
         BeforeAll {
             Clear-MetasysEnvVariables
             $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
@@ -290,7 +330,7 @@ Header1: This is header 1
 
 "hello"
 "@
-            $actual = Invoke-MetasysMethod /anything
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders
             $actual | Should -Be  $expectedString
         }
     }
