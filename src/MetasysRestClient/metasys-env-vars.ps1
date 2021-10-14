@@ -1,10 +1,11 @@
+Set-StrictMode -Version 3
 class MetasysEnvVars {
     static [string] getSiteHost() {
-        return $env:METASYS_SITE_HOST
+        return $env:METASYS_HOST
     }
 
     static [void] setSiteHost([string]$siteHost) {
-        $env:METASYS_SITE_HOST = $siteHost
+        $env:METASYS_HOST = $siteHost
     }
 
     static [int] getVersion() {
@@ -15,19 +16,27 @@ class MetasysEnvVars {
         $env:METASYS_VERSION = $version
     }
 
-    static [string] getExpires() {
-        return $env:METASYS_EXPIRES
+    static [DateTimeOffset] getExpires() {
+        $aDate = [DateTimeOffset]::Now
+        if ([DateTimeOffset]::TryParse($env:METASYS_EXPIRES, [ref]$aDate)) {
+            return $aDate
+        }
+        return $null
     }
 
-    static [void] setExpires([string]$expires) {
-        $env:METASYS_EXPIRES = $expires
+    static [void] setExpires([DateTimeOffset]$expires) {
+        $env:METASYS_EXPIRES = $expires.ToString("o")
     }
 
     static [SecureString] getToken() {
-        if ($env:METASYS_SECURE_TOKEN) {
-            return ConvertTo-SecureString $env:METASYS_SECURE_TOKEN
+        if ($env:METASYS_ACCESS_TOKEN) {
+            return ConvertTo-SecureString $env:METASYS_ACCESS_TOKEN
         }
         return $null
+    }
+
+    static [void] setToken([SecureString]$token) {
+        $env:METASYS_ACCESS_TOKEN = ConvertFrom-SecureString -SecureString $token
     }
 
     static [String] getTokenAsPlainText() {
@@ -39,8 +48,8 @@ class MetasysEnvVars {
         return $null
     }
 
-    static [void] setToken([SecureString]$token) {
-        $env:METASYS_SECURE_TOKEN = ConvertFrom-SecureString -SecureString $token
+    static [void] setTokenAsPlainText([String]$token) {
+        [MetasysEnvVars]::setToken(($token | ConvertTo-SecureString -AsPlainText))
     }
 
     static [string] getLast() {
@@ -52,8 +61,8 @@ class MetasysEnvVars {
     }
 
     static [void] clear() {
-        $env:METASYS_SECURE_TOKEN = $null
-        $env:METASYS_SITE_HOST = $null
+        $env:METASYS_ACCESS_TOKEN = $null
+        $env:METASYS_HOST = $null
         $env:METASYS_VERSION = $null
         $env:METASYS_LAST_RESPONSE = $null
         $env:METASYS_EXPIRES = $null

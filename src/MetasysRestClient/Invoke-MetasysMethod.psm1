@@ -113,18 +113,6 @@ function Invoke-MetasysMethod {
 
     [CmdletBinding(PositionalBinding = $false)]
     param(
-        # The hostname or ip address of the site you wish to interact with
-        [Alias("host", "h", "ip")]
-        [string]$SiteHost,
-        # The username of the account you wish to use on this Site
-        [Alias("u", "user")]
-        [string]$UserName,
-        # A switch used to force Login. This isn't normally needed except
-        # when you wish to switch accounts or switch sites. By using this
-        # switch you will be prompted for the site or your credentials if
-        # not supplied on the command line.
-        [Alias("l")]
-        [switch]$Login,
         # The relative or absolute url for an endpont. For example: /alarms
         # All of the urls are listed in the API Documentation
         [Alias("p")]
@@ -137,7 +125,7 @@ function Invoke-MetasysMethod {
         # The HTTP Method you are sending.
         [Alias("verb", "m")]
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
-        # The version of the API you intent to use
+        # The version of the API you intend to use
         [Alias("v")]
         [ValidateRange(2, 4)]
         [Int]$Version,
@@ -157,15 +145,18 @@ function Invoke-MetasysMethod {
         [Switch]$ReturnBodyAsObject
     )
 
-    # PROCESS block is needed if you accept input from pipeline like Body in this function
-    PROCESS {
-
+    BEGIN {
         Set-Variable -Name fiveMinutes -Value ([TimeSpan]::FromMinutes(5)) -Option Constant
 
         setBackgroundColorsToMatchConsole
 
 
         assertPowershellCore
+
+        if (!$Path) {
+            Write-Information "Path not supplied. Please enter a path"
+            $Path = Read-Host -Prompt "Path"
+        }
 
         if (!$SkipCertificateCheck.IsPresent) {
             $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
@@ -177,7 +168,7 @@ function Invoke-MetasysMethod {
             $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
             if ($Version -gt 0 -and $versionNumber -ne $Version) {
                 Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
-                return
+                continue
             }
         }
 
@@ -189,145 +180,54 @@ function Invoke-MetasysMethod {
 
         # Login Region
 
-        $ForceLogin = $false
-
-        if ([MetasysEnvVars]::getExpires()) {
-            $expiration = [Datetime]::Parse([MetasysEnvVars]::getExpires())
-            if ([DateTime]::UtcNow -gt $expiration) {
-                # Token is expired, require login
-                $ForceLogin = $true
-            }
-            elseif ([DateTime]::UtcNow -gt $expiration - $fiveMinutes) {
-
-                # attempt to renew the token to keep it fresh
-                $refreshRequest = buildRequest -method "Get" -uri (buildUri -path "/refreshToken" -version $Version) `
-                    -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
-
-                try {
-                    Write-Information -Message "Attempting to refresh access token"
-                    $refreshResponse = Invoke-RestMethod @refreshRequest
-                    [MetasysEnvVars]::setExpires($refreshResponse.expires)
-                    [MetasysEnvVars]::setToken((ConvertTo-SecureString $refreshResponse.accessToken -AsPlainText))
-                    Write-Information -Message "Refresh token successful"
+        if ($null -eq ([MetasysEnvVars]::getToken()) ) {
+            Write-Error "No connection to a Metasys site exists. Please connect using Connect-MetasysAccount"
+            continue
+        }
+        else {
+            if ([MetasysEnvVars]::getExpires()) {
+                $expiration = [MetasysEnvVars]::getExpires()
+                if ([DateTimeOffset]::UtcNow -gt $expiration) {
+                    # Token is expired, attempt to connect with previously used site host and user name
+                    try {
+                        Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version ([MetasysEnvVars]::getVersion()) `
+                            -SkipCertificateCheck:$SkipCertificateCheck
+                    }
+                    catch {
+                        Write-Error "Session expired and attempt to re-connect failed"
+                        continue
+                    }
                 }
-                catch {
-                    Write-Debug "Error attempting to refresh token"
-                    Write-Debug $_
-                }
+                elseif ([DateTimeOffset]::UtcNow -gt ($expiration - $fiveMinutes)) {
 
+                    # attempt to renew the token as it will expire soon
+                    $uri = buildUri -siteHost ([MetasysEnvVars]::getSiteHost()) -version ([MetasysEnvVars]::getVersion()) -path "/refreshToken"
+                    $refreshRequest = buildRequest -uri $uri`
+                        -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
-            }
-        }
-        if ($Login) {
-            # This is either first login, or user was logged in and forcing a new login
-            # So clear the saved host and username
-
-            $ForceLogin = $true
-            # Don't automatically use the saved site host
-            if (!$SiteHost) {
-                [MetasysEnvVars]::setSiteHost($null)
-            }
-            # Don't automatically use the saved user name
-            if (!$UserName) {
-                [MetasysEnvVars]::setUserName($null)
-            }
-        }
-        elseif ($SiteHost -and ($SiteHost -ne [MetasysEnvVars]::getSiteHost())) {
-            # If user specified a new host, force a login
-            $ForceLogin = $true
-
-            # Don't automatically use the saved user name
-            if (!$UserName) {
-                [MetasysEnvVars]::setUserName($null)
-            }
-        }
-        elseif ($UserName -and $UserName -ne ([MetasysEnvVars]::getUserName())) {
-            # If user is choosing a new user name force a login
-            $ForceLogin = $true
-
-            # Don't automatically use the saved site host
-            if (!$SiteHost) {
-                [MetasysEnvVars]::setSiteHost($null)
-            }
-        }
-        elseif (![MetasysEnvVars]::getToken()) {
-            $ForceLogin = $true
-        }
-
-        if ($ForceLogin) {
-
-            $SiteHost = $SiteHost ?? [MetasysEnvVars]::getSiteHost()
-            if (!$SiteHost) {
-                $SiteHost = Read-Host -Prompt "Site host"
-            }
-
-            $UserName = $UserName ?? [MetasysEnvVars]::getUserName()
-            if (!$UserName) {
-                # attempt to find a user name in secret store
-                $users = invokeWithWarningsOff -script { Get-SavedMetasysUsers -SiteHost $SiteHost }
-
-
-                if ($users -is [System.Object[]]) {
-                    Write-Information "Multiple UserNames found for this host. Please enter one below."
-                    $users | ForEach-Object { Write-Information "$($_.UserName)" }
-
-                }
-                elseif ($null -ne $Users) {
-                    $UserName = $users.UserName
-                }
-
-                if (!$UserName) {
-                    $UserName = Read-Host -Prompt "UserName"
+                    try {
+                        Write-Information -Message "Attempting to refresh access token"
+                        $refreshResponse = Invoke-RestMethod @refreshRequest
+                        [MetasysEnvVars]::setExpires($refreshResponse.expires)
+                        [MetasysEnvVars]::setTokenAsPlainText($refreshResponse.accessToken)
+                        Write-Information -Message "Refresh token successful"
+                    }
+                    catch {
+                        Write-Debug "Error attempting to refresh token"
+                        Write-Debug $_
+                        continue
+                    }
                 }
             }
-
-            if (!$Password) {
-                Write-Information -Message "Attempting to get password for $SiteHost $UserName"
-
-                $password = invokeWithWarningsOff -script { Get-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName }
-
-
-                if (!$password) {
-                    $password = Read-Host -Prompt "Password" -AsSecureString
-                }
-            }
-
-            $jsonObject = @{
-                username = $UserName
-                password = ConvertFrom-SecureString -SecureString $password -AsPlainText
-            }
-            $json = (ConvertTo-Json $jsonObject)
-
-            $loginRequest = buildRequest -method "Post" -uri (buildUri -siteHost $SiteHost -version $Version -path "login") `
-                -body $json -skipCertificateCheck:$SkipCertificateCheck
-
-            try {
-                $loginResponse = Invoke-RestMethod -ErrorAction Stop @loginRequest
-            }
-            catch {
-                # Catches errors like host name can't be found and also 4xx, 5xx http errors
-                Write-Error $_
-                return
-            }
-
-            $secureToken = ConvertTo-SecureString -String $loginResponse.accessToken -AsPlainText
-            [MetasysEnvVars]::setToken($secureToken)
-            [MetasysEnvVars]::setSiteHost($SiteHost)
-            [MetasysEnvVars]::setExpires($loginResponse.expires)
-            [MetasysEnvVars]::setVersion($Version)
-            [MetasysEnvVars]::setUserName($UserName)
-
-            invokeWithWarningsOff -script { Set-SavedMetasysPassword -SiteHost $SiteHost -UserName $UserName -Password $Password }
-
-            Write-Information -Message "Login successful"
         }
+        $uri = buildUri -path $Path -version $Version -siteHost ([MetasysEnvVars]::getSiteHost())
 
-        if (!$Path) {
-            return
-        }
+    }
 
-        $request = buildRequest -uri (buildUri -path $Path -version $Version) -method $Method -body $Body -version  `
-            $Version -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
+    # PROCESS block is needed if you accept input from pipeline like Body in this function
+    PROCESS {
+
+        $request = buildRequest -uri $uri -method $Method -body $Body -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
             -headers $Headers
 
 

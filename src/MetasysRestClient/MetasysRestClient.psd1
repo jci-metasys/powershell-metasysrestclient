@@ -8,10 +8,10 @@
     # Script module or binary module file associated with this manifest.
     RootModule           = 'Invoke-MetasysMethod.psm1'
 
-    NestedModules        = @("metasys-env-vars.ps1", "password-management.ps1", "build-uri.ps1", "build-request.ps1")
+    NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1")
 
     # Version number of this module.
-    ModuleVersion        = '1.0.0'
+    ModuleVersion        = '2.0.0'
     # Supported PSEditions
     # CompatiblePSEditions = @()
     CompatiblePSEditions = @("Core")
@@ -70,7 +70,7 @@
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse',
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
-    'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables'
+    'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount'
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport      = @()
@@ -79,7 +79,7 @@
     VariablesToExport    = @()
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport      = 'imm'
+    AliasesToExport      = 'imm', 'cma'
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
@@ -111,7 +111,7 @@
             # ReleaseNotes = ''
 
             # Prerelease string of this module
-            # Prerelease = 'alpha3'
+            Prerelease = 'alpha4'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false
