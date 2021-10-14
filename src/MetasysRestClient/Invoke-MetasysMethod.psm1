@@ -115,17 +115,22 @@ function Invoke-MetasysMethod {
     param(
         # The relative or absolute url for an endpont. For example: /alarms
         # All of the urls are listed in the API Documentation
-        [Alias("p")]
         [Parameter(Position = 0)]
         [string]$Path,
         # The payload to send with your request.
+        #
+        # Alias: -b
         [Parameter(ValueFromPipeline = $true)]
         [Alias("b")]
         [string]$Body,
         # The HTTP Method you are sending.
+        #
+        # Aliases: -m, -verb
         [Alias("verb", "m")]
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
         # The version of the API you intend to use
+        #
+        # Alias: -v
         [Alias("v")]
         [ValidateRange(2, 4)]
         [Int]$Version,
@@ -136,13 +141,24 @@ function Invoke-MetasysMethod {
         # self-signed certificate for testing purposes. Use at your own risk.
         [switch]$SkipCertificateCheck,
         # A collection of headers to include in the request
-        [Alias("hd")]
+        #
+        # Alias: -h
+        [Alias("h")]
         [hashtable]$Headers,
-        # TODO: Add support for password to be passed in
+        # Add support for password to be passed in
+        #
+        # Alias: -p
+        [Alias("p")]
         [SecureString]$Password,
         # Return the response as PSObject or Hashtable instead of JSON string
+        # Aliases: -o, -object
         [Alias("o", "object")]
-        [Switch]$ReturnBodyAsObject
+        [Switch]$ReturnBodyAsObject,
+        # Includes the response headers in the output
+        #
+        # Alias: -rh
+        [Alias("rh")]
+        [Switch]$IncludeResponseHeaders
     )
 
     BEGIN {
@@ -237,17 +253,26 @@ function Invoke-MetasysMethod {
         Write-Information -Message "Attempting request"
 
         try {
-            $responseObject = Invoke-WebRequest @request
+            $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
         }
         catch {
-            # Catches errors like host name can't be found and also 4xx, 5xx http errors
+            # Catches errors like host name can't be found but not http errors like 4xx, 5xx due to SkipHttpErrorCheck above
             Write-Error $_
             return
         }
 
         if ($responseObject) {
-            if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*") -or ($responseObject.StatusCode -eq 204)) {
-                $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
+
+            $contentLength = 0
+            [Int]::TryParse($responseObject.Headers["Content-Length"], [ref] $contentLength)  | Out-Null
+
+            if ($responseObject.Headers["Content-Type"] -like "*json*" -or $contentLength -eq 0 -or $responseObject.StatusCode -eq 204 -or $responseObject.StatusCode -ge 400) {
+                if ($responseObject.Content -is [String]) {
+                    $response = $responseObject.Content
+                }
+                else {
+                    $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
+                }
             }
             else {
                 Write-Error "An unexpected content type was found"
@@ -266,7 +291,12 @@ function Invoke-MetasysMethod {
             Get-LastMetasysResponseBodyAsObject
         }
         elseif ($null -ne $response) {
-            Show-LastMetasysResponseBody
+            if ($IncludeResponseHeaders) {
+                Show-LastMetasysFullResponse
+            }
+            else {
+                Show-LastMetasysResponseBody
+            }
         }
     }
 
@@ -278,10 +308,10 @@ function Show-LastMetasysAccessToken {
 
 function Show-LastMetasysHeaders {
 
-    $response = @()
+    $response = ""
     $headers = ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
     foreach ($header in $headers.PSObject.Properties) {
-        $response += "$($header.Name): $($header.Value -join ',')"
+        $response += "$($header.Name): $($header.Value -join ',')" + "`n"
     }
     $response
 }
@@ -299,7 +329,13 @@ function ConvertFrom-JsonSafely {
         ConvertFrom-Json -InputObject $json
     }
     catch {
-        ConvertFrom-Json -AsHashtable -InputObject $json
+        try {
+            ConvertFrom-Json -AsHashtable -InputObject $json
+        }
+        catch {
+            # apparently this wasn't JSON so leave it as is
+            $json
+        }
     }
 }
 
@@ -311,7 +347,7 @@ function Show-LastMetasysResponseBody {
 }
 
 function Show-LastMetasysFullResponse {
-    (Show-LastMetasysStatus), (Show-LastMetasysHeaders), (Show-LastMetasysResponseBody) | Join-String -Separator `n
+    "$(Show-LastMetasysStatus)`n$(Show-LastMetasysHeaders)`n$(Show-LastMetasysResponseBody)"
 }
 
 function Get-LastMetasysResponseBodyAsObject {
