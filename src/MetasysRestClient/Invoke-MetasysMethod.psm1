@@ -237,17 +237,26 @@ function Invoke-MetasysMethod {
         Write-Information -Message "Attempting request"
 
         try {
-            $responseObject = Invoke-WebRequest @request
+            $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
         }
         catch {
-            # Catches errors like host name can't be found and also 4xx, 5xx http errors
+            # Catches errors like host name can't be found but not http errors like 4xx, 5xx due to SkipHttpErrorCheck above
             Write-Error $_
             return
         }
 
         if ($responseObject) {
-            if (($responseObject.Headers["Content-Length"] -eq "0") -or ($responseObject.Headers["Content-Type"] -like "*json*") -or ($responseObject.StatusCode -eq 204)) {
-                $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
+
+            $contentLength = 0
+            [Int]::TryParse($responseObject.Headers["Content-Length"], [ref] $contentLength)  | Out-Null
+
+            if ($responseObject.Headers["Content-Type"] -like "*json*" -or $contentLength -eq 0 -or $responseObject.StatusCode -eq 204 -or $responseObject.StatusCode -ge 400) {
+                if ($responseObject.Content -is [String]) {
+                    $response = $responseObject.Content
+                }
+                else {
+                    $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
+                }
             }
             else {
                 Write-Error "An unexpected content type was found"
@@ -266,7 +275,12 @@ function Invoke-MetasysMethod {
             Get-LastMetasysResponseBodyAsObject
         }
         elseif ($null -ne $response) {
-            Show-LastMetasysResponseBody
+            if ($responseObject.StatusCode -ge 400) {
+                Show-LastMetasysFullResponse
+            }
+            else {
+                Show-LastMetasysResponseBody
+            }
         }
     }
 
@@ -278,10 +292,10 @@ function Show-LastMetasysAccessToken {
 
 function Show-LastMetasysHeaders {
 
-    $response = @()
+    $response = ""
     $headers = ConvertFrom-Json ([MetasysEnvVars]::getHeaders())
     foreach ($header in $headers.PSObject.Properties) {
-        $response += "$($header.Name): $($header.Value -join ',')"
+        $response += "$($header.Name): $($header.Value -join ',')" + "`n"
     }
     $response
 }
@@ -299,7 +313,13 @@ function ConvertFrom-JsonSafely {
         ConvertFrom-Json -InputObject $json
     }
     catch {
-        ConvertFrom-Json -AsHashtable -InputObject $json
+        try {
+            ConvertFrom-Json -AsHashtable -InputObject $json
+        }
+        catch {
+            # apparently this wasn't JSON so leave it as is
+            $json
+        }
     }
 }
 
@@ -311,7 +331,7 @@ function Show-LastMetasysResponseBody {
 }
 
 function Show-LastMetasysFullResponse {
-    (Show-LastMetasysStatus), (Show-LastMetasysHeaders), (Show-LastMetasysResponseBody) | Join-String -Separator `n
+    "$(Show-LastMetasysStatus)`n$(Show-LastMetasysHeaders)`n$(Show-LastMetasysResponseBody)"
 }
 
 function Get-LastMetasysResponseBodyAsObject {

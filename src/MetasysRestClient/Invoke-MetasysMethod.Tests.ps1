@@ -258,6 +258,42 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
     }
 
 
+    Describe 'When server returns an error' {
+        BeforeAll {
+            Clear-MetasysEnvVariables
+            $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
+            $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+            $env:METASYS_VERSION = $LatestVersion
+            $env:METASYS_HOST = "oas12"
+        }
+
+        It "Should display all headers and response body" {
+            Mock Invoke-WebRequest -ModuleName MetasysRestClient {
+                # Mocking Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject
+                $response = @{
+                    StatusCode        = 400;
+                    StatusDescription = "Bad Request"
+                    Headers           = @{
+                        Header1        = "This is header 1";
+                        Header2        = "Header 2";
+                        "Content-Type" = "application/json"
+                    };
+                    Content           = 34, 104, 101, 108, 108, 111, 34
+                }
+                $response
+            }
+            $expectedString = @"
+400 (Bad Request)
+Content-Type: application/json
+Header2: Header 2
+Header1: This is header 1
+
+"hello"
+"@
+            $actual = Invoke-MetasysMethod /anything
+            $actual | Should -Be  $expectedString
+        }
+    }
 
 }
 
