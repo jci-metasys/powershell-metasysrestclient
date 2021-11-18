@@ -97,25 +97,23 @@ This section will show you the basics of using `Invoke-MetasysMethod`. We will c
 
 To get started you need to get logged into a site.
 
-To do this, simply call `Invoke-MetasysMethod` with no parameters. You'll be prompted for your `Site host`, `UserName` and `Password`.
+To do this, call `Connect-MetasysAccount` with no parameters. You'll be prompted for your `Metasys host`, `UserName` and `Password`.
 
 ```powershell
-PS > Invoke-MetasysMethod
+PS > Connect-MetasysAccount
 
-Site host: welchoas
+Metasys host: welchoas
 UserName: api
 Password: *********
 ```
 
-> **Note** You don't need to explicitly do this login step separately. It's safe to call `Invoke-MetasysMethod` with a request and if you haven't already established a session, you'll be prompted for your credentials.
-
 #### Starting a Session without Prompts
 
-If you want to start a session without being prompted for `SiteHost`, `UserName`, and `Password` you can supply them all as parameters. You should also specify the `Version` on this first call to be explicit about which version of the API you want. The default value of this parameter is `4`.
+If you want to start a session without being prompted for `Metasys Host`, `UserName`, and `Password` you can supply them all as parameters. You should also specify the `Version` on this first call to be explicit about which version of the API you want. The default value of this parameter is `4`.
 
 ```powershell
-PS > $password = Get-SavedMetasysPassword -SiteName welchoas -UserName api
-PS > Invoke-MetasysMethod -SiteName welchoas -UserName api -Password $password -Version 3
+PS > $password = Get-SavedMetasysPassword -SiteHost welchoas -UserName api
+PS > Connect-MetasysAccount -MetasysHost welchoas -UserName api -Password $password -Version 3
 ```
 
 This will start a session using version 3 of the API. You don't need to specify the version for other calls made during this session. `Invoke-MetasysMethod` remembers what version you requested and uses it for future calls. The `Password` parameter takes as input a `SecureString`. Typically you'd want to retrieve it from some secret storage that returns a `SecureString`. In this example we looked it up using `Get-SavedMetasysPassword`. See [SecretManagement](docs/secret-management.md) for more details.
