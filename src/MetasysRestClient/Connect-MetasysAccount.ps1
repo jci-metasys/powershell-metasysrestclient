@@ -3,7 +3,7 @@
 param()
 
 Set-StrictMode -Version 3
-Set-Variable -Name LatestVersion -Value 4 -Option Constant
+Set-Variable -Name LatestVersion -Value 5 -Option Constant
 
 function Connect-MetasysAccount {
     <#
@@ -52,8 +52,8 @@ function Connect-MetasysAccount {
         #
         # Alias: -v
         [Alias("v")]
-        [ValidateRange(2, 4)]
-        [Int32]$Version = 4,
+        [ValidateRange(2, 5)]
+        [Int32]$Version,
 
         # Skips certificate validation checks. This includes all validations
         # such as expiration, revocation, trusted root authority, etc.
@@ -89,9 +89,9 @@ function Connect-MetasysAccount {
         $Password = (Get-SavedMetasysPassword -SiteHost $MetasysHost -UserName $UserName) ?? (Read-Host -Prompt "Password" -AsSecureString)
     }
 
-    if (!$Version) {
-        Write-Information "No version specified. Defaulting to v$LatestVersion"
-        $Version = $LatestVersion
+    if ($Version -eq 0) {
+        $Version = $env:METASYS_DEFAULT_API_VERSION ?? $LatestVersion
+        Write-Information "No version specified. Defaulting to v$Version"
     }
 
     $body = @{

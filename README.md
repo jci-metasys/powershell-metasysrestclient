@@ -87,11 +87,22 @@ PS > help Invoke-MetasysMethod
 
 This section will show you the basics of using `Invoke-MetasysMethod`. We will cover
 
+* Setting a Default Version
 * Starting a Session
 * Discovering objects
 * Reading an object and an attribute
 * Sending a command
 * Creating an object
+
+### Setting a Default Version
+
+By default the latest version of the API (`v5`) is used. If you wish to use an earlier version, you can specify it on each call with the `-Version` switch or set it once with an environment variable. For example, if you will primarily be using `v4` of the API add this line to your powershell profile:
+
+```bash
+$env:METASYS_DEFAULT_API_VERSION = 4
+```
+
+If you set a default version, you can still override your choice by using the `-Version` switch on any specific call.
 
 ### Starting a Session
 
