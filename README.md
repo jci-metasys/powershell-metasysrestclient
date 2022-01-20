@@ -1,47 +1,66 @@
 # MetasysRestClient
 
-A PowerShell module that sends HTTPS request to a Metasys device running Metasys REST API.
+A PowerShell module that sends HTTPS request to a Metasys device running Metasys
+REST API.
 
 Features:
 
-* Establishes a "session" with a Metasys device so you don't need to send credentials on each call or explicitly manage the access token
-* Sets boiler plate like `Content-Type` header for you on each request
-* Securely stores credentials in secret vault after your first successful login to a Metasys device (requires SecretManagement module and a Secret Vault to be installed and registered)
-* Provides helper functions to inspect all the results of the previous command
-* Provides helper functions to deal with responses as PowerShell objects rather than JSON
-* Provides helper functions to make calling common methods even easier (in progress)
+- Establishes a "session" with a Metasys device so you don't need to send
+  credentials on each call or explicitly manage the access token
+- Sets boiler plate like `Content-Type` header for you on each request
+- Securely stores credentials in secret vault after your first successful login
+  to a Metasys device (requires SecretManagement module and a Secret Vault to be
+  installed and registered)
+- Provides helper functions to inspect all the results of the previous command
+- Provides helper functions to deal with responses as PowerShell objects rather
+  than JSON
+- Provides helper functions to make calling common methods even easier (in
+  progress)
 
 ## Dependencies
 
-* Powershell Core for your OS: See the [repository](https://github.com/powershell/powershell).
+- Powershell Core for your OS: See the
+  [repository](https://github.com/powershell/powershell).
 
-    **Note:** Windows PowerShell is not supported
+  **Note:** Windows PowerShell is not supported
 
-* (Optional) Microsoft.PowerShell.SecretManagement
-* (Optional) Microsoft.PowerShell.SecretStore (or other SecretVault implementation)
+- (Optional) Microsoft.PowerShell.SecretManagement
+- (Optional) Microsoft.PowerShell.SecretStore (or other SecretVault
+  implementation)
 
 ## Credential Management
 
-If you install and configure SecretManagement and a Secret Vault, your credentials will be securely saved between sessions. See [Secret Management](docs/secret-management.md).
+If you install and configure SecretManagement and a Secret Vault, your
+credentials will be securely saved between sessions. See
+[Secret Management](docs/secret-management.md).
 
 ## Prerequisites
 
-This guide assumes you have some familiarity with REST APIs in general and the Metasys REST API specifically.
+This guide assumes you have some familiarity with REST APIs in general and the
+Metasys REST API specifically.
 
-See the Documentation for the Metasys REST API for more information on what endpoints are available and what their payloads look like.
+See the Documentation for the Metasys REST API for more information on what
+endpoints are available and what their payloads look like.
 
-To become really proficient with this tool you'll want to learn PowerShell. But this guide doesn't assume you know PowerShell and the documentation will be updated to help you do the most common actions.
+To become really proficient with this tool you'll want to learn PowerShell. But
+this guide doesn't assume you know PowerShell and the documentation will be
+updated to help you do the most common actions.
 
 ## Metasys REST API Versions
 
-Examples in this README are from `v4` of the API. However, `Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to explicitly include the `-Version` parameter when making calls. Else `Invoke-MetasysMethod` assumes the latest version released.
+Examples in this README are from `v4` of the API. However,
+`Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to
+explicitly include the `-Version` parameter when making calls. Else
+`Invoke-MetasysMethod` assumes the latest version released.
 
-However, you only need to specify `Version` on the first call you invoke. `Invoke-MetasysMethod` will remember what version you requested and use it for all subsequent calls.
+However, you only need to specify `Version` on the first call you invoke.
+`Invoke-MetasysMethod` will remember what version you requested and use it for
+all subsequent calls.
 
 ## PowerShell References
 
-* [Learning PowerShell](https://github.com/PowerShell/PowerShell/tree/master/docs/learning-powershell)
-* [PowerShell Beginner’s Guide](https://github.com/PowerShell/PowerShell/blob/master/docs/learning-powershell/powershell-beginners-guide.md)
+- [Learning PowerShell](https://github.com/PowerShell/PowerShell/tree/master/docs/learning-powershell)
+- [PowerShell Beginner’s Guide](https://github.com/PowerShell/PowerShell/blob/master/docs/learning-powershell/powershell-beginners-guide.md)
 
 ## Installation
 
@@ -53,7 +72,8 @@ PS > Install-Module MetasysRestClient -Repository PSGallery
 
 ## Help
 
-You can discover the commands in the module by ensuring it has been loaded and then inspecting it's contents:
+You can discover the commands in the module by ensuring it has been loaded and
+then inspecting it's contents:
 
 ```powershell
 PS > Import-Module MetasysRestClient
@@ -85,30 +105,36 @@ PS > help Invoke-MetasysMethod
 
 ## Quick Start
 
-This section will show you the basics of using `Invoke-MetasysMethod`. We will cover
+This section will show you the basics of using `Invoke-MetasysMethod`. We will
+cover
 
-* Setting a Default Version
-* Starting a Session
-* Discovering objects
-* Reading an object and an attribute
-* Sending a command
-* Creating an object
+- Setting a Default Version
+- Starting a Session
+- Discovering objects
+- Reading an object and an attribute
+- Sending a command
+- Creating an object
 
 ### Setting a Default Version
 
-By default the latest version of the API (`v5`) is used. If you wish to use an earlier version, you can specify it on each call with the `-Version` switch or set it once with an environment variable. For example, if you will primarily be using `v4` of the API add this line to your powershell profile:
+By default the latest version of the API (`v5`) is used. If you wish to use an
+earlier version, you can specify it on each call with the `-Version` switch or
+set it once with an environment variable. For example, if you will primarily be
+using `v4` of the API add this line to your powershell profile:
 
 ```bash
 $env:METASYS_DEFAULT_API_VERSION = 4
 ```
 
-If you set a default version, you can still override your choice by using the `-Version` switch on any specific call.
+If you set a default version, you can still override your choice by using the
+`-Version` switch on any specific call.
 
 ### Starting a Session
 
 To get started you need to get logged into a site.
 
-To do this, call `Connect-MetasysAccount` with no parameters. You'll be prompted for your `Metasys host`, `UserName` and `Password`.
+To do this, call `Connect-MetasysAccount` with no parameters. You'll be prompted
+for your `Metasys host`, `UserName` and `Password`.
 
 ```powershell
 PS > Connect-MetasysAccount
@@ -120,24 +146,38 @@ Password: *********
 
 #### Starting a Session without Prompts
 
-If you want to start a session without being prompted for `Metasys Host`, `UserName`, and `Password` you can supply them all as parameters. You should also specify the `Version` on this first call to be explicit about which version of the API you want. The default value of this parameter is `4`.
+If you want to start a session without being prompted for `Metasys Host`,
+`UserName`, and `Password` you can supply them all as parameters. You should
+also specify the `Version` on this first call to be explicit about which version
+of the API you want. The default value of this parameter is `4`.
 
 ```powershell
 PS > $password = Get-SavedMetasysPassword -SiteHost welchoas -UserName api
 PS > Connect-MetasysAccount -MetasysHost welchoas -UserName api -Password $password -Version 3
 ```
 
-This will start a session using version 3 of the API. You don't need to specify the version for other calls made during this session. `Invoke-MetasysMethod` remembers what version you requested and uses it for future calls. The `Password` parameter takes as input a `SecureString`. Typically you'd want to retrieve it from some secret storage that returns a `SecureString`. In this example we looked it up using `Get-SavedMetasysPassword`. See [SecretManagement](docs/secret-management.md) for more details.
+This will start a session using version 3 of the API. You don't need to specify
+the version for other calls made during this session. `Invoke-MetasysMethod`
+remembers what version you requested and uses it for future calls. The
+`Password` parameter takes as input a `SecureString`. Typically you'd want to
+retrieve it from some secret storage that returns a `SecureString`. In this
+example we looked it up using `Get-SavedMetasysPassword`. See
+[SecretManagement](docs/secret-management.md) for more details.
 
 ### Reading Information (GET)
 
-When you want to read information from Metasys you'll normally be doing a `GET` request. These are the easiest to work with because they only require a URL and nothing else. You can use a relative or absolute url.
+When you want to read information from Metasys you'll normally be doing a `GET`
+request. These are the easiest to work with because they only require a URL and
+nothing else. You can use a relative or absolute url.
 
 ```powershell
 PS > Invoke-MetasysMethod /objects
 ```
 
-This will invoke the `/objects` endpoint and display the response body. Notice that we were not prompted for any information because we established a session in the previous step. (If we had skipped that step then we would have been prompted for `Site Host`, `UserName` and `Password` right now.)
+This will invoke the `/objects` endpoint and display the response body. Notice
+that we were not prompted for any information because we established a session
+in the previous step. (If we had skipped that step then we would have been
+prompted for `Site Host`, `UserName` and `Password` right now.)
 
 <!-- markdownlint-disable no-inline-html -->
 
@@ -241,9 +281,14 @@ This will invoke the `/objects` endpoint and display the response body. Notice t
 
 </details>
 
-An *absolute url* looks like `https://{hostname}/api/v4/objects`. Many API endpoints return absolute URLs in their response payloads. These are used to provide information about other useful resources on the system. So it's convenient to be able to copy and paste those to make another request.
+An _absolute url_ looks like `https://{hostname}/api/v4/objects`. Many API
+endpoints return absolute URLs in their response payloads. These are used to
+provide information about other useful resources on the system. So it's
+convenient to be able to copy and paste those to make another request.
 
-In the example above, the `self` property of the last object is `https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b`. Let's use that absolute url to read the default view of that object.
+In the example above, the `self` property of the last object is
+`https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b`. Let's
+use that absolute url to read the default view of that object.
 
 ```powershell
 PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b
@@ -345,10 +390,7 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b58
             },
             {
               "title": "Time",
-              "properties": [
-                "localTime",
-                "localDate"
-              ],
+              "properties": ["localTime", "localDate"],
               "id": "viewGroupEnumSet.timeGrp"
             }
           ],
@@ -379,9 +421,7 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b58
             },
             {
               "title": "Alarms",
-              "properties": [
-                "almSnoozeTime"
-              ],
+              "properties": ["almSnoozeTime"],
               "id": "viewGroupEnumSet.alarmsGrp"
             },
             {
@@ -408,23 +448,17 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b58
             },
             {
               "title": "Weekly Scheduling",
-              "properties": [
-                "jciExceptionSchedule"
-              ],
+              "properties": ["jciExceptionSchedule"],
               "id": "viewGroupEnumSet.weeklySchedGrp"
             },
             {
               "title": "Validated Environment",
-              "properties": [
-                "isValidated"
-              ],
+              "properties": ["isValidated"],
               "id": "viewGroupEnumSet.validatedEnvironmentGrp"
             },
             {
               "title": "BACnet Routing",
-              "properties": [
-                "bacnetObjectCacheExposed"
-              ],
+              "properties": ["bacnetObjectCacheExposed"],
               "id": "viewGroupEnumSet.routingGrp"
             }
           ],
@@ -456,9 +490,11 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b58
 
 </details>
 
-A *relative url* looks like `/objects`. In other words, it's everything after `https://{hostname}/api/v4`.
+A _relative url_ looks like `/objects`. In other words, it's everything after
+`https://{hostname}/api/v4`.
 
-In this next example we'll read the `presentValue` of an object. I happen to know the `id` for this object is `ce820989-5617-50bd-90ea-2fd95d1402ba`.
+In this next example we'll read the `presentValue` of an object. I happen to
+know the `id` for this object is `ce820989-5617-50bd-90ea-2fd95d1402ba`.
 
 ```powershell
 PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/presentValue
@@ -473,9 +509,12 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/ce820989-5617-50bd-90e
 }
 ```
 
-This time we showed the use of an absolute url. We could have just used `/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/presentValue` instead. Either type of url is fine.
+This time we showed the use of an absolute url. We could have just used
+`/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/presentValue` instead.
+Either type of url is fine.
 
-Another good tip is to save identifiers in variables so you don't have to type them multiple times or copy/paste them:
+Another good tip is to save identifiers in variables so you don't have to type
+them multiple times or copy/paste them:
 
 ```powershell
 PS > $Id = "ce820989-5617-50bd-90ea-2fd95d1402ba"
@@ -484,16 +523,23 @@ PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/$Id/attributes/present
 
 Examples of other urls that support `GET`
 
-* `/alarms` - Get first page of alarms
-* `/audits` - Get first page of audits
-* `/activities` - Get first page of the collection of all activities (the activities collection is a union of the alarms and audits collections)
-* `/objects/$id/objects` - Get the child objects of the specified object where `$id` contains a valid object identifier.
+- `/alarms` - Get first page of alarms
+- `/audits` - Get first page of audits
+- `/activities` - Get first page of the collection of all activities (the
+  activities collection is a union of the alarms and audits collections)
+- `/objects/$id/objects` - Get the child objects of the specified object where
+  `$id` contains a valid object identifier.
 
 ### Writing An Object Attribute (PATCH)
 
-In this example we'll change the value of an object attribute. This requires us to use two new parameters. First we'll use the `Method` parameter to specify we are sending a `PATCH` request, and we'll use the `Body` parameter to specify the content we want to send.
+In this example we'll change the value of an object attribute. This requires us
+to use two new parameters. First we'll use the `Method` parameter to specify we
+are sending a `PATCH` request, and we'll use the `Body` parameter to specify the
+content we want to send.
 
-In this example we'll change the `description` attribute of the AV from the previous section. Let's first read it to confirm it's currently `null`. Recall that we've saved the identifier in the variable `$Id`.
+In this example we'll change the `description` attribute of the AV from the
+previous section. Let's first read it to confirm it's currently `null`. Recall
+that we've saved the identifier in the variable `$Id`.
 
 ```powershell
 PS > Invoke-MetasysMethod /objects/$Id/attributes/description
@@ -506,7 +552,8 @@ PS > Invoke-MetasysMethod /objects/$Id/attributes/description
 }
 ```
 
-We'll change the value to be `Zone 3 Temperature Set Point`. We are going to send this body to do that:
+We'll change the value to be `Zone 3 Temperature Set Point`. We are going to
+send this body to do that:
 
 ```json
 {
@@ -516,9 +563,12 @@ We'll change the value to be `Zone 3 Temperature Set Point`. We are going to sen
 }
 ```
 
-It can be a little tricky dealing with large JSON strings.. There are many ways to construct them. See [Tips for Working With PowerShell](docs/tips.md) for examples of working with JSON strings.
+It can be a little tricky dealing with large JSON strings.. There are many ways
+to construct them. See [Tips for Working With PowerShell](docs/tips.md) for
+examples of working with JSON strings.
 
-When the JSON string is relatively short like in this example you can just type it all on one line:
+When the JSON string is relatively short like in this example you can just type
+it all on one line:
 
 ```powershell
 PS > Invoke-MetasysMethod -Method Patch /objects/$Id  -Body "{ 'item': { 'description': 'Zone 3 Temperature Set Point' } }"
@@ -540,13 +590,18 @@ PS > Invoke-MetasysMethod /objects/$Id/attributes/description
 
 ### Using an Alias
 
-Many of the built-in PowerShell commands have long names just like `Invoke-WebRequest`. Many of those also have aliases that are much shorter (eg. `iwr` for `Invoke-WebRequest`). The command `Invoke-MetasysMethod` also has an alias, `imm`, which you can use instead of the full name. For the remainder of this README we'll use `imm` instead of `Invoke-MetasysMethod`.
+Many of the built-in PowerShell commands have long names just like
+`Invoke-WebRequest`. Many of those also have aliases that are much shorter (eg.
+`iwr` for `Invoke-WebRequest`). The command `Invoke-MetasysMethod` also has an
+alias, `imm`, which you can use instead of the full name. For the remainder of
+this README we'll use `imm` instead of `Invoke-MetasysMethod`.
 
 ### Sending a Command to an Object (PUT)
 
 In this example we'll send an `adjustCommand` command to an AV.
 
-We can discover that the object supports `adjustCommand` by requesting the list of commands:
+We can discover that the object supports `adjustCommand` by requesting the list
+of commands:
 
 ```powershell
 PS > imm /objects/$Id/commands
@@ -589,8 +644,8 @@ PS > imm /objects/$Id/commands
                 "unitsSource": "units",
                 "metasysType": "float",
                 "type": "number",
-                "minimum": -1.69999997607218E+38,
-                "maximum": 1.69999997607218E+38,
+                "minimum": -1.69999997607218e38,
+                "maximum": 1.69999997607218e38,
                 "displayPrecision": {
                   "id": "displayPrecisionEnumSet.displayPrecisionPt1",
                   "displayMultipleOf": 0.1
@@ -736,8 +791,8 @@ PS > imm /objects/$Id/commands
                 "unitsSource": "units",
                 "metasysType": "float",
                 "type": "number",
-                "minimum": -1.69999997607218E+38,
-                "maximum": 1.69999997607218E+38,
+                "minimum": -1.69999997607218e38,
+                "maximum": 1.69999997607218e38,
                 "displayPrecision": {
                   "id": "displayPrecisionEnumSet.displayPrecisionPt1",
                   "displayMultipleOf": 0.1
@@ -782,8 +837,8 @@ PS > imm /objects/$Id/commands
                 "unitsSource": "units",
                 "metasysType": "float",
                 "type": "number",
-                "minimum": -1.69999997607218E+38,
-                "maximum": 1.69999997607218E+38,
+                "minimum": -1.69999997607218e38,
+                "maximum": 1.69999997607218e38,
                 "displayPrecision": {
                   "id": "displayPrecisionEnumSet.displayPrecisionPt1",
                   "displayMultipleOf": 0.1
@@ -1143,7 +1198,10 @@ PS > imm /objects/$Id/commands
 
 </details>
 
-The details of the response are outside of the scope of this tutorial, but we do see the `adjustCommand` in the response and we see that it's body is expected to be an object with a `parameters` property. The definition of `parameters` tells us it needs to be an array with one numeric value. So we can do the following.
+The details of the response are outside of the scope of this tutorial, but we do
+see the `adjustCommand` in the response and we see that it's body is expected to
+be an object with a `parameters` property. The definition of `parameters` tells
+us it needs to be an array with one numeric value. So we can do the following.
 
 ```powershell
 PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body "{ 'parameters': [ 72.5 ] }"
@@ -1160,7 +1218,8 @@ PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body $json
 
 ### Creating an Object (POST)
 
-For this example we'll create a new AV. A typical payload to create an AV might look something like this:
+For this example we'll create a new AV. A typical payload to create an AV might
+look something like this:
 
 ```json
 {
@@ -1177,14 +1236,21 @@ For this example we'll create a new AV. A typical payload to create an AV might 
 }
 ```
 
-We'll assume that JSON is stored in a file call `new-av.json` which is in the same directory that we are running our commands from. (We'll use the `Get-Content` command to read that file and provide it as the body. Be sure to use the `Raw` switch so that `Get-Content` returns the whole file as one string, rather than an array of strings -- one string per line).
+We'll assume that JSON is stored in a file call `new-av.json` which is in the
+same directory that we are running our commands from. (We'll use the
+`Get-Content` command to read that file and provide it as the body. Be sure to
+use the `Raw` switch so that `Get-Content` returns the whole file as one string,
+rather than an array of strings -- one string per line).
 
 ```powershell
 PS > imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw)
 ```
 
-Notice that currently the creation of a new object doesn't return anything. So how do we know if it was successful? There are some helper functions that allow us to inspect the last response. I'll demonstrate three of them `Show-LastMetasysStatus`,
-`Show-LastMetasysHeaders` and `Show-LastMetasysFullResponse`
+Notice that currently the creation of a new object doesn't return anything. So
+how do we know if it was successful? There are some helper functions that allow
+us to inspect the last response. I'll demonstrate three of them
+`Show-LastMetasysStatus`, `Show-LastMetasysHeaders` and
+`Show-LastMetasysFullResponse`
 
 ```powershell
 # Show the status of last call
@@ -1220,7 +1286,8 @@ Cache-Control: private
 Set-Cookie: Secure; HttpOnly
 ```
 
-**Note:** The status of `200` tells us everything was good and the `Location` header from above gives the url we can use to read the object back.
+**Note:** The status of `200` tells us everything was good and the `Location`
+header from above gives the url we can use to read the object back.
 
 ```powershell
 PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
@@ -1229,7 +1296,6 @@ PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 <details><summary>Click to see response</summary>
 
 ```json
-
 {
   "self": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84?includeSchema=false&viewId=viewNameEnumSet.focusView",
   "objectType": "objectTypeEnumSet.avClass",
@@ -1325,18 +1391,12 @@ PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
             },
             {
               "title": "Display",
-              "properties": [
-                "units",
-                "displayPrecision",
-                "covIncrement"
-              ],
+              "properties": ["units", "displayPrecision", "covIncrement"],
               "id": "viewGroupEnumSet.displayGrp"
             },
             {
               "title": "Internal Logic Interface",
-              "properties": [
-                "connectedToInternalApplication"
-              ],
+              "properties": ["connectedToInternalApplication"],
               "id": "viewGroupEnumSet.internalLogicIfGrp"
             }
           ],
@@ -1391,7 +1451,9 @@ Set-Cookie: Secure; HttpOnly
 
 ### Clearing a Session
 
-Sometimes you want to talk to another site. This can be done by running `Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset your session by doing one of the following:
+Sometimes you want to talk to another site. This can be done by running
+`Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset
+your session by doing one of the following:
 
 ```powershell
 # Start a new session (without making a data request)
@@ -1409,6 +1471,12 @@ UserName: api
 
 ### Invalid Certificates
 
-This command will fail to execute if the server you are executing against doesn't have a valid certificate. A parameter is provided, `SkipCertificateCheck`, which causes all validation checks to be skipped. This includes all validations such as expiration, revocation, trusted root authority, etc. **WARNING** Using this parameter is not secure and is not recommended. This switch is intended to be used against known hosts using a self-signed certificate for testing purposes. *Use at your own risk*.
+This command will fail to execute if the server you are executing against
+doesn't have a valid certificate. A parameter is provided,
+`SkipCertificateCheck`, which causes all validation checks to be skipped. This
+includes all validations such as expiration, revocation, trusted root authority,
+etc. **WARNING** Using this parameter is not secure and is not recommended. This
+switch is intended to be used against known hosts using a self-signed
+certificate for testing purposes. _Use at your own risk_.
 
 ## Known Limitations
