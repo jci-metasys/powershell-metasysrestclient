@@ -42,7 +42,7 @@ function Get-SavedMetasysUsers {
     .DESCRIPTION
         The Invoke-MetasysMethod module includes functions that may update a secret vault.
         This cmdlet finds and returns the user names of Metasys accounts for a host that
-        matches the provided 'SiteHost'. If no 'SiteHost' parameter argument is provided
+        matches the provided 'MetasysHost'. If no 'MetasysHost' parameter argument is provided
         then all user names for all hosts will be returned.
 
         Note: This cmdlet only returns user names associated with Metasys credentials that
@@ -52,21 +52,24 @@ function Get-SavedMetasysUsers {
         The list of matching user names.
 
     .EXAMPLE
-        PS > Get-SavedMetasysUsers -SiteHost adx55
+        PS > Get-SavedMetasysUsers -MetasysHost adx55
 
         Gets the list of users that have been saved for the site host adx55
 
     #>
     param (
-        # The host name or ip address of the site host
-        [string]$SiteHost
+        # A hostname or ip address.
+        #
+        # Aliases: -h, -host, -SiteHost
+        [Alias("h", "host", "SiteHost")]
+        [string]$MetasysHost
     )
 
     if (!(aSecretVaultIsAvailable)) {
         return
     }
 
-    $searchFor = ($SiteHost) ? "$prefix`:$siteHost`:*" : "$prefix`:*"
+    $searchFor = ($MetasysHost) ? "$prefix`:$metasysHost`:*" : "$prefix`:*"
 
     $secretInfo = Get-SecretInfo -Name $searchFor -ErrorAction SilentlyContinue
 
@@ -74,11 +77,11 @@ function Get-SavedMetasysUsers {
         return
     }
 
-    if ($SiteHost) {
+    if ($MetasysHost) {
         $UserName = @{label = "UserName"; expression = { ($_.Name -split ":")[2] } }
         $HostName = @{label = "Host"; expression = { ($_.Name -split ":")[1] } }
         if ($secretInfo -is [Object[]]) {
-            return $secretInfo | Select-Object $HostName, $UserName | Where-Object { $_.Host -eq $SiteHost } | Select-Object $UserName
+            return $secretInfo | Select-Object $HostName, $UserName | Where-Object { $_.Host -eq $MetasysHost } | Select-Object $UserName
         }
         else {
             return $secretInfo | Select-Object $UserName
@@ -92,7 +95,7 @@ function Get-SavedMetasysUsers {
             }
             return $_.Name.Substring($lastColon + 1)
         }
-        $siteHostExpression = {
+        $metasysHostExpression = {
 
             $firstColon = $_.Name.IndexOf(":")
             $lastColon = $_.Name.LastIndexOf(":")
@@ -105,11 +108,11 @@ function Get-SavedMetasysUsers {
         }
 
         $userNameSelector = @{label = "UserName"; expression = $userNameExpression }
-        $hostSelector = @{label = "Host"; expression = $siteHostExpression }
+        $hostSelector = @{label = "Host"; expression = $metasysHostExpression }
 
         $regex = [System.Text.RegularExpressions.Regex]::new("^${prefix}:[^:]+:[^:]+$")
 
-        return $secretInfo | Where-Object { $regex.Match($_.Name).Success } |  Select-Object $hostSelector, $userNameSelector #| Where-Object { $null -ne $_.UserName } | Where-Object { $null -ne $_.SiteHost }
+        return $secretInfo | Where-Object { $regex.Match($_.Name).Success } |  Select-Object $hostSelector, $userNameSelector #| Where-Object { $null -ne $_.UserName } | Where-Object { $null -ne $_.MetasysHost }
 
 
     }
@@ -125,7 +128,7 @@ function Get-SavedMetasysPassword {
     .DESCRIPTION
         The Invoke-MetasysMethod module includes functions that may update a secret vault.
         This cmdlet finds and returns the password of a Metasys account for a host that
-        matches the provided 'SiteHost' and a user that matches 'UserName'. The password
+        matches the provided 'MetasysHost' and a user that matches 'UserName'. The password
         is returned as a SecureString object unless the '-AsPlainText' parameter switch
         is used, in which ase the password is returned in plain text.
 
@@ -133,24 +136,31 @@ function Get-SavedMetasysPassword {
         System.Object
 
     .EXAMPLE
-        PS > Get-SavedMetasysPassword -SiteHost adx55 -UserName fred
+        PS > Get-SavedMetasysPassword -MetasysHost adx55 -UserName fred
         System.Security.SecureString
 
         Gets the password for fred on host adx55
 
     .EXAMPLE
-        PS > Get-SavedMetasysPassword -SiteHost adx55 -UserName fred -AsPlainText
+        PS > Get-SavedMetasysPassword -MetasysHost adx55 -UserName fred -AsPlainText
         PlainTextPassword
 
         Gets the password for fred on host adx55 and returns it as plain text
 
     #>
     param (
-        # The host name or ip address of the site host to search for
+        # A hostname or ip address.
+        #
+        # Aliases: -h, -host, -SiteHost
+        [Alias("h", "host", "SiteHost")]
         [Parameter(Mandatory = $true)]
-        [string]$SiteHost,
+        [string]$MetasysHost,
+
+        # The username of an account on the host
+        #
+        # Alias: -u
+        [Alias("u")]
         [Parameter(Mandatory = $true)]
-        # The user name to search for
         [string]$UserName,
         # Return the password back as plain text
         [switch]$AsPlainText
@@ -160,7 +170,7 @@ function Get-SavedMetasysPassword {
         return
     }
 
-    $secretInfo = Get-SecretInfo -Name "${prefix}:${SiteHost}:$UserName" -ErrorAction SilentlyContinue
+    $secretInfo = Get-SecretInfo -Name "${prefix}:${MetasysHost}:$UserName" -ErrorAction SilentlyContinue
 
     if (!$secretInfo) {
         return
@@ -187,27 +197,34 @@ function Remove-SavedMetasysPassword {
     .DESCRIPTION
         The Invoke-MetasysMethod module includes functions that may update a secret vault.
         This cmdlet finds and removes the Metasys credentials for a host that
-        matches the provided 'SiteHost' and a user that matches 'UserName'.
+        matches the provided 'MetasysHost' and a user that matches 'UserName'.
 
     .EXAMPLE
-        PS > Remove-SavedMetasysPassword -SiteHost adx55 -UserName fred
+        PS > Remove-SavedMetasysPassword -MetasysHost adx55 -UserName fred
 
         Finds and removes the password for fred on adx55
 
     #>
     param(
-        # The host name or ip address of the site host to search for
+        # A hostname or ip address.
+        #
+        # Aliases: -h, -host, -SiteHost
+        [Alias("h", "host", "SiteHost")]
         [Parameter(Mandatory = $true)]
-        [String]$SiteHost,
-        # The user name to search for
+        [string]$MetasysHost,
+
+        # The username of an account on the host
+        #
+        # Alias: -u
+        [Alias("u")]
         [Parameter(Mandatory = $true)]
-        [String]$UserName
+        [string]$UserName
     )
     if (!(aSecretVaultIsAvailable)) {
         return
     }
 
-    Get-SecretInfo -Name "${prefix}:${SiteHost}:$UserName" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Secret -Name $_.Name }
+    Get-SecretInfo -Name "${prefix}:${MetasysHost}:$UserName" -ErrorAction SilentlyContinue | ForEach-Object { Remove-Secret -Name $_.Name }
 
 }
 
@@ -220,17 +237,31 @@ function Set-SavedMetasysPassword {
         This cmdlet saves Metasys credentials into the default secret vault
 
     .EXAMPLE
-        PS > Set-SavedMetasysPassword -SiteHost adx55 -UserName fred -Password $password
+        PS > Set-SavedMetasysPassword -MetasysHost adx55 -UserName fred -Password $password
 
         Assuming $password is a SecureString that contains the password, this example
         saves fred's password for adx55.
 
     #>
     param(
+        # A hostname or ip address.
+        #
+        # Aliases: -h, -host, -SiteHost
+        [Alias("h", "host", "SiteHost")]
         [Parameter(Mandatory = $true)]
-        [string]$SiteHost,
+        [string]$MetasysHost,
+
+        # The username of an account on the host
+        #
+        # Alias: -u
+        [Alias("u")]
         [Parameter(Mandatory = $true)]
         [string]$UserName,
+
+        # The password of an account on the host. Note: `Password` takes a `SecureString`
+        #
+        # Alias: -p
+        [Alias("p")]
         [Parameter(Mandatory = $true)]
         [SecureString]$Password
     )
@@ -238,7 +269,7 @@ function Set-SavedMetasysPassword {
         return
     }
 
-    Set-Secret -Name "${prefix}:${SiteHost}:$UserName" -SecureStringSecret $Password
+    Set-Secret -Name "${prefix}:${MetasysHost}:$UserName" -SecureStringSecret $Password
 }
 
 Export-ModuleMember -Function "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword"

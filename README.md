@@ -148,7 +148,7 @@ also specify the `Version` on this first call to be explicit about which version
 of the API you want. The default value of this parameter is `5`.
 
 ```powershell
-PS > $password = Get-SavedMetasysPassword -SiteHost welchoas -UserName api
+PS > $password = Get-SavedMetasysPassword -MetasysHost welchoas -UserName api
 PS > Connect-MetasysAccount -MetasysHost welchoas -UserName api -Password $password -Version 3
 ```
 
@@ -1426,8 +1426,8 @@ PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 </details>
 
 Rather than rely on the `Show-` methods, we can use the
-`-IncludeResponseHeaders` switch at the time we invoke the method at all of the
-response headers will be shown.
+`-IncludeResponseHeaders` switch at the time we invoke the method and all of the
+response headers will be shown when the request finishes.
 
 ```powershell
 PS > imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw) -IncludeResponseHeaders
