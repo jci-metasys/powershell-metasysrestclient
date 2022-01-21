@@ -40,13 +40,9 @@ function Get-SavedMetasysUsers {
         Finds and returns user names associated with saved Metasys credentials.
 
     .DESCRIPTION
-        The Invoke-MetasysMethod module includes functions that may update a secret vault.
-        This cmdlet finds and returns the user names of Metasys accounts for a host that
-        matches the provided 'MetasysHost'. If no 'MetasysHost' parameter argument is provided
-        then all user names for all hosts will be returned.
+        The Invoke-MetasysMethod module includes functions that may update a secret vault. This cmdlet finds and returns the user names of Metasys accounts for a host that matches the provided 'MetasysHost'. If no 'MetasysHost' parameter argument is provided then all user names for all hosts will be returned.
 
-        Note: This cmdlet only returns user names associated with Metasys credentials that
-        have been added using this or other cmdlets of Invoke-MetasysMethod module.
+        Note: This cmdlet only returns user names associated with Metasys credentials that have been added using this or other cmdlets of Invoke-MetasysMethod module.
 
     .OUTPUTS
         The list of matching user names.
@@ -126,11 +122,9 @@ function Get-SavedMetasysPassword {
         Finds and returns the password associated with saved Metasys credentials.
 
     .DESCRIPTION
-        The Invoke-MetasysMethod module includes functions that may update a secret vault.
-        This cmdlet finds and returns the password of a Metasys account for a host that
-        matches the provided 'MetasysHost' and a user that matches 'UserName'. The password
-        is returned as a SecureString object unless the '-AsPlainText' parameter switch
-        is used, in which ase the password is returned in plain text.
+        The Invoke-MetasysMethod module includes functions that may update a secret vault. This cmdlet finds and returns the password of a Metasys account for a host that matches the provided 'MetasysHost' and a user that matches 'UserName'.
+
+        The password is returned as a SecureString object unless the '-AsPlainText' parameter switch is used, in which case the password is returned in plain text.
 
     .OUTPUTS
         System.Object
@@ -192,12 +186,11 @@ function Get-SavedMetasysPassword {
 function Remove-SavedMetasysPassword {
     <#
     .SYNOPSIS
-        Finds and removes the password associated with saved Metasys credentials.
+        Finds and removes the password associated with saved Metasys
+        credentials.
 
     .DESCRIPTION
-        The Invoke-MetasysMethod module includes functions that may update a secret vault.
-        This cmdlet finds and removes the Metasys credentials for a host that
-        matches the provided 'MetasysHost' and a user that matches 'UserName'.
+        The Invoke-MetasysMethod module includes functions that may update a secret vault. This cmdlet finds and removes the Metasys credentials for a host that matches the provided 'MetasysHost' and a user that matches 'UserName'.
 
     .EXAMPLE
         PS > Remove-SavedMetasysPassword -MetasysHost adx55 -UserName fred
@@ -239,8 +232,7 @@ function Set-SavedMetasysPassword {
     .EXAMPLE
         PS > Set-SavedMetasysPassword -MetasysHost adx55 -UserName fred -Password $password
 
-        Assuming $password is a SecureString that contains the password, this example
-        saves fred's password for adx55.
+        Assuming $password is a SecureString that contains the password, this example saves fred's password for adx55.
 
     #>
     param(
@@ -258,7 +250,8 @@ function Set-SavedMetasysPassword {
         [Parameter(Mandatory = $true)]
         [string]$UserName,
 
-        # The password of an account on the host. Note: `Password` takes a `SecureString`
+        # The password of an account on the host. Note: `Password` takes a
+        # `SecureString`
         #
         # Alias: -p
         [Alias("p")]

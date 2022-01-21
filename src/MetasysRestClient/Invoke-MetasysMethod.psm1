@@ -72,27 +72,19 @@ function Invoke-MetasysMethod {
         Sends an HTTPS request to a Metasys device running Metasys REST API
 
     .DESCRIPTION
-        This function allows you to call methods of the Metasys REST API.
-        Once a session is established (on the first invocation) the session state
-        is maintained in the terminal session. This allows you to make additional
-        calls with less boilerplate text necessary for each call.
+        This function allows you to call methods of the Metasys REST API. Once a session is established (on the first invocation) the session state is maintained in the terminal session. This allows you to make additional calls with less boilerplate text necessary for each call.
 
     .OUTPUTS
         System.String
-            The payloads from Metasys are formatted JSON strings. This is the
-            default return type for this function.
+            The payloads from Metasys are formatted JSON strings. This is the default return type for this function.
 
         PSObject, Hashtable
-            If the switch `ReturnBodyAsObject` is set then this function attempts
-            to convert the response to a custom object. In some cases, the JSON string
-            may contain properties that only differ in casing and can't be converted
-            to a PSObject. In such cases, a Hashtable is returned instead.
+            If the switch `ReturnBodyAsObject` is set then this function attempts to convert the response to a custom object. In some cases, the JSON string may contain properties that only differ in casing and can't be converted to a PSObject. In such cases, a Hashtable is returned instead.
 
     .EXAMPLE
         Invoke-MetasysMethod /objects/$id
 
-        Reads the default view of the specified object assuming $id contains a
-        valid object identifier
+        Reads the default view of the specified object assuming $id contains a valid object identifier
 
     .EXAMPLE
         Invoke-MetasysMethod /alarms
@@ -102,8 +94,7 @@ function Invoke-MetasysMethod {
     .EXAMPLE
         Invoke-MetasysMethod -Method Put /objects/$id/commands/adjust -Body '{ "parameters": [72.5] }'
 
-        This example will send the adjust command to the specified object (assuming
-        a valid id is stored in $id, and v4 of the API).
+        This example will send the adjust command to the specified object (assuming a valid id is stored in $id, and v4 of the API).
 
     .LINK
 
