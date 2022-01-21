@@ -48,14 +48,8 @@ updated to help you do the most common actions.
 
 ## Metasys REST API Versions
 
-Examples in this README are from `v4` of the API. However,
-`Invoke-MetasysMethod` works with `v2` and `v3` as well, but you'll need to
-explicitly include the `-Version` parameter when making calls. Else
-`Invoke-MetasysMethod` assumes the latest version released.
-
-However, you only need to specify `Version` on the first call you invoke.
-`Invoke-MetasysMethod` will remember what version you requested and use it for
-all subsequent calls.
+Examples in this README are from `v4` of the API. However, Metasys Rest Client
+works with `v2`, `v3` and `v5` as well.
 
 ## PowerShell References
 
@@ -82,6 +76,7 @@ PS > (Get-Module MetasysRestClient).ExportedCommands
 Key                                 Value
 ---                                 -----
 Clear-MetasysEnvVariables           Clear-MetasysEnvVariables
+Connect-MetasysAccount              Connect-MetasysAccount
 Get-LastMetasysHeadersAsObject      Get-LastMetasysHeadersAsObject
 Get-LastMetasysResponseBodyAsObject Get-LastMetasysResponseBodyAsObject
 Get-SavedMetasysPassword            Get-SavedMetasysPassword
@@ -94,6 +89,7 @@ Show-LastMetasysFullResponse        Show-LastMetasysFullResponse
 Show-LastMetasysHeaders             Show-LastMetasysHeaders
 Show-LastMetasysResponseBody        Show-LastMetasysResponseBody
 Show-LastMetasysStatus              Show-LastMetasysStatus
+cma                                 cma
 imm                                 imm
 ```
 
@@ -136,13 +132,13 @@ can specify it with the `-Version` switch.
 PS > Connect-MetasysAccount -Version 3
 ```
 
-If you don't specify then `Connect-MetasysAccount` will look for the environment
-variable `$env:METASYS_DEFAULT_API_VERSION`. If that variable is not set, it
-will default to a version. At time of writing that version is 5.
+If you don't specify a version, then `Connect-MetasysAccount` will look for the
+environment variable `$env:METASYS_DEFAULT_API_VERSION`. If that variable is not
+set, it will default to a version. At the time of writing, that version is 5.
 
 Whatever version is used in the call to `Connect-MetasysAccount` will be used
 for all other calls in the current session (unless overridden with `-Version`
-switch of by specifying a full URL).
+switch or by specifying a full URL).
 
 #### Starting a Session without Prompts
 
@@ -176,8 +172,8 @@ PS > Invoke-MetasysMethod /objects
 
 This will invoke the `/objects` endpoint and display the response body. Notice
 that we were not prompted for any information because we established a session
-in the previous step. (If we had skipped that step then we would have been
-prompted for `Site Host`, `UserName` and `Password` right now.)
+in the previous step. (If we had skipped that step then we would have been given
+an error message.)
 
 <!-- markdownlint-disable no-inline-html -->
 
@@ -537,9 +533,9 @@ to use two new parameters. First we'll use the `Method` parameter to specify we
 are sending a `PATCH` request, and we'll use the `Body` parameter to specify the
 content we want to send.
 
-In this example we'll change the `description` attribute of the AV from the
-previous section. Let's first read it to confirm it's currently `null`. Recall
-that we've saved the identifier in the variable `$Id`.
+Let's change the `description` attribute of the AV from the previous section.
+Let's first read it to confirm it's currently `null`. Recall that we've saved
+the identifier in the variable `$Id`.
 
 ```powershell
 PS > Invoke-MetasysMethod /objects/$Id/attributes/description
@@ -563,7 +559,7 @@ send this body to do that:
 }
 ```
 
-It can be a little tricky dealing with large JSON strings.. There are many ways
+It can be a little tricky dealing with large JSON strings. There are many ways
 to construct them. See [Tips for Working With PowerShell](docs/tips.md) for
 examples of working with JSON strings.
 
@@ -594,7 +590,8 @@ Many of the built-in PowerShell commands have long names just like
 `Invoke-WebRequest`. Many of those also have aliases that are much shorter (eg.
 `iwr` for `Invoke-WebRequest`). The command `Invoke-MetasysMethod` also has an
 alias, `imm`, which you can use instead of the full name. For the remainder of
-this README we'll use `imm` instead of `Invoke-MetasysMethod`.
+this README we'll use `imm` instead of `Invoke-MetasysMethod`. The alias for
+`Connect-MetasysAccount` is `cma`.
 
 ### Sending a Command to an Object (PUT)
 
@@ -1428,16 +1425,34 @@ PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 
 </details>
 
+Rather than rely on the `Show-` methods, we can use the
+`-IncludeResponseHeaders` switch at the time we invoke the method at all of the
+response headers will be shown.
+
+```powershell
+PS > imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw) -IncludeResponseHeaders
+
+200 (OK)
+Location: https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+Expires: -1
+Cache-Control: private
+Strict-Transport-Security: max-age=31536000
+Date: Fri, 21 Jan 2022 20:03:56 GMT
+Pragma: no-cache,no-cache
+Content-Length: 0
+X-XSS-Protection: 1; mode=block
+Set-Cookie: Secure; HttpOnly
+X-Content-Type-Options: nosniff
+```
+
 ### Delete an Object (DELETE)
 
 Let's delete the previous object
 
 ```powershell
-# This is no response body to this payload
-PS > imm -Method Delete https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+# There is no response body to this payload, use -IncludeResponseHeaders to see the results
+PS > imm -Method Delete https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84 -IncludeResponseHeaders
 
-# Use Show-LastMetasysFullResponse to verify success (204 status)
-PS > Show-LastMetasysFullResponse
 204 (NoContent)
 X-XSS-Protection: 1; mode=block
 Date: Mon, 05 Jul 2021 23:26:28 GMT
@@ -1447,24 +1462,6 @@ Expires: -1
 Cache-Control: no-store, must-revalidate, no-cache, max-age=0, s-maxage=0, pre-check=0, post-check=0
 X-Content-Type-Options: nosniff
 Set-Cookie: Secure; HttpOnly
-```
-
-### Clearing a Session
-
-Sometimes you want to talk to another site. This can be done by running
-`Invoke-MetasysMethod` in a separate instance of your terminal. Or you can reset
-your session by doing one of the following:
-
-```powershell
-# Start a new session (without making a data request)
-PS > imm -Login /objects
-SiteHost: welchoas
-UserName: api
-
-# Start a new session and make a data request
-PS > imm -Login /objects
-SiteHost: welchoas
-UserName: api
 ```
 
 ## Troubleshooting
