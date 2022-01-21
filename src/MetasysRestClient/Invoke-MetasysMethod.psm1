@@ -132,7 +132,7 @@ function Invoke-MetasysMethod {
         #
         # Alias: -v
         [Alias("v")]
-        [ValidateRange(2, 4)]
+        [ValidateRange(2, 5)]
         [Int]$Version,
         # Skips certificate validation checks. This includes all validations
         # such as expiration, revocation, trusted root authority, etc.
@@ -189,9 +189,9 @@ function Invoke-MetasysMethod {
         }
 
         If ($Version -eq 0) {
-            # Default to the latest version
-            # TODO: Also check a environment variable or even a config file for reasonable defaults.
-            $Version = 4
+            # Use the version from last cma call, else the default api version (if set), else latest version
+            $Version = $env:METASYS_VERSION ?? $env:METASYS_DEFAULT_API_VERSION ?? $LatestVersion
+            Write-Information "No version specified. Defaulting to v$Version"
         }
 
         # Login Region
@@ -206,7 +206,7 @@ function Invoke-MetasysMethod {
                 if ([DateTimeOffset]::UtcNow -gt $expiration) {
                     # Token is expired, attempt to connect with previously used site host and user name
                     try {
-                        Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version ([MetasysEnvVars]::getVersion()) `
+                        Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version $Version `
                             -SkipCertificateCheck:$SkipCertificateCheck
                     }
                     catch {
