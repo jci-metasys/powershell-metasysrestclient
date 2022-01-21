@@ -5,7 +5,6 @@ using namespace Microsoft.PowerShell.Commands
 using namespace System.Management.Automation
 
 Set-StrictMode -Version 3
-Set-Variable -Name LatestVersion -Value 5 -Option Constant
 
 # HACK: https://stackoverflow.com/a/49859001
 # Otherwise on Linux I get "Unable to find type [WebRequestMethod]" error
