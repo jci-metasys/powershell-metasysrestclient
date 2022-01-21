@@ -205,7 +205,7 @@ Let's break it down. The call to `/objects?flatten=true` returns a list inside o
 In this next example I'm going to write a one-liner that checks the `equipmentUrl` for each space to see which have any equipment defined.
 
 ```powershell
-PS > imm -SiteHost diana12oas /spaces -ReturnBodyAsObject | Select-Object -ExpandProperty items | ForEach-Object { imm $_.equipmentUrl -ReturnBodyAsObject } | Where-Object { $_.total -gt 0 }
+PS > imm -MetasysHost diana12oas /spaces -ReturnBodyAsObject | Select-Object -ExpandProperty items | ForEach-Object { imm $_.equipmentUrl -ReturnBodyAsObject } | Where-Object { $_.total -gt 0 }
 ```
 
 <details><summary>Click to see the response</summary>
@@ -240,7 +240,7 @@ Now let's break it down step by step.
 The first command just fetches the first page of spaces and returns the response as an object:
 
 ```powershell
-imm -SiteHost diana12oas /spaces -ReturnBodyAsObject
+imm -MetasysHost diana12oas /spaces -ReturnBodyAsObject
 ```
 
 Like in the previous example, we pipe result to `Select-Object` and expand the `items` property
