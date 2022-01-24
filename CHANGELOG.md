@@ -21,6 +21,7 @@ and this project adheres to
 ### Added
 
 - Add support for `v5` of the API in `Version` switch
+- Add support for `$env:METASYS_DEFAULT_API_VERSION`
 
 ### Changed
 
