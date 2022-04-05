@@ -77,7 +77,7 @@ function Get-SavedMetasysUsers {
         $UserName = @{label = "UserName"; expression = { ($_.Name -split ":")[2] } }
         $HostName = @{label = "Host"; expression = { ($_.Name -split ":")[1] } }
         if ($secretInfo -is [Object[]]) {
-            return $secretInfo | Select-Object $HostName, $UserName | Where-Object { $_.Host -eq $MetasysHost } | Select-Object $UserName
+            return $secretInfo | Select-Object $HostName, $UserName | Where-Object { $_.Host -eq $MetasysHost } | Select-Object UserName
         }
         else {
             return $secretInfo | Select-Object $UserName
