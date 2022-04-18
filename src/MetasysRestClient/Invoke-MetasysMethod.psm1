@@ -121,7 +121,7 @@ function Invoke-MetasysMethod {
         # Aliases: -m, -verb
         [Alias("verb", "m")]
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
-        # The version of the API you intend to use
+        # The version of the API you intend to use. Typically you do not need to specify anything for this parameter as this command will use whatever version was specified when you ran `Connect-MetasysAccount`. However, you may wish to use this paramter if you want to invoke an operation at a different version than the one used to connect.
         #
         # Alias: -v
         [Alias("v")]

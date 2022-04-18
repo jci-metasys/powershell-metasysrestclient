@@ -23,6 +23,11 @@ function Connect-MetasysAccount {
     Connect-MetasysAccount -MetasysHost oas -UserName userName -Password $password
 
     After prompting for a password (stored as a secure string), connects the host named `oas` with the specified user name and password.
+
+    .NOTES
+    The Metasys REST API mandates that you specify the version of the API you wish to call. This command assumes that you wish to use the latest version of the API (v5 at time of writing). If you wish to use an older version of the API use the -Version parameter. To avoid having to specify this every time you connect you can modify your start up profile to set the environment variable $env:METASYS_DEFAULT_API_VERSION to which ever version you wish. (For example you could set it to 4).
+
+    Whichever version of the API was used to connect to Metasys will be used for every other call in your session (unless you override that with the -Version parameter or by specifying a full URL).
     #>
     [CmdLetBinding(PositionalBinding = $false)]
     param(
