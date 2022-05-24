@@ -290,7 +290,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
             It "Should throw an exception for version v<version>" -ForEach @(
                 @{ Version = 1 }
                 @{ Version = 0 }
-                @{ Version = 5 }
+                @{ Version = 6 }
             ) {
 
                 { Connect-MetasysAccount -Version $version } | Should -Throw -ExceptionType  System.Management.Automation.ParameterBindingException

@@ -11,7 +11,7 @@ Describe "Password Management When No Vaults Registered" {
     Context "Get-SavedMetasysUsers" {
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysUsers
             if (!$result) {
                 $returnedNothing = $true
@@ -22,8 +22,8 @@ Describe "Password Management When No Vaults Registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 
@@ -31,7 +31,7 @@ Describe "Password Management When No Vaults Registered" {
 
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
                 $returnedNothing = $true
@@ -42,8 +42,8 @@ Describe "Password Management When No Vaults Registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 
@@ -51,7 +51,7 @@ Describe "Password Management When No Vaults Registered" {
 
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
             if (!$result) {
                 $returnedNothing = $true
@@ -62,8 +62,8 @@ Describe "Password Management When No Vaults Registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
 
     }
@@ -71,7 +71,7 @@ Describe "Password Management When No Vaults Registered" {
     Context "Remove-SavedMetasysPassword" {
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Remove-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
                 $returnedNothing = $true
@@ -82,8 +82,8 @@ Describe "Password Management When No Vaults Registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 }
@@ -96,7 +96,7 @@ Describe "Password Management When Vault Registered but the module for that vaul
             Mock Get-SecretVault -ModuleName MetasysRestClient {
                 @{ ModuleName = "DoesNotExist" }
             }
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysUsers
             if (!$result) {
                 $returnedNothing = $true
@@ -107,8 +107,8 @@ Describe "Password Management When Vault Registered but the module for that vaul
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 
@@ -116,7 +116,7 @@ Describe "Password Management When Vault Registered but the module for that vaul
 
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
                 $returnedNothing = $true
@@ -127,8 +127,8 @@ Describe "Password Management When Vault Registered but the module for that vaul
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 
@@ -136,7 +136,7 @@ Describe "Password Management When Vault Registered but the module for that vaul
 
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
             if (!$result) {
                 $returnedNothing = $true
@@ -147,8 +147,8 @@ Describe "Password Management When Vault Registered but the module for that vaul
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
 
     }
@@ -156,7 +156,7 @@ Describe "Password Management When Vault Registered but the module for that vaul
     Context "Remove-SavedMetasysPassword" {
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Remove-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
                 $returnedNothing = $true
@@ -167,8 +167,8 @@ Describe "Password Management When Vault Registered but the module for that vaul
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 }
@@ -182,7 +182,7 @@ Describe "Password Management When a Singnle Vault is registered" {
             Mock Get-SecretVault -ModuleName MetasysRestClient {
                 @{ ModuleName = "DoesNotExist" }
             }
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysUsers
             if (!$result) {
                 $returnedNothing = $true
@@ -193,8 +193,8 @@ Describe "Password Management When a Singnle Vault is registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 
@@ -202,7 +202,7 @@ Describe "Password Management When a Singnle Vault is registered" {
 
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
                 $returnedNothing = $true
@@ -213,8 +213,8 @@ Describe "Password Management When a Singnle Vault is registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 
@@ -222,7 +222,7 @@ Describe "Password Management When a Singnle Vault is registered" {
 
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
             if (!$result) {
                 $returnedNothing = $true
@@ -233,8 +233,8 @@ Describe "Password Management When a Singnle Vault is registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
 
     }
@@ -242,7 +242,7 @@ Describe "Password Management When a Singnle Vault is registered" {
     Context "Remove-SavedMetasysPassword" {
         BeforeAll {
             Mock Get-SecretVault -ModuleName MetasysRestClient
-            Mock Write-Warning -ModuleName MetasysRestClient
+            Mock Write-Information -ModuleName MetasysRestClient
             $result = Remove-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
                 $returnedNothing = $true
@@ -253,8 +253,8 @@ Describe "Password Management When a Singnle Vault is registered" {
             $returnedNothing | Should -BeTrue
         }
 
-        It "Should write a warning" {
-            Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+        It "Should write an information message" {
+            Should -Invoke Write-Information -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
         }
     }
 }

@@ -1477,3 +1477,18 @@ switch is intended to be used against known hosts using a self-signed
 certificate for testing purposes. _Use at your own risk_.
 
 ## Known Limitations
+
+## Testing
+
+The tests are alongside the modules in `/src/MetasysRestClient`. To run the
+tests change into that directory and invoke pester:
+
+```powershell
+PS > cd src/MetasysRestClient
+PS > Invoke-Pester
+```
+
+### Issues with tests
+
+- The one that tests -IncludeResponseHeader seems to be non-deterministic.
+  Sometimes the order of `Header1` and `Header2` swap.

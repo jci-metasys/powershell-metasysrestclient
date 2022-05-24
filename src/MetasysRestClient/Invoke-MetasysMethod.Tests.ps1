@@ -325,8 +325,8 @@ Header1: This is header 1
             $expectedString = @"
 400 (Bad Request)
 Content-Type: application/json
-Header2: Header 2
 Header1: This is header 1
+Header2: Header 2
 
 "hello"
 "@

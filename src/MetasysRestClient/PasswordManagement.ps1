@@ -28,7 +28,7 @@ function aSecretVaultIsAvailable {
     }
 
     if (!$vaultAvailable) {
-        Write-Warning "There are currently no secret vaults available."
+        Write-Information "There are currently no secret vaults available."
     }
     $vaultAvailable
 }
