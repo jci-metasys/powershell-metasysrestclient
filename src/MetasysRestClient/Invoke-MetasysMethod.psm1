@@ -100,7 +100,7 @@ function Invoke-MetasysMethod {
 
     .LINK
 
-        https://github.com/metasys-server/powershell-metasysrestapi
+        https://github.com/metasys-server/powershell-metasysrestclient
 
     #>
 
