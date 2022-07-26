@@ -16,6 +16,18 @@ and this project adheres to
   `Write-Information`
 - Add support for a config file with preferences
 
+## [2.1.2] - 2022-06-21
+
+### Changed
+
+- Fix a bug in Get-SavedMetasysUsers which corrupted the output a little
+- Only attempt to change background colors when running in console mode. Else
+  when running in the background (say as part of a cron job) there is no console
+  to access and the job would error out.
+- Update help for Connect-MetasysAccount to explain how versioning works
+- If secrete vault is not configured write out information message rather than
+  warning
+
 ## [2.1.0] - 2022-01-24
 
 ### Added
@@ -78,7 +90,9 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.0...HEAD
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...HEAD
+[2.1.2]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.0...v2.1.2
 [2.1.0]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.0.0...v2.1.0
 [2.0.0]:
