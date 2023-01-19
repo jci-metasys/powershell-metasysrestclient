@@ -30,7 +30,7 @@ function setBackgroundColorsToMatchConsole {
 
 }
 
-function createErrorStringFromResponseObject {
+function convertResponseObjectToString {
     param(
         [WebResponseObject]$responseObject
     )
@@ -40,6 +40,14 @@ function createErrorStringFromResponseObject {
     $responseObject.Headers.Keys | ForEach-Object { $errorMessage += "`n" + $_ + ": " + $responseObject.Headers[$_] }
     $errorMessage += "`n$body"
     return $errorMessage
+}
+
+function createErrorStringFromResponseObject {
+    param(
+        [WebResponseObject]$responseObject
+    )
+
+    return convertResponseObjectToString $responseObject
 }
 
 function invokeWithWarningsOff {
@@ -81,7 +89,7 @@ function Invoke-MetasysMethod {
             The payloads from Metasys are formatted JSON strings. This is the default return type for this function.
 
         PSObject, Hashtable
-            If the switch `ReturnBodyAsObject` is set then this function attempts to convert the response to a custom object. In some cases, the JSON string may contain properties that only differ in casing and can't be converted to a PSObject. In such cases, a Hashtable is returned instead.
+            If the switch `ReturnBodyAsObject` is set then this function attempts to convert the response to a custom object. In some cases, the JSON string may contain properties that only differ in casing and can't be converted to a PSObject. In such cases, a Hashtable is returned instead. Note: This parameter only applies if the response content type is JSON. Otherwise it is ignored.
 
     .EXAMPLE
         Invoke-MetasysMethod /objects/$id
@@ -254,46 +262,68 @@ function Invoke-MetasysMethod {
             return
         }
 
+        $contentType = "unknown"; # one of json, text, unknown
         if ($responseObject) {
 
             $contentLength = 0
             [Int]::TryParse($responseObject.Headers["Content-Length"], [ref] $contentLength)  | Out-Null
 
             if ($responseObject.Headers["Content-Type"] -like "*json*" -or $contentLength -eq 0 -or $responseObject.StatusCode -eq 204 -or $responseObject.StatusCode -ge 400) {
-                if ($responseObject.Content -is [String]) {
-                    $response = $responseObject.Content
-                }
-                else {
-                    $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
-                }
+                $contentType = "json"
+            }
+            elseif ($responseObject.Headers["Content-Type"] -like "text*") {
+                $contentType = "text"
             }
             else {
+                $contentType = "unknown"
                 Write-Error "An unexpected content type was found"
                 Write-Error (createErrorStringFromResponseObject -responseObject $responseObject)
+
+            }
+            if ($responseObject.Content -is [String]) {
+                $response = $responseObject.Content
+            }
+            else {
+                $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
             }
         }
 
         # Only overwrite the last response if $response is not null
-        if ($null -ne $response) {
+        if ($null -ne $response -and $contentType -eq "json") {
             [MetasysEnvVars]::setLast($response)
             [MetasysEnvVars]::setHeaders($responseObject.Headers)
             [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
         }
 
-        if ($ReturnBodyAsObject.IsPresent -and $null -ne $response) {
+        if ($ReturnBodyAsObject.IsPresent -and $null -ne $response -and $contetType -eq "json") {
             Get-LastMetasysResponseBodyAsObject
         }
         elseif ($null -ne $response) {
-            if ($IncludeResponseHeaders) {
-                Show-LastMetasysFullResponse
+
+            if ($contentType -eq "json") {
+                if ($IncludeResponseHeaders) {
+                    Show-LastMetasysFullResponse
+                }
+                else {
+                    Show-LastMetasysResponseBody
+                }
             }
-            else {
-                Show-LastMetasysResponseBody
+            if ($contentType -eq "text") {
+
+                if ($IncludeResponseHeaders) {
+                    convertResponseObjectToString $responseObject
+                }
+                else {
+                    $responseObject.Content
+                }
             }
+
         }
     }
 
 }
+
+
 
 function Show-LastMetasysAccessToken {
     ConvertFrom-SecureString -AsPlainText -SecureString ([MetasysEnvVars]::getToken())
@@ -334,7 +364,7 @@ function ConvertFrom-JsonSafely {
 
 function Show-LastMetasysResponseBody {
     $body = [MetasysEnvVars]::getLast()
-    if ($body) {
+    if ($body -and ($contentType -eq "json")) {
         ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
     }
 }
