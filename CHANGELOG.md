@@ -16,6 +16,11 @@ and this project adheres to
   `Write-Information`
 - Add support for a config file with preferences
 
+## [2.1.3-alpha1] - 2023-01-01
+
+- Add support for response content types of type `text/*`
+- Change version parameter to string and remove validation
+
 ## [2.1.2] - 2022-06-21
 
 ### Changed
@@ -90,7 +95,9 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...HEAD
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha1...HEAD
+[2.1.3-alpha1]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.1.3-alpha1
 [2.1.2]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.0...v2.1.2
 [2.1.0]:
