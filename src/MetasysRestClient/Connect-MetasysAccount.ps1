@@ -52,10 +52,10 @@ function Connect-MetasysAccount {
 
         # The API version to use on the host.
         #
+        # Acceptable values: 2, 3, 4, 5
         # Alias: -v
         [Alias("v")]
-        [ValidateRange(2, 5)]
-        [Int32]$Version,
+        [string]$Version,
 
         # Skips certificate validation checks. This includes all validations
         # such as expiration, revocation, trusted root authority, etc.
@@ -91,7 +91,7 @@ function Connect-MetasysAccount {
         $Password = (Get-SavedMetasysPassword -SiteHost $MetasysHost -UserName $UserName) ?? (Read-Host -Prompt "Password" -AsSecureString)
     }
 
-    if ($Version -eq 0) {
+    if ($Version -eq "") {
         $Version = $env:METASYS_DEFAULT_API_VERSION ?? $LatestVersion
         Write-Information "No version specified. Defaulting to v$Version"
     }

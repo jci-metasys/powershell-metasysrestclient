@@ -131,10 +131,10 @@ function Invoke-MetasysMethod {
         [Microsoft.PowerShell.Commands.WebRequestMethod]$Method = "Get",
         # The version of the API you intend to use. Typically you do not need to specify anything for this parameter as this command will use whatever version was specified when you ran `Connect-MetasysAccount`. However, you may wish to use this paramter if you want to invoke an operation at a different version than the one used to connect.
         #
+        # Acceptable values: 2, 3, 4, 5
         # Alias: -v
         [Alias("v")]
-        [ValidateRange(2, 5)]
-        [Int]$Version,
+        [string]$Version,
         # Skips certificate validation checks. This includes all validations
         # such as expiration, revocation, trusted root authority, etc.
         # [!WARNING] Using this parameter is not secure and is not recommended.
@@ -183,13 +183,13 @@ function Invoke-MetasysMethod {
         if ($uri.IsAbsoluteUri) {
             $versionSegment = $uri.Segments[2]
             $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
-            if ($Version -gt 0 -and $versionNumber -ne $Version) {
+            if ($Version -ne "" -and $versionNumber -ne $Version) {
                 Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
                 continue
             }
         }
 
-        If ($Version -eq 0) {
+        If ($Version -eq "") {
             # Use the version from last cma call, else the default api version (if set), else latest version
             $Version = $env:METASYS_VERSION ?? $env:METASYS_DEFAULT_API_VERSION ?? $LatestVersion
             Write-Information "No version specified. Defaulting to v$Version"
