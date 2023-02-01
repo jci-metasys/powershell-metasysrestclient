@@ -6,7 +6,7 @@ function buildUri {
         [Parameter(Mandatory = $true)]
         [string]$siteHost,
         [Parameter(Mandatory = $true)]
-        [int]$version,
+        [string]$version,
         [Parameter(Mandatory = $true)]
         [string]$path
     )
