@@ -1,9 +1,28 @@
 {
     "cSpell.words": [
+        "Adsrepos",
+        "Apdu",
+        "bacdevice",
+        "bacnet",
+        "boce",
+        "Clas",
+        "cmdlet",
+        "Cmdparm",
+        "fips",
         "Hashtable",
+        "hvac",
         "Keychain",
+        "maxage",
         "Metasys",
-        "cmdlet"
+        "metasysrestclient",
+        "myhost",
+        "nosniff",
+        "Nxes",
+        "Parms",
+        "Sched",
+        "struct",
+        "ulong",
+        "welchoas"
     ],
     "[markdown]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",

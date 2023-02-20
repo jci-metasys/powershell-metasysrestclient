@@ -93,6 +93,14 @@ class MetasysEnvVars {
         return $env:METASYS_SKIP_CHECK_NOT_SECURE
     }
 
+    static [Boolean] getSkipCertificateCheck() {
+        return $env:METASYS_SKIP_CERTIFICATE_CHECK
+    }
+
+    static [void] setSkipCertificateCheck([Boolean]$SkipCertificateCheck) {
+        $env:METASYS_SKIP_CERTIFICATE_CHECK = $SkipCertificateCheck
+    }
+
     static [string] getUserName() {
         return $env:METASYS_USER_NAME
     }
