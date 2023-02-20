@@ -72,6 +72,27 @@ function Connect-MetasysAccount {
         $MetasysHost = Read-Host -Prompt "Metasys Host"
     }
 
+    # Use the config file (if present) to lookup the actual host name
+    # and user name (if supplied)
+    $HostEntry = Read-ConfigFile -Alias $MetasysHost
+    if ($HostEntry) {
+        $HostEntryProperties = $HostEntry.PSObject.Properties
+        $MetasysHost = $HostEntry.hostname
+        Write-Information "Alias '$($HostEntry.alias)' found in '.metasysrestclient'. Using '$MetasysHost' as new value for -MetaysHost"
+        if (!$UserName -and $HostEntryProperties['username']) {
+            $UserName = $HostEntry.username
+            Write-Information "Alias '$($HostEntry.alias)' has an associated username. Using '$UserName' as value for -UserName"
+        }
+        if (!$Version -and $HostEntryProperties['version']) {
+            $Version = $HostEntry.version
+            Write-Information "Alias '$($HostEntry.alias)' has an associated version. Using '$Version' as value for -Version"
+        }
+        if ($HostEntryProperties['skip-certificate-check']) {
+            $SkipCertificateCheck = $true
+            Write-Information "Alias s'$($HostEntry.alias)' is configured to skip certificate checking."
+        }
+    }
+
     if (!$UserName) {
         Write-Information "No UserName specified. Searching secret management."
         $users = Get-SavedMetasysUsers -SiteHost $MetasysHost
@@ -115,6 +136,7 @@ function Connect-MetasysAccount {
     [MetasysEnvVars]::setTokenAsPlainText($response.accessToken)
     [MetasysEnvVars]::setSiteHost($MetasysHost)
     [MetasysEnvVars]::setVersion($Version)
+    [MetasysEnvVars]::setSkipCertificateCheck($SkipCertificateCheck)
 
     Write-Information "Saving credentials to vault"
     Set-SavedMetasysPassword -SiteHost $MetasysHost -UserName $UserName -Password $Password

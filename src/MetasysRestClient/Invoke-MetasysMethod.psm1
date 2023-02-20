@@ -175,6 +175,10 @@ function Invoke-MetasysMethod {
             $Path = Read-Host -Prompt "Path"
         }
 
+        # Read SkipCertificateCheck from environment
+        $SkipCertificateCheck = [MetasysEnvVars]::getSkipCertificateCheck()
+
+
         if (!$SkipCertificateCheck.IsPresent) {
             $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
         }

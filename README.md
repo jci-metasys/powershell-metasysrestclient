@@ -1464,6 +1464,95 @@ X-Content-Type-Options: nosniff
 Set-Cookie: Secure; HttpOnly
 ```
 
+## Configuration
+
+The Metasys Rest Client supports a limited amount of configuration. To configure
+the app create a `.metasysrestclient` file in your home directory.
+
+The configuration allows you to specify the default values to use when invoking
+`Connect-MetasysAccount` for a specific host.
+
+The following properties are supported:
+
+- `hosts` - An array of entries that describe a host you want to connect to.
+  Each entry must contain an `alias` and a `hostname`. Optionally, you can
+  specify other properties for a host as well. You can have multiple entries for
+  the same `hostname` as long as they have different aliases.
+
+A host entry has the following properties:
+
+- `hostname` **required** `string` - The resolvable hostname or ip address of a
+  host.
+- `alias` **required** `string` - An alias to assign to that host. This alias
+  can then be used as the `MetasysHost` parameter in an invocation of
+  `Connect-MetasysAccount`
+- `user` _optional_ `string` - The user account to use to log into `hostname`.
+  If specified, this will be used as the `UserName` parameter in an invocation
+  of `Connect-MetasysAccount`.
+- `version` _optional_ `string` - The version of the API to use for this host.
+- `skip-certificate-check` _optional_ `switch` - Set this to any value to
+  specify that you want certificate checking skipped. Typically you would use
+  `true` but any value (including `false` and `null`) means the same thing. You
+  must delete this key to restore certificate checking. (The same warnings apply
+  as to those given for `-SkipCertificateCheck` above.)
+
+### Example Configuration
+
+Assume you had the following content in `$HOME/.metasysrestclient`
+
+```jsonc
+{
+  "hosts": [
+    {
+      "hostname": "myhost.domain",
+      "alias": "myhost"
+    },
+    {
+      "hostname": "host2.domain",
+      "alias": "host2"
+    },
+    {
+      "hostname": "myhost.domain",
+      "alias": "myhost2",
+      "user": "john_smith",
+      "version": "4",
+      "skip-certificate-check": true
+    }
+  ]
+}
+```
+
+Then the following two commands are equivalent as they both would attempt to
+connect to `myhost.domain`
+
+```bash
+Connect-MetasysAccount -MetasysHost myhost
+Connect-MetasysAccount -MetasysHost myhost.domain
+```
+
+Likewise the following two commands are equivalent. Both attempt to login to
+`myhost.domain` with a `UserName` of `john_smith`, using version `4` and
+skipping any certificate checks.
+
+```bash
+Connect-MetasysAccount -MetasysHost myhost.domain -UserName john_smith -Version 4 -SkipCertificateCheck
+Connect-MetasysAccount -MetasysHost myhost2
+```
+
+> **Note** \
+> If you supply a value for `-UserName` it will override any `username` value in
+> `.metasysrestclient`. Likewise, if you supply a value for `-Version` it will override
+> any `version` value in `.metasysrestclient`.
+
+For example
+
+```bash
+Connect-MetasysAccount myhost2 -Version 3 -UserName bob
+```
+
+Will use a version `3` and user `bob` instead of the values in
+`.metasysrestclient`.
+
 ## Troubleshooting
 
 ### Invalid Certificates
@@ -1472,9 +1561,12 @@ This command will fail to execute if the server you are executing against
 doesn't have a valid certificate. A parameter is provided,
 `SkipCertificateCheck`, which causes all validation checks to be skipped. This
 includes all validations such as expiration, revocation, trusted root authority,
-etc. **WARNING** Using this parameter is not secure and is not recommended. This
-switch is intended to be used against known hosts using a self-signed
-certificate for testing purposes. _Use at your own risk_.
+etc.
+
+> **WARNING** \
+> Using this parameter is not secure and is not recommended. This switch is intended
+> to be used against known hosts using a self-signed certificate for testing purposes.
+> _Use at your own risk_.
 
 ## Known Limitations
 
