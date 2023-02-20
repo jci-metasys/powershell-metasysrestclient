@@ -8,11 +8,11 @@ class MetasysEnvVars {
         $env:METASYS_HOST = $siteHost
     }
 
-    static [int] getVersion() {
+    static [string] getVersion() {
         return $env:METASYS_VERSION
     }
 
-    static [void] setVersion([int]$version) {
+    static [void] setVersion([string]$version) {
         $env:METASYS_VERSION = $version
     }
 
