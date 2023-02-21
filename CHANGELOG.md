@@ -13,6 +13,11 @@ and this project adheres to
 - Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
   `Send-MetasysCommand`, ...)
 
+## [2.1.3-alpha3] - 2023-02-21
+
+- Make `-MetasysHost` a positional parameter. With the other changes from
+  `2.1.3-alpha2` you can now make a connection as simply as `cma {alias}`.
+
 ## [2.1.3-alpha2] - 2023-02-21
 
 - Add support for a config file to provide an alias for hosts, along with other
@@ -97,7 +102,9 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha2...HEAD
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha3...HEAD
+[2.1.3-alpha3]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha2...v2.1.3-alpha3
 [2.1.3-alpha2]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha1...v2.1.3-alpha2
 [2.1.3-alpha1]:
