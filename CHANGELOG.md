@@ -12,9 +12,11 @@ and this project adheres to
 
 - Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
   `Send-MetasysCommand`, ...)
-- Add more informational messages (primarily to help in debugging) using
-  `Write-Information`
-- Add support for a config file with preferences
+
+## [2.1.3-alpha2] - 2023-02-21
+
+- Add support for a config file to provide an alias for hosts, along with other
+  connection properties (like username, version, skip-certificate-check)
 
 ## [2.1.3-alpha1] - 2023-01-01
 
@@ -95,7 +97,9 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha1...HEAD
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha2...HEAD
+[2.1.3-alpha2]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha1...v2.1.3-alpha2
 [2.1.3-alpha1]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.1.3-alpha1
 [2.1.2]:
