@@ -29,13 +29,14 @@ function Connect-MetasysAccount {
 
     Whichever version of the API was used to connect to Metasys will be used for every other call in your session (unless you override that with the -Version parameter or by specifying a full URL).
     #>
-    [CmdLetBinding(PositionalBinding = $false)]
+    [CmdLetBinding(PositionalBinding = $true)]
     param(
 
         # A hostname or ip address. This is the device `Connect-MetasysAccount` will athenticated with.
         #
         # Aliases: -h, -host, -SiteHost
         [Alias("h", "host", "SiteHost")]
+        [Parameter(Position=0)]
         [String]$MetasysHost,
 
         # The username of an account on the host
