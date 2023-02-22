@@ -1,0 +1,19 @@
+TOPIC
+    about_metasysrestclient
+
+SHORT DESCRIPTION
+    A PowerShell module that sends HTTPS request to a Metasys device running
+    Metasys REST API.
+
+LONG DESCRIPTION
+    Use the `Connect-MetasysAccount` command to establish a connect to a Metasys
+    site. Once you have established a connection use `Invoke-MetasysMethod` to
+    send requests to the Metasys REST API.
+
+RELATED LINKS
+
+    Connect-MetasysAccount
+    Invoke-MetasysMethod
+    Metasys Rest Client Secret Management: https://github.com/metasys-server/powershell-metasysrestclient/blob/main/docs/secret-management.md
+    Tips for Working with Powershell: https://github.com/metasys-server/powershell-metasysrestclient/blob/main/docs/tips.md
+
