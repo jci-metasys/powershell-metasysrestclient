@@ -33,3 +33,20 @@ function Read-ConfigFile {
         }
     }
 }
+
+    <#
+    .Synopsis
+    Read the file $HOME/.metasysrestclient and return the list of the aliases found.
+
+    #>
+function ReadAliases {
+    $config = $null
+    $config = Get-Content "$HOME/.metasysrestclient" -Raw -ErrorAction SilentlyContinue
+    if ($config) {
+        $configs = $null
+        $configs = ConvertFrom-Json $config  -ErrorAction SilentlyContinue
+        if ($configs) {
+            $configs.hosts | Select-Object -ExpandProperty alias
+        }
+    }
+}
