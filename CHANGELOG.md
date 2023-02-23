@@ -13,6 +13,13 @@ and this project adheres to
 - Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
   `Send-MetasysCommand`, ...)
 
+## [2.1.3-alpha4] - 2023-02-23
+
+- Make -Alias a positional parameter
+- Add tab completions to -Alias
+- Update docs to note that any cli parameters supplied to Connect-MetasysAccount
+  override there related properties found in the config file.
+
 ## [2.1.3-alpha3] - 2023-02-21
 
 - Make `-MetasysHost` a positional parameter. With the other changes from
@@ -102,7 +109,9 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha3...HEAD
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha4...HEAD
+[2.1.3-alpha4]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha3...v2.1.3-alpha4
 [2.1.3-alpha3]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha2...v2.1.3-alpha3
 [2.1.3-alpha2]:
