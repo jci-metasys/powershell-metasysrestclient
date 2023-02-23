@@ -21,7 +21,7 @@ function Connect-MetasysAccount {
 
     -Alias <System.String>
 
-    An alias from your configuration file. See NOTES for more information on configuring an alias. If you specify an Alias and a MetasysHost the Alias is given precedence.
+    An alias from your configuration file. See NOTES for more information on configuring an alias.  If you specify an Alias and a MetasysHost the host specified by Alias is used.
 
     NOTE: This is the only positional parameter so you can invoke this command as simply as this:
 
@@ -80,6 +80,8 @@ function Connect-MetasysAccount {
     TAB COMPLETION
 
     With a configuration file in place you can use tab completion to pick the host you want. If you don't recall all of your aliases, just type `cma <TAB KEY>` and they will all be listed.
+
+    Any parameters given on the command line (-UserName, -Version, -SkipCertificateCheck) will override any values in the configuration file. This allows you to still use an alias to avoid typing a full hostname, but let you override the version (for example).
 
     #>
     [CmdLetBinding(PositionalBinding = $false)]
