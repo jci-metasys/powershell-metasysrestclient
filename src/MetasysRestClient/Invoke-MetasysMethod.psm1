@@ -299,7 +299,7 @@ function Invoke-MetasysMethod {
             [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
         }
 
-        if ($ReturnBodyAsObject.IsPresent -and $null -ne $response -and $contetType -eq "json") {
+        if ($ReturnBodyAsObject.IsPresent -and $null -ne $response -and $contentType -eq "json") {
             Get-LastMetasysResponseBodyAsObject
         }
         elseif ($null -ne $response) {
