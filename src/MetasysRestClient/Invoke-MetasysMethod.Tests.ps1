@@ -285,9 +285,9 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             }
             $expectedString = @"
 200 (OK)
-Content-Type: application/json
 Header2: Header 2
 Header1: This is header 1
+Content-Type: application/json
 
 
 "@
@@ -324,12 +324,32 @@ Header1: This is header 1
             }
             $expectedString = @"
 400 (Bad Request)
-Content-Type: application/json
-Header1: This is header 1
 Header2: Header 2
+Header1: This is header 1
+Content-Type: application/json
 
 "hello"
 "@
+
+            # Since header order isn't important or guaranteed we'll sort the headers before checking
+            $sortHeaders = {
+                param(
+                    [string]$InputString
+                )
+                # make this split on new line work with either line ending \r or \r\n
+                #https://stackoverflow.com/a/42216677/697188
+                $lines = $InputString -split '\r?\n'
+
+                $headerLines = ($lines[1..3] | Sort-Object) -join ([Environment]::NewLine)
+
+                @"
+$($lines[0])
+$headerLines
+$($lines[4])
+$($lines[5])
+"@
+            }
+
             $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders
             $actual | Should -Be  $expectedString
         }

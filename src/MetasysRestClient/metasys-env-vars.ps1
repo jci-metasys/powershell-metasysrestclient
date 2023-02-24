@@ -73,6 +73,20 @@ class MetasysEnvVars {
     }
 
     static [void] setHeaders([Hashtable]$headers) {
+        # To maintain order of the headers (for testing sanity), we'll
+        # make note of the current order. Then create a dictionary:
+
+        <#
+
+            {
+                Headers = $headers;
+                Order = [{order list of headers}]
+            }
+        #>
+
+        # Then when we read them back we can ensure we return 
+
+
         $env:METASYS_LAST_HEADERS = ConvertTo-Json -Depth 15 $headers
     }
 

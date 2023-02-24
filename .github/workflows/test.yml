@@ -1,0 +1,13 @@
+name: Run Unit Tests
+
+on: pull_request
+
+jobs:
+  pester-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+      - name: Run Tests
+        shell: pwsh
+        run: ./run-tests.ps1
