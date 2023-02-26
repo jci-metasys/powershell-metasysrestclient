@@ -94,6 +94,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             $env:METASYS_ACCESS_TOKEN = (ConvertTo-SecureString -AsPlainText "This is the token") | ConvertFrom-SecureString
             $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
             $env:METASYS_HOST = "oas12"
+            $env:METASYS_VERSION = $LatestVersion
         }
 
         Context "No parameters supplied" {
@@ -117,7 +118,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                 } -Exactly -Times 1 -Scope Context
             }
 
-            It "Should prompt for Path,  and Invoke Operation" {
+            It "Should Invoke Operation" {
                 Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient  -ParameterFilter {
                     $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v$LatestVersion" + "$($mockConsole.GetResponse([MockConsole]::PathPrompt))"
                 } -Exactly -Times 1 -Scope Context
