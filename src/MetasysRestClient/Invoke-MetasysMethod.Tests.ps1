@@ -63,6 +63,27 @@ BeforeAll {
             expires     = $expires
         }
     }
+    <# We can't control how headers are sorted so to compare expect/actual response
+    we'll always expect sorted headers, and we'll sort the actual headers.
+    #>
+
+    # Expect the status line, then 0 or more header lines, then a blank line and theen
+    # the body
+    function sortHeaders {
+        param(
+            [Parameter(ValueFromPipeline = $true)]
+            [string]$InputString
+        )
+        # make this split on new line work with either line ending \r or \r\n
+        #https://stackoverflow.com/a/42216677/697188
+        $lines = $InputString -split '\r?\n'
+
+        $blankLineIndex = [Array]::IndexOf($lines, "")
+        $headerLines = ($lines[1..($blankLineIndex - 1)] | Sort-Object) -join ([Environment]::NewLine)
+        $theRest = ($lines[$blankLineIndex..$lines.Length]) -join ([Environment]::NewLine)
+
+        $lines[0] + ([Environment]::NewLine) + $headerLines + ([Environment]::NewLine) + $theRest
+    }
 }
 
 Describe "Invoke-MetasysMethod" -Tag Unit {
@@ -285,9 +306,9 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             }
             $expectedString = @"
 200 (OK)
-Header2: Header 2
-Header1: This is header 1
 Content-Type: application/json
+Header1: This is header 1
+Header2: Header 2
 
 
 "@
@@ -324,33 +345,16 @@ Content-Type: application/json
             }
             $expectedString = @"
 400 (Bad Request)
-Header2: Header 2
-Header1: This is header 1
 Content-Type: application/json
+Header1: This is header 1
+Header2: Header 2
 
 "hello"
 "@
 
             # Since header order isn't important or guaranteed we'll sort the headers before checking
-            $sortHeaders = {
-                param(
-                    [string]$InputString
-                )
-                # make this split on new line work with either line ending \r or \r\n
-                #https://stackoverflow.com/a/42216677/697188
-                $lines = $InputString -split '\r?\n'
 
-                $headerLines = ($lines[1..3] | Sort-Object) -join ([Environment]::NewLine)
-
-                @"
-$($lines[0])
-$headerLines
-$($lines[4])
-$($lines[5])
-"@
-            }
-
-            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders
             $actual | Should -Be  $expectedString
         }
     }
