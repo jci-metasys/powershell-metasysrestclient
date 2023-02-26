@@ -138,12 +138,14 @@ function Connect-MetasysAccount {
         # Add the attributes to the attributes collection
         $AttributeCollection.Add($ParameterAttribute)
 
-        # Generate and set the ValidateSet
+        # Generate and set the ValidateSet, but only if aliases are found
         $arrSet = ReadAliases
-        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+        if ($arrSet) {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
 
-        # Add the ValidateSet to the attributes collection
-        $AttributeCollection.Add($ValidateSetAttribute)
+            # Add the ValidateSet to the attributes collection
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
 
         # Create and return the dynamic parameter
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
