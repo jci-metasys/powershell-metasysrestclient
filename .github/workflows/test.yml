@@ -8,6 +8,11 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v3
+      - name: Install from PSGallery
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Microsoft.Powershell.SecretManagement
       - name: Run Tests
         shell: pwsh
         run: ./run-tests.ps1
