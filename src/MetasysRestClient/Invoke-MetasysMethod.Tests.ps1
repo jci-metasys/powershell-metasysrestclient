@@ -161,7 +161,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             $env:METASYS_VERSION = $LatestVersion
             $env:METASYS_HOST = "oas12"
             $env:METASYS_USER_NAME = "api"
-            $env:METASYS_VERSION = $LatestVersion
+            $env:METASYS_SKIP_CERTIFICATE_CHECK = $false
         }
 
         Context "An operation is invoked, but session is expired" {

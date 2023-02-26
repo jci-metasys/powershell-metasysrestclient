@@ -15,4 +15,6 @@ jobs:
           Install-Module Microsoft.Powershell.SecretManagement
       - name: Run Tests
         shell: pwsh
-        run: ./run-tests.ps1
+        run: |
+          # $InformationPreference = "Continue"
+          ./run-tests.ps1

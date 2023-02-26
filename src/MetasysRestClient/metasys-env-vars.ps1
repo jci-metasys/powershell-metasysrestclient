@@ -84,7 +84,7 @@ class MetasysEnvVars {
             }
         #>
 
-        # Then when we read them back we can ensure we return 
+        # Then when we read them back we can ensure we return
 
 
         $env:METASYS_LAST_HEADERS = ConvertTo-Json -Depth 15 $headers
