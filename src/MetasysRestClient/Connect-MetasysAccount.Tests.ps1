@@ -24,6 +24,9 @@ BeforeAll {
 
     Set-Variable -Name LatestVersion -Value 5 -Option Constant
 
+    #Override any default Version
+    $env:METASYS_DEFAULT_API_VERSION = $LatestVersion
+
     function CreateLoginResponse {
         param(
             [string]$accessToken = "test token",
