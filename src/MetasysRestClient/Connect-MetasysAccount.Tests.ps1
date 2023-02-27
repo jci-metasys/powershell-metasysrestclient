@@ -22,7 +22,7 @@ BeforeAll {
 
     . ./MockConsole.ps1
 
-    Set-Variable -Name LatestVersion -Value 4 -Option Constant
+    Set-Variable -Name LatestVersion -Value 5 -Option Constant
 
     function CreateLoginResponse {
         param(
