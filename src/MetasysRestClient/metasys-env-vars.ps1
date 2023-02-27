@@ -70,6 +70,9 @@ class MetasysEnvVars {
         $env:METASYS_LAST_STATUS_DESCRIPTION = $null
         $env:METASYS_LAST_HEADERS = $null
         $env:METASYS_USER_NAME = $null
+        $env:METASYS_SKIP_CHECK_NOT_SECURE = $null
+        $env:METASYS_SKIP_CERTIFICATE_CHECK = $null
+        $env:METASYS_DEFAULT_API_VERSION = $null
     }
 
     static [void] setHeaders([Hashtable]$headers) {
@@ -104,14 +107,21 @@ class MetasysEnvVars {
     }
 
     static [Boolean] getDefaultSkipCheck() {
-        return $env:METASYS_SKIP_CHECK_NOT_SECURE
+        # Need to convert string value into Boolean
+        if ($env:METASYS_SKIP_CHECK_NOT_SECURE -eq "True") {
+            return $true
+        }
+        else {
+            return $false
+        }
     }
 
     static [Boolean] getSkipCertificateCheck() {
         # Need to convert string value into Boolean
         if ($env:METASYS_SKIP_CERTIFICATE_CHECK -eq "True") {
             return $true
-        } else {
+        }
+        else {
             return $false
         }
     }
