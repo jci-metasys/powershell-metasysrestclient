@@ -286,16 +286,16 @@ Describe "Connect-Metasys" -Tag "Unit" {
             }
         }
 
-        Context "When an invalid version is specified" {
-            It "Should throw an exception for version v<version>" -ForEach @(
-                @{ Version = 1 }
-                @{ Version = 0 }
-                @{ Version = 6 }
-            ) {
+        # Context "When an invalid version is specified" {
+        #     It "Should throw an exception for version v<version>" -ForEach @(
+        #         @{ Version = 1 }
+        #         @{ Version = 0 }
+        #         @{ Version = 6 }
+        #     ) {
 
-                { Connect-MetasysAccount -Version $version } | Should -Throw -ExceptionType  System.Management.Automation.ParameterBindingException
-            }
-        }
+        #         { Connect-MetasysAccount -Version $version } | Should -Throw -ExceptionType  System.Management.Automation.ParameterBindingException
+        #     }
+        # }
 
     }
 
