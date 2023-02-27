@@ -12,19 +12,24 @@ function aSecretVaultIsAvailable {
     param()
 
     $vaultAvailable = $false
-    try {
+
+    $secretManagementInstalled = Get-Module -ListAvailable Microsoft.PowerShell.SecretManagement
+
+    if ($secretManagementInstalled) {
+
         # if this works we know we have a registered vault
         $secretVault = Get-SecretVault
 
-        # let's see if we can import the module for the vault
-        $module = Import-Module -Name $secretVault.ModuleName -EA SilentlyContinue -PassThru
+        if ($secretVault) {
 
-        if ($module) {
-            $vaultAvailable = $true
+
+            # let's see if we can find the module for the vault
+            $module = Get-Module -ListAvailable $secretVault.ModuleName
+
+            if ($module) {
+                $vaultAvailable = $true
+            }
         }
-
-    }
-    catch {
     }
 
     if (!$vaultAvailable) {
