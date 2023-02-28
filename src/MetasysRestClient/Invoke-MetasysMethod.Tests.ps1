@@ -74,13 +74,14 @@ BeforeAll {
             [Parameter(ValueFromPipeline = $true)]
             [string]$InputString
         )
+
         # make this split on new line work with either line ending \r or \r\n
         #https://stackoverflow.com/a/42216677/697188
         $lines = $InputString -split '\r?\n'
 
         $blankLineIndex = [Array]::IndexOf($lines, "")
         $headerLines = ($lines[1..($blankLineIndex - 1)] | Sort-Object) -join ([Environment]::NewLine)
-        $theRest = ($lines[$blankLineIndex..$lines.Length]) -join ([Environment]::NewLine)
+        $theRest = ($lines[$blankLineIndex..($lines.Length - 1)]) -join ([Environment]::NewLine)
 
         $lines[0] + ([Environment]::NewLine) + $headerLines + ([Environment]::NewLine) + $theRest
     }
