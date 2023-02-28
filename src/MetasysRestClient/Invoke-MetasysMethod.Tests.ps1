@@ -315,7 +315,7 @@ Header2: Header 2
 
 "@
             $expectedString += [System.Text.Encoding]::UTF8.GetString($response.Content)
-            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders
             $actual | Should -Be  $expectedString
         }
     }
