@@ -22,7 +22,7 @@ BeforeAll {
 
     . ./MockConsole.ps1
 
-    Set-Variable -Name LatestVersion -Value 4 -Option Constant
+    Set-Variable -Name LatestVersion -Value (Get-MetasysLatestVersion) -Option Constant
 
     function CreateLoginResponse {
         param(
@@ -54,6 +54,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient
                 Mock Get-SavedMetasysUsers -ModuleName MetasysRestClient
                 Mock Set-SavedMetasysPassword -ModuleName MetasysRestClient
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
 
                 # qualify with $script to avoid unused-vars warnings from PSScriptAnalyzer
                 $script:response = Connect-MetasysAccount
@@ -133,6 +134,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 Mock Invoke-RestMethod -ModuleName MetasysRestClient {
                     $loginResponse
                 }
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
 
                 $script:metasysHost = "aHost"
                 $script:userName = "aUser"

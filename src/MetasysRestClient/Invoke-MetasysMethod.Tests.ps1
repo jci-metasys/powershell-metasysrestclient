@@ -51,7 +51,7 @@ BeforeAll {
 
     . ./MockConsole.ps1
 
-    Set-Variable -Name LatestVersion -Value 4 -Option Constant
+    Set-Variable -Name LatestVersion -Value (Get-MetasysLatestVersion) -Option Constant
 
     function CreateLoginResponse {
         param(
@@ -108,6 +108,8 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                 Mock Invoke-WebRequest -ModuleName MetasysRestClient {
 
                 }
+
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
 
                 Invoke-MetasysMethod
             }
@@ -172,6 +174,10 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                 Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient {
                     ConvertTo-SecureString -String "ThePassword" -AsPlainText
                 }
+                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
+                    $null
+                }
+
                 Invoke-MetasysMethod /objects
             }
 

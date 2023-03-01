@@ -180,7 +180,7 @@ function Invoke-MetasysMethod {
 
 
         if (!$SkipCertificateCheck.IsPresent) {
-            $SkipCertificateCheck = [MetasysEnvVars]::getDefaultSkipCheck()
+            $SkipCertificateCheck = Get-MetasysSkipSecureCheckNotSecure
         }
 
         $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
@@ -195,7 +195,7 @@ function Invoke-MetasysMethod {
 
         If ($Version -eq "") {
             # Use the version from last cma call, else the default api version (if set), else latest version
-            $Version = $env:METASYS_VERSION ?? $env:METASYS_DEFAULT_API_VERSION ?? $LatestVersion
+            $Version = $env:METASYS_VERSION ?? (Get-MetasysDefaultApiVersion) ?? (Get-MetasysLatestVersion)
             Write-Information "No version specified. Defaulting to v$Version"
         }
 
@@ -211,6 +211,9 @@ function Invoke-MetasysMethod {
                 if ([DateTimeOffset]::UtcNow -gt $expiration) {
                     # Token is expired, attempt to connect with previously used site host and user name
                     try {
+                        Write-Information "Session has expired. Trying to reconnect with this command:"
+                        Write-Information "Connect-MetasysAccount -SiteHost $([MetasysEnvVars]::getSiteHost()) -UserName $([MetasysEnvVars]::getUserName()) -Version $($Version) `
+-                         -SkipCertificateCheck:$($SkipCertificateCheck)"
                         Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version $Version `
                             -SkipCertificateCheck:$SkipCertificateCheck
                     }
