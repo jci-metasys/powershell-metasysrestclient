@@ -63,6 +63,28 @@ BeforeAll {
             expires     = $expires
         }
     }
+    <# We can't control how headers are sorted so to compare expect/actual response
+    we'll always expect sorted headers, and we'll sort the actual headers.
+    #>
+
+    # Expect the status line, then 0 or more header lines, then a blank line and theen
+    # the body
+    function sortHeaders {
+        param(
+            [Parameter(ValueFromPipeline = $true)]
+            [string]$InputString
+        )
+
+        # make this split on new line work with either line ending \r or \r\n
+        #https://stackoverflow.com/a/42216677/697188
+        $lines = $InputString -split '\r?\n'
+
+        $blankLineIndex = [Array]::IndexOf($lines, "")
+        $headerLines = ($lines[1..($blankLineIndex - 1)] | Sort-Object) -join ([Environment]::NewLine)
+        $theRest = ($lines[$blankLineIndex..($lines.Length - 1)]) -join ([Environment]::NewLine)
+
+        $lines[0] + ([Environment]::NewLine) + $headerLines + ([Environment]::NewLine) + $theRest
+    }
 }
 
 Describe "Invoke-MetasysMethod" -Tag Unit {
@@ -286,13 +308,13 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             $expectedString = @"
 200 (OK)
 Content-Type: application/json
-Header2: Header 2
 Header1: This is header 1
+Header2: Header 2
 
 
 "@
             $expectedString += [System.Text.Encoding]::UTF8.GetString($response.Content)
-            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders
             $actual | Should -Be  $expectedString
         }
     }
@@ -330,7 +352,10 @@ Header2: Header 2
 
 "hello"
 "@
-            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders
+
+            # Since header order isn't guaranteed we'll sort the headers before checking
+
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders
             $actual | Should -Be  $expectedString
         }
     }
