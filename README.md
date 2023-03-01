@@ -1603,8 +1603,3 @@ tests change into that directory and invoke pester:
 PS > cd src/MetasysRestClient
 PS > Invoke-Pester
 ```
-
-### Issues with tests
-
-- The one that tests -IncludeResponseHeader seems to be non-deterministic.
-  Sometimes the order of `Header1` and `Header2` swap.
