@@ -109,6 +109,8 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
                 }
 
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
+
                 Invoke-MetasysMethod
             }
 
@@ -172,6 +174,10 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                 Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient {
                     ConvertTo-SecureString -String "ThePassword" -AsPlainText
                 }
+                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
+                    $null
+                }
+
                 Invoke-MetasysMethod /objects
             }
 

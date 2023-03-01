@@ -90,16 +90,6 @@ class MetasysEnvVars {
         return "$($env:METASYS_LAST_STATUS_CODE) ($($env:METASYS_LAST_STATUS_DESCRIPTION))"
     }
 
-    static [Boolean] getDefaultSkipCheck() {
-        # Need to convert string value into Boolean
-        if ($env:METASYS_SKIP_CHECK_NOT_SECURE -eq "True") {
-            return $true
-        }
-        else {
-            return $false
-        }
-    }
-
     static [Boolean] getSkipCertificateCheck() {
         # Need to convert string value into Boolean
         if ($env:METASYS_SKIP_CERTIFICATE_CHECK -eq "True") {
@@ -123,3 +113,4 @@ class MetasysEnvVars {
     }
 
 }
+
