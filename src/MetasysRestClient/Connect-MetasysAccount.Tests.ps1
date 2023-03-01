@@ -38,7 +38,7 @@ BeforeAll {
 
 Describe "Connect-Metasys" -Tag "Unit" {
     Describe "When Secret Vault does not have the credentials" {
-        Context "No parameters supplied" {
+        Context "No parameters supplied and preferences for version and skip check not set" {
             BeforeAll {
                 Clear-MetasysEnvVariables
                 $mockConsole = [MockConsole]::new()
@@ -120,6 +120,62 @@ Describe "Connect-Metasys" -Tag "Unit" {
                     $UserName -eq $mockConsole.GetUserName() -and
                     (ConvertFrom-SecureString -AsPlainText $Password) -eq $mockConsole.GetPasswordAsPlainText()
                 } -Scope Context -Times 1 -Exactly
+            }
+
+        }
+
+        Context "No parameters passed, but preferences for version and skip cert check are set" {
+            BeforeAll {
+                Clear-MetasysEnvVariables
+                $mockConsole = [MockConsole]::new()
+                Mock Read-Host -ModuleName MetasysRestClient {
+                    $mockConsole.ReadHost($Prompt)
+                }
+
+                $loginResponse = CreateLoginResponse
+                Mock Invoke-RestMethod -ModuleName MetasysRestClient {
+                    $loginResponse
+                }
+
+                Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient
+                Mock Get-SavedMetasysUsers -ModuleName MetasysRestClient
+                Mock Set-SavedMetasysPassword -ModuleName MetasysRestClient
+
+                $oldVersion = "3"
+
+                # So in this test the following two preferences have been set by the user
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient {
+                    $oldVersion
+                }
+
+                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
+                    $true
+                }
+
+                # qualify with $script to avoid unused-vars warnings from PSScriptAnalyzer
+                $script:response = Connect-MetasysAccount
+            }
+
+
+
+            AfterAll {
+                Clear-MetasysEnvVariables
+            }
+
+            It "Should invoke Invoke-RestMethod with correct version and skip check" {
+                $expectedBody = @{
+                    username = $mockConsole.GetUserName();
+                    password = $mockConsole.GetPasswordAsPlainText();
+                } | ConvertTo-Json -Compress
+
+                Should -Invoke Invoke-RestMethod -ModuleName MetasysRestClient -ParameterFilter {
+                    $Method -eq 'Post' -and
+                    $ContentType -eq 'application/json' -and
+                    $Uri.ToString() -eq "https://$($mockConsole.GetMetasysHost())/api/v$oldVersion/login" -and
+                    ($Body | ConvertFrom-Json | ConvertTo-Json -Compress) -eq $expectedBody -and
+                    $SkipCertificateCheck -eq $true
+
+                } -Times 1 -Exactly -Scope Context
             }
 
         }
