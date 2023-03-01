@@ -1,5 +1,7 @@
 BeforeAll {
     Import-Module -Force -Name ./
+
+    $script:secretManagementInstalled = Get-Module -ListAvailable Microsoft.PowerShell.SecretManagement
 }
 
 # Since all of the password management functions depend on secret management it's useful
@@ -10,7 +12,9 @@ BeforeAll {
 Describe "Password Management When No Vaults Registered" {
     Context "Get-SavedMetasysUsers" {
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysUsers
             if (!$result) {
@@ -30,7 +34,9 @@ Describe "Password Management When No Vaults Registered" {
     Context "Get-SavedMetasysPassword" {
 
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
@@ -50,7 +56,9 @@ Describe "Password Management When No Vaults Registered" {
     Context "Set-SavedMetasysPassword" {
 
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
             if (!$result) {
@@ -70,7 +78,9 @@ Describe "Password Management When No Vaults Registered" {
 
     Context "Remove-SavedMetasysPassword" {
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Remove-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
@@ -93,8 +103,10 @@ Describe "Password Management When No Vaults Registered" {
 Describe "Password Management When Vault Registered but the module for that vault is not installed" {
     Context "Get-SavedMetasysUsers" {
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient {
-                @{ ModuleName = "DoesNotExist" }
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient {
+                    @{ ModuleName = "DoesNotExist" }
+                }
             }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysUsers
@@ -115,7 +127,9 @@ Describe "Password Management When Vault Registered but the module for that vaul
     Context "Get-SavedMetasysPassword" {
 
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
@@ -135,7 +149,9 @@ Describe "Password Management When Vault Registered but the module for that vaul
     Context "Set-SavedMetasysPassword" {
 
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
             if (!$result) {
@@ -155,7 +171,9 @@ Describe "Password Management When Vault Registered but the module for that vaul
 
     Context "Remove-SavedMetasysPassword" {
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Remove-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
@@ -176,11 +194,13 @@ Describe "Password Management When Vault Registered but the module for that vaul
 
 
 
-Describe "Password Management When a Singnle Vault is registered" {
+Describe "Password Management When a Single Vault is registered" {
     Context "Get-SavedMetasysUsers" {
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient {
-                @{ ModuleName = "DoesNotExist" }
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient {
+                    @{ ModuleName = "DoesNotExist" }
+                }
             }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysUsers
@@ -201,7 +221,9 @@ Describe "Password Management When a Singnle Vault is registered" {
     Context "Get-SavedMetasysPassword" {
 
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Get-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
@@ -221,7 +243,9 @@ Describe "Password Management When a Singnle Vault is registered" {
     Context "Set-SavedMetasysPassword" {
 
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
             if (!$result) {
@@ -241,7 +265,9 @@ Describe "Password Management When a Singnle Vault is registered" {
 
     Context "Remove-SavedMetasysPassword" {
         BeforeAll {
-            Mock Get-SecretVault -ModuleName MetasysRestClient
+            if ($script:secretManagementInstalled) {
+                Mock Get-SecretVault -ModuleName MetasysRestClient
+            }
             Mock Write-Information -ModuleName MetasysRestClient
             $result = Remove-SavedMetasysPassword -SiteHost anything -UserName anything
             if (!$result) {
