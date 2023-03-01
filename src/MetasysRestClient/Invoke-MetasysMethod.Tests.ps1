@@ -51,7 +51,7 @@ BeforeAll {
 
     . ./MockConsole.ps1
 
-    Set-Variable -Name LatestVersion -Value 4 -Option Constant
+    Set-Variable -Name LatestVersion -Value (Get-MetasysLatestVersion) -Option Constant
 
     function CreateLoginResponse {
         param(

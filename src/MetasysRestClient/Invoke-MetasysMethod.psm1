@@ -195,7 +195,7 @@ function Invoke-MetasysMethod {
 
         If ($Version -eq "") {
             # Use the version from last cma call, else the default api version (if set), else latest version
-            $Version = $env:METASYS_VERSION ?? $env:METASYS_DEFAULT_API_VERSION ?? $LatestVersion
+            $Version = $env:METASYS_VERSION ?? $env:METASYS_DEFAULT_API_VERSION ?? (Get-MetasysLatestVersion)
             Write-Information "No version specified. Defaulting to v$Version"
         }
 

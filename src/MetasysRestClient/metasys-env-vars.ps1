@@ -104,7 +104,8 @@ class MetasysEnvVars {
         # Need to convert string value into Boolean
         if ($env:METASYS_SKIP_CERTIFICATE_CHECK -eq "True") {
             return $true
-        } else {
+        }
+        else {
             return $false
         }
     }

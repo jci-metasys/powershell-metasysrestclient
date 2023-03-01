@@ -207,7 +207,7 @@ function Connect-MetasysAccount {
         }
 
         if ($Version -eq "") {
-            $Version = $env:METASYS_DEFAULT_API_VERSION ?? $LatestVersion
+            $Version = $env:METASYS_DEFAULT_API_VERSION ?? (Get-MetasysLatestVersion)
             Write-Information "No version specified. Defaulting to v$Version"
         }
 

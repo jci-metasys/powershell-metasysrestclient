@@ -8,7 +8,7 @@
     # Script module or binary module file associated with this manifest.
     RootModule           = 'Invoke-MetasysMethod.psm1'
 
-    NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1", "Read-ConfigFile.ps1")
+    NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1", "Read-ConfigFile.ps1", "constants.ps1")
 
     # Version number of this module.
     ModuleVersion        = '2.1.3'
@@ -70,7 +70,7 @@
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport    = 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse',
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
-    'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount'
+    'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount', 'Get-MetasysLatestVersion'
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport      = @()
