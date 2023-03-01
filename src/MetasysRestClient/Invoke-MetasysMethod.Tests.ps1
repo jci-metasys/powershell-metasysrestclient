@@ -146,9 +146,35 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
         }
 
+        Context "Version and SkipCertificateCheck not supplied" {
+
+            It "Should use user preferences if set" {
+
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient {
+                    "3"
+                }
+
+                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
+                    $true
+                }
+
+                Invoke-MetasysMethod /objects
+
+                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
+                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v3/objects" -and
+                    $SkipCertificateCheck -eq $true
+                } -Exactly -Times 1 -Scope Context
+
+            }
+
+        }
 
 
     }
+
 
 
 
