@@ -90,7 +90,13 @@ class MetasysEnvVars {
     }
 
     static [Boolean] getDefaultSkipCheck() {
-        return $env:METASYS_SKIP_CHECK_NOT_SECURE
+        # Need to convert string value into Boolean
+        if ($env:METASYS_SKIP_CHECK_NOT_SECURE -eq "True") {
+            return $true
+        }
+        else {
+            return $false
+        }
     }
 
     static [Boolean] getSkipCertificateCheck() {
