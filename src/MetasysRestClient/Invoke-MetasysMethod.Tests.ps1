@@ -280,16 +280,15 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
     }
 
     Describe 'When -IncludeResponseHeaders with success response' {
+        BeforeAll {
+            Clear-MetasysEnvVariables
+            $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
+            $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+            $env:METASYS_VERSION = $LatestVersion
+            $env:METASYS_HOST = "oas12"
+        }
 
         It "Should display response headers and then the response body" {
-            BeforeAll {
-                Clear-MetasysEnvVariables
-                $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
-                $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
-                $env:METASYS_VERSION = $LatestVersion
-                $env:METASYS_HOST = "oas12"
-            }
-
 
             $response = @{
                 StatusCode        = 200;
