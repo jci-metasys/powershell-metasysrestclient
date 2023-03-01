@@ -13,27 +13,38 @@ and this project adheres to
 - Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
   `Send-MetasysCommand`, ...)
 
-## [2.1.3-alpha4] - 2023-02-23
+## [2.2.0-rc1] - 2023-03-01
 
-- Make -Alias a positional parameter
-- Add tab completions to -Alias
+### Added
+
+- Add support for a config file to provide an alias for hosts, along with other
+  connection properties (`alias`, `hostname`, `username`, `version`,
+  `skip-certificate-check`)
+
+  - Add new positional parameter -Alias (you can now make a connection as simply
+    as `cma {alias}`)
+  - Add tab completion for -Alias parameter
+
+- A new information stream message when attempting to reconnect
+- Repo now has an automated unit test workflow on pr and merge to main
+- Added user preference for METASYS_SKIP_CHECK_NOT_SECURE
+- Add support for response content types of type `text/*`
+
+### Changed
+
+- Change version parameter to string and remove validation
 - Update docs to note that any cli parameters supplied to Connect-MetasysAccount
   override there related properties found in the config file.
 
-## [2.1.3-alpha3] - 2023-02-21
+### Fixed
 
-- Make `-MetasysHost` a positional parameter. With the other changes from
-  `2.1.3-alpha2` you can now make a connection as simply as `cma {alias}`.
-
-## [2.1.3-alpha2] - 2023-02-21
-
-- Add support for a config file to provide an alias for hosts, along with other
-  connection properties (like username, version, skip-certificate-check)
-
-## [2.1.3-alpha1] - 2023-01-01
-
-- Add support for response content types of type `text/*`
-- Change version parameter to string and remove validation
+- Issues with "boolean" environment variables not back to booleans correctly
+- Issue in tests that relied on order of headers
+- Issue in checking to see if secret management/secret store is installed and
+  configured
+- Issue in clearing env variables between runs and between tests
+- Issue in tests where different versions of $LatestVersion were used
+- Issues in tests where user preferences were not accounted for or honored
 
 ## [2.1.2] - 2022-06-21
 
@@ -109,15 +120,9 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha4...HEAD
-[2.1.3-alpha4]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha3...v2.1.3-alpha4
-[2.1.3-alpha3]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha2...v2.1.3-alpha3
-[2.1.3-alpha2]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.3-alpha1...v2.1.3-alpha2
-[2.1.3-alpha1]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.1.3-alpha1
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.2.0-rc1...HEAD
+[2.2.0-rc1]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.2.0-rc1
 [2.1.2]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.0...v2.1.2
 [2.1.0]:
