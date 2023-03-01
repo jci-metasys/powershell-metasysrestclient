@@ -211,6 +211,9 @@ function Invoke-MetasysMethod {
                 if ([DateTimeOffset]::UtcNow -gt $expiration) {
                     # Token is expired, attempt to connect with previously used site host and user name
                     try {
+                        Write-Information "Session has expired. Trying to reconnect with this command:"
+                        Write-Information "Connect-MetasysAccount -SiteHost $([MetasysEnvVars]::getSiteHost()) -UserName $([MetasysEnvVars]::getUserName()) -Version $($Version) `
+-                         -SkipCertificateCheck:$($SkipCertificateCheck)"
                         Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version $Version `
                             -SkipCertificateCheck:$SkipCertificateCheck
                     }
