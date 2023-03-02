@@ -1512,9 +1512,9 @@ A host entry has the following properties:
 - `alias` **required** `string` - An alias to assign to that host. This alias
   can then be used as the `MetasysHost` parameter in an invocation of
   `Connect-MetasysAccount`
-- `user` _optional_ `string` - The user account to use to log into `hostname`.
-  If specified, this will be used as the `UserName` parameter in an invocation
-  of `Connect-MetasysAccount`.
+- `username` _optional_ `string` - The user account to use to log into
+  `hostname`. If specified, this will be used as the `UserName` parameter in an
+  invocation of `Connect-MetasysAccount`.
 - `version` _optional_ `string` - The version of the API to use for this host.
 - `skip-certificate-check` _optional_ `switch` - Set this to any value to
   specify that you want certificate checking skipped. Typically you would use
@@ -1540,7 +1540,7 @@ Assume you had the following content in `$HOME/.metasysrestclient`
     {
       "hostname": "myhost.domain",
       "alias": "myhost2",
-      "user": "john_smith",
+      "username": "john_smith",
       "version": "4",
       "skip-certificate-check": true
     }
