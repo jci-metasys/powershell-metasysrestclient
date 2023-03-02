@@ -80,10 +80,22 @@ BeforeAll {
         $lines = $InputString -split '\r?\n'
 
         $blankLineIndex = [Array]::IndexOf($lines, "")
-        $headerLines = ($lines[1..($blankLineIndex - 1)] | Sort-Object) -join ([Environment]::NewLine)
-        $theRest = ($lines[$blankLineIndex..($lines.Length - 1)]) -join ([Environment]::NewLine)
+        $headerLines = ($lines[1..($blankLineIndex - 1)] | Sort-Object) -join "`n"
+        $theRest = ($lines[$blankLineIndex..($lines.Length - 1)]) -join "`n"
 
-        $lines[0] + ([Environment]::NewLine) + $headerLines + ([Environment]::NewLine) + $theRest
+        $lines[0] + "`n" + $headerLines + "`n" + $theRest
+    }
+
+
+    # Serialization of JSON differs between Windows and Linux (macOS) in the use of line endings.
+    # So we convert all line endings to unix line endings prior to string comparisons
+    function dos2unix {
+        param(
+            [Parameter(ValueFromPipeline = $true)]
+            [string]$InputString
+        )
+        ($InputString -split '\r?\n') -join "`n"
+
     }
 }
 
@@ -343,9 +355,9 @@ Header1: This is header 1
 Header2: Header 2
 
 
-"@
+"@ | dos2unix
             $expectedString += [System.Text.Encoding]::UTF8.GetString($response.Content)
-            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders | dos2unix
             $actual | Should -Be  $expectedString
         }
     }
@@ -382,11 +394,11 @@ Header1: This is header 1
 Header2: Header 2
 
 "hello"
-"@
+"@ | dos2unix
 
             # Since header order isn't guaranteed we'll sort the headers before checking
 
-            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders
+            $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders | dos2unix
             $actual | Should -Be  $expectedString
         }
     }
