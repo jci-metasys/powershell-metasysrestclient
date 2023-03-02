@@ -274,6 +274,56 @@ Describe "Connect-Metasys" -Tag "Unit" {
             }
         }
 
+        Context "Only alias is passed and the config file includes username, hostname, skip-check and version" {
+            BeforeAll {
+                Clear-MetasysEnvVariables
+
+                $script:metasysHost = "host.com"
+                $script:version = "4"
+                $script:username = "api"
+                Mock Get-Content -ModuleName MetasysRestClient {
+                    @"
+                    {
+                        "hosts": {
+                            "alias": "host",
+                            "hostname": "$($script:metasysHost)",
+                            "username": "$($script:username)",
+                            "version": "$($script:version)",
+                            "skip-certificate-check": true
+                        }
+                    }
+"@
+                }
+                $loginResponse = CreateLoginResponse
+                Mock Invoke-RestMethod -ModuleName MetasysRestClient {
+                    $loginResponse
+                }
+
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
+                $mockConsole = [MockConsole]::new()
+                Mock Read-Host -ModuleName MetasysRestClient {
+                    $mockConsole.ReadHost($Prompt)
+                }
+
+                $script:response = Connect-MetasysAccount host
+            }
+
+            AfterAll {
+                Clear-MetasysEnvVariables
+            }
+
+
+            It 'Should invoke cma with correct hostname, username, version and the skip-check' {
+                Should -Invoke Invoke-RestMethod -ModuleName MetasysRestClient -ParameterFilter {
+
+                    $Uri.ToString() -eq "https://$($script:metasysHost)/api/v$($script:version)/login" -and
+                    ($Body | ConvertFrom-Json).username -eq $script:username -and
+                    $SkipCertificateCheck -eq $true
+
+                } -Times 1 -Exactly -Scope Context
+            }
+        }
+
     }
 
     Describe "When secret vault is used but not configured" {

@@ -178,7 +178,7 @@ function Connect-MetasysAccount {
             }
             if ($HostEntryProperties['skip-certificate-check']) {
                 $SkipCertificateCheck = $true
-                Write-Information "Alias s'$($HostEntry.alias)' is configured to skip certificate checking."
+                Write-Information "Alias '$($HostEntry.alias)' is configured to skip certificate checking."
             }
         }
 
@@ -212,10 +212,13 @@ function Connect-MetasysAccount {
         }
 
         # Need to use $PSBoundParameters to check to see if a switch is present. (.IsPresent just casts the value to boolean, so if it was set to `false` IsPresent returns `$true`)
-        if(!$PSBoundParameters.ContainsKey('SkipCertificateCheck')) {
+        if (!$PSBoundParameters.ContainsKey('SkipCertificateCheck')) {
             # switch parameter was not passed by the caller
-            # default to the user preference
-            $SkipCertificateCheck = Get-MetasysSkipSecureCheckNotSecure
+            # however, it may have been set by a host entry in the .metasysrestclient config file
+            # So only use the default if the switch in the config file wasn't explicitly set
+            if (!$SkipCertificateCheck) {
+                $SkipCertificateCheck = Get-MetasysSkipSecureCheckNotSecure
+            }
         }
 
 
