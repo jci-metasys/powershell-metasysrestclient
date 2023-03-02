@@ -98,8 +98,8 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 } -Times 1 -Exactly -Scope Context
             }
 
-            It 'Should set $env:METASYS_ACCESS_TOKEN as an encrypted string' {
-                $env:METASYS_ACCESS_TOKEN | Should -Be (ConvertFrom-SecureString (ConvertTo-SecureString -AsPlainText $loginResponse.accessToken))
+            It 'Should set $env:METASYS_ACCESS_TOKEN as an encrypted string whose decrypted value matches what we expect' {
+                $env:METASYS_ACCESS_TOKEN | ConvertTo-SecureString | ConvertFrom-SecureString -AsPlainText | Should -Be  $loginResponse.accessToken
             }
 
             It 'Should set $env:METASYS_EXPIRES' {
@@ -258,7 +258,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
             }
 
             It 'Should set $env:METASYS_ACCESS_TOKEN' {
-                $env:METASYS_ACCESS_TOKEN | Should -Be (ConvertFrom-SecureString (ConvertTo-SecureString -AsPlainText $loginResponse.accessToken))
+                $env:METASYS_ACCESS_TOKEN | ConvertTo-SecureString | ConvertFrom-SecureString -AsPlainText | Should -Be  $loginResponse.accessToken
             }
 
             It 'Should set $env:METASYS_EXPIRES' {
