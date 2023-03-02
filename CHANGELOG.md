@@ -13,7 +13,7 @@ and this project adheres to
 - Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
   `Send-MetasysCommand`, ...)
 
-## [2.2.0-rc1] - 2023-03-01
+## [2.2.0-rc2] - 2023-03-01
 
 ### Added
 
@@ -121,8 +121,8 @@ No changes since alpha 3
 
 [unreleased]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.2.0-rc1...HEAD
-[2.2.0-rc1]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.2.0-rc1
+[2.2.0-rc2]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.2.0-rc2
 [2.1.2]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.0...v2.1.2
 [2.1.0]:
