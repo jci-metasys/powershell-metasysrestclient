@@ -54,6 +54,12 @@ following command to configure SecretStore. _Use at your own risk._
 PS > Set-SecretStoreConfiguration -Authentication None -Interaction None
 ```
 
+> **Note** \
+> The system will still prompt you for a password. Go ahead and enter a password,
+> then enter it again for confirmation. Next the system will ask you to enter the
+> password a third time to confirm that you don't want a password. (Yes, I know this
+> is odd.)
+
 ### Authentication with Password
 
 If your vault will store sensitive passwords you'll want to set a password for
