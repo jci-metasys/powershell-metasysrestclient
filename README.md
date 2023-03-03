@@ -164,19 +164,17 @@ example we looked it up using `Get-SavedMetasysPassword`. See
 
 #### Starting a Session using Aliases
 
-Starting with version 2.1.3-alpha2 you use a
+Starting with version 2.2.0-rc2 you can use a
 [Configuration File](#configuration) to define aliases and other parameters for
 all of your hosts. Assuming I had a file in place for a host named
-`r12adsdaily.cg.na.jci.com` with an alias of `r12` I could type tye following.
+`r12adsdaily.cg.na.jci.com` with an alias of `r12` I could type just the
+following to connect to that host.
 
 ```powershell
-cma -h r12
+cma -Alias r12
 ```
 
-Note the use of the parameter alias `-h` to shorten the command even further.
-
-And now in 2.1.3-alpha3 you can specify the host with a positional parameter and
-just type
+Or since `Alias` is a positional parameter just type
 
 ```powershell
 cma r12
