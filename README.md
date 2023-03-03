@@ -1510,7 +1510,7 @@ A host entry has the following properties:
 - `hostname` **required** `string` - The resolvable hostname or ip address of a
   host.
 - `alias` **required** `string` - An alias to assign to that host. This alias
-  can then be used as the `MetasysHost` parameter in an invocation of
+  can then be used as the `Alias` parameter in an invocation of
   `Connect-MetasysAccount`
 - `username` _optional_ `string` - The user account to use to log into
   `hostname`. If specified, this will be used as the `UserName` parameter in an
@@ -1552,17 +1552,20 @@ Then the following two commands are equivalent as they both would attempt to
 connect to `myhost.domain`
 
 ```bash
-Connect-MetasysAccount -MetasysHost myhost
-Connect-MetasysAccount -MetasysHost myhost.domain
+cma myhost
+cma -MetasysHost myhost.domain
 ```
+
+> **Note** The `Alias` parameter is positional so you don't need to explicitly
+> state it. (Recall that `cma` is the alias for `Connect-MetasysAccount`.)
 
 Likewise the following two commands are equivalent. Both attempt to login to
 `myhost.domain` with a `UserName` of `john_smith`, using version `4` and
 skipping any certificate checks.
 
 ```bash
-Connect-MetasysAccount -MetasysHost myhost.domain -UserName john_smith -Version 4 -SkipCertificateCheck
-Connect-MetasysAccount -MetasysHost myhost2
+cma -MetasysHost myhost.domain -UserName john_smith -Version 4 -SkipCertificateCheck
+cma myhost2
 ```
 
 > **Note** \
@@ -1573,7 +1576,7 @@ Connect-MetasysAccount -MetasysHost myhost2
 For example
 
 ```bash
-Connect-MetasysAccount myhost2 -Version 3 -UserName bob
+cma myhost2 -Version 3 -UserName bob
 ```
 
 Will use a version `3` and user `bob` instead of the values in
@@ -1594,8 +1597,6 @@ etc.
 > to be used against known hosts using a self-signed certificate for testing purposes.
 > _Use at your own risk_.
 
-## Known Limitations
-
 ## Testing
 
 The tests are alongside the modules in `/src/MetasysRestClient`. To run the
@@ -1604,4 +1605,10 @@ tests change into that directory and invoke pester:
 ```powershell
 PS > cd src/MetasysRestClient
 PS > Invoke-Pester
+```
+
+Or simply use the script `runtests.ps1` in the root
+
+```powershell
+PS > ./runtests.ps1
 ```
