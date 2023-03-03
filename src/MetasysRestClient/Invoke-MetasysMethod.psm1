@@ -226,8 +226,7 @@ function Invoke-MetasysMethod {
 
                     # attempt to renew the token as it will expire soon
                     $uri = buildUri -siteHost ([MetasysEnvVars]::getSiteHost()) -version ([MetasysEnvVars]::getVersion()) -path "/refreshToken"
-                    $refreshRequest = buildRequest -uri $uri`
-                        -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
+                    $refreshRequest = buildRequest -uri $uri -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                     try {
                         Write-Information -Message "Attempting to refresh access token"
