@@ -354,18 +354,16 @@ function ConvertFrom-JsonSafely {
         [String]$json
     )
 
+    # Always use -AsHashtable since we have some enum sets that
+    # have keys that vary only in casing in the same enum set.
     try {
-        ConvertFrom-Json -InputObject $json
+        ConvertFrom-Json -AsHashtable -InputObject $json
     }
     catch {
-        try {
-            ConvertFrom-Json -AsHashtable -InputObject $json
-        }
-        catch {
-            # apparently this wasn't JSON so leave it as is
-            $json
-        }
+        # apparently this wasn't JSON so leave it as is
+        $json
     }
+
 }
 
 function Show-LastMetasysResponseBody {
