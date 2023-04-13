@@ -1,6 +1,6 @@
 # MetasysRestClient
 
-[![Unit Tests](https://github.com/metasys-server/powershell-metasysrestclient/actions/workflows/test.yml/badge.svg)](https://github.com/metasys-server/powershell-metasysrestclient/actions/workflows/test.yml)
+[![Unit Tests](https://github.com/jci-metasys/powershell-metasysrestclient/actions/workflows/test.yml/badge.svg)](https://github.com/metasys-server/powershell-metasysrestclient/actions/workflows/test.yml)
 
 A PowerShell module that sends HTTPS request to a Metasys device running Metasys
 REST API.
