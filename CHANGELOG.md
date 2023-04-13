@@ -13,6 +13,15 @@ and this project adheres to
 - Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
   `Send-MetasysCommand`, ...)
 
+## [2.3.0-rc1] - 2023-04-13
+
+### Added
+
+- Add `-Subscribe` parameter to `Invoke-MetasysMethod` (syntactic sugar for
+  adding a subscription to a resource, instead of using `-Headers`)
+- Add `Invoke-MetasysGetStream` which is used to receive server-sent events from
+  a site.
+
 ## [2.2.0] - 2023-03-21
 
 ### Added
