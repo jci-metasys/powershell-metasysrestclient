@@ -145,7 +145,7 @@ function Invoke-MetasysMethod {
         #
         # Alias: -h
         [Alias("h")]
-        [hashtable]$Headers,
+        [hashtable]$Headers = @{},
         # Add support for password to be passed in
         #
         # Alias: -p
@@ -159,7 +159,19 @@ function Invoke-MetasysMethod {
         #
         # Alias: -rh
         [Alias("rh")]
-        [Switch]$IncludeResponseHeaders
+        [Switch]$IncludeResponseHeaders,
+
+        # Add a subscription for this resource. Pass a `stream id` as the value
+        # of this parameter. For example `0915342b-4557-401e-a061-237d0bced15d` (
+        # assuming this is the stream id passed to you in the hello event of your stream
+        # )
+        #
+        # This is identical to including `METASYS-SUBSCRIBE` in `Headers` parameter.
+        # If you use both `Subscribe` and `Headers` the `Subscribe` parameter value is
+        # used
+        # Alias: s
+        [Alias("s")]
+        [Guid]$Subscribe
     )
 
     BEGIN {
@@ -249,6 +261,10 @@ function Invoke-MetasysMethod {
 
     # PROCESS block is needed if you accept input from pipeline like Body in this function
     PROCESS {
+
+        if ($Subscribe) {
+            $Headers['Metasys-Subscribe'] = $Subscribe
+        }
 
         $request = buildRequest -uri $uri -method $Method -body $Body -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
             -headers $Headers
