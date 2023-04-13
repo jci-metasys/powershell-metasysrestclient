@@ -130,7 +130,9 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.2.0-rc1...HEAD
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.3.0-rc1...HEAD
+[2.3.0-rc1]:
+  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.2.0...v2.3.0-rc1
 [2.2.0]:
   https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.2.0
 [2.1.2]:
