@@ -8,7 +8,7 @@
     # Script module or binary module file associated with this manifest.
     RootModule           = 'Invoke-MetasysMethod.psm1'
 
-    NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1", "Read-ConfigFile.ps1", "constants.ps1", "preferences.ps1", "Invoke-MetasysGetStream.ps1", "event-parser.ps1")
+    NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1", "Read-ConfigFile.ps1", "constants.ps1", "preferences.ps1", "Invoke-MetasysGetStream.ps1", "event-parser.ps1", "Invoke-FindObject.ps1")
 
     # Version number of this module.
     ModuleVersion        = '2.3.0'
@@ -72,7 +72,7 @@
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
     'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount', 'Get-MetasysLatestVersion', 'Set-MetasysDefaultApiVersion', 'Get-MetasysDefaultApiVersion',
     'Set-MetasysSkipSecureCheckNotSecure', 'Reset-MetasysSkipSecureCheckNotSecure', 'Get-MetasysSkipSecureCheckNotSecure',
-    'Invoke-MetasysGetStream'
+    'Invoke-MetasysGetStream', 'Invoke-MetasysFindObject'
 
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -82,7 +82,7 @@
     VariablesToExport    = @()
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport      = 'imm', 'cma', 'ims'
+    AliasesToExport      = 'imm', 'cma', 'ims', 'ifo'
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
