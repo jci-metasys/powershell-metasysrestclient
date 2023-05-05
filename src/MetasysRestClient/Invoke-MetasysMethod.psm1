@@ -108,7 +108,7 @@ function Invoke-MetasysMethod {
 
     .LINK
 
-        https://github.com/metasys-server/powershell-metasysrestclient
+        https://github.com/jci-metasys/powershell-metasysrestclient
 
     #>
 

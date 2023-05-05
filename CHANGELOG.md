@@ -130,22 +130,22 @@ No changes since alpha 3
   `Set-SavedMetasysPassword`
 
 [unreleased]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.3.0-rc1...HEAD
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v2.3.0-rc1...HEAD
 [2.3.0-rc1]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.2.0...v2.3.0-rc1
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v2.2.0...v2.3.0-rc1
 [2.2.0]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.2...v2.2.0
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v2.1.2...v2.2.0
 [2.1.2]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.1.0...v2.1.2
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v2.1.0...v2.1.2
 [2.1.0]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v2.0.0...v2.1.0
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v2.0.0...v2.1.0
 [2.0.0]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0...v2.0.0
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v1.0.0...v2.0.0
 [1.0.0]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha3...v1.0.0
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v1.0.0-alpha3...v1.0.0
 [1.0.0-alpha3]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha2...v1.0.0-alpha3
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v1.0.0-alpha2...v1.0.0-alpha3
 [1.0.0-alpha2]:
-  https://github.com/metasys-server/powershell-metasysrestclient/compare/v1.0.0-alpha1...v1.0.0-alpha2
+  https://github.com/jci-metasys/powershell-metasysrestclient/compare/v1.0.0-alpha1...v1.0.0-alpha2
 [1.0.0-alpha1]:
-  https://github.com/metasys-server/powershell-metasysrestclient/releases/tag/v1.0.0-alpha1
+  https://github.com/jci-metasys/powershell-metasysrestclient/releases/tag/v1.0.0-alpha1
