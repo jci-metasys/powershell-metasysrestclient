@@ -14,6 +14,6 @@ RELATED LINKS
 
     Connect-MetasysAccount
     Invoke-MetasysMethod
-    Metasys Rest Client Secret Management: https://github.com/metasys-server/powershell-metasysrestclient/blob/main/docs/secret-management.md
-    Tips for Working with Powershell: https://github.com/metasys-server/powershell-metasysrestclient/blob/main/docs/tips.md
+    Metasys Rest Client Secret Management: https://github.com/jci-metasys/powershell-metasysrestclient/blob/main/docs/secret-management.md
+    Tips for Working with Powershell: https://github.com/jci-metasys/powershell-metasysrestclient/blob/main/docs/tips.md
 
