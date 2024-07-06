@@ -72,7 +72,8 @@
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
     'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount', 'Get-MetasysLatestVersion', 'Set-MetasysDefaultApiVersion', 'Get-MetasysDefaultApiVersion',
     'Set-MetasysSkipSecureCheckNotSecure', 'Reset-MetasysSkipSecureCheckNotSecure', 'Get-MetasysSkipSecureCheckNotSecure',
-    'Invoke-MetasysGetStream', 'Invoke-MetasysFindObject'
+    'Invoke-MetasysGetStream', 'Invoke-MetasysFindObject',
+    'Set-MetasysAccessToken'
 
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -114,7 +115,7 @@
             # ReleaseNotes = ''
 
             # Prerelease string of this module
-            Prerelease = 'rc1'
+            Prerelease = 'rc2'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false
@@ -133,4 +134,3 @@
     # DefaultCommandPrefix = ''
 
 }
-

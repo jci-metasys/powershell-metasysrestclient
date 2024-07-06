@@ -114,3 +114,47 @@ class MetasysEnvVars {
 
 }
 
+
+function Set-MetasysAccessToken {
+    <#
+    .SYNOPSIS
+        Stores the token as a secure string in current session.
+    .DESCRIPTION
+        Using this command takes the place of using `Connect-MetasysAccount` and as such
+        it takes many of the same parameters like `MetasysHost` and `Version`.
+
+        If you have a valid Metasys token from a previous login, you can use it in
+        your current session by setting it with this command.
+
+        It's mandatory that you also include the `MetasysHost`
+
+        If you know the
+        expiration time include that in the call. If you don't provide an expiration time
+        then the session will assume no expiration; however eventually the token will
+        fail to work and you'll get an error.
+    #>
+    [CmdletBinding(PositionalBinding = $false)]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AccessToken,
+        [Parameter(Mandatory = $true)]
+        [string]$MetasysHost,
+        [DateTimeOffset]$Expires = [DateTimeOffset]::MaxValue,
+        [switch]$SkipCertificateCheck,
+        [string]$Version = "5"
+    )
+
+    [MetasysEnvVars]::setTokenAsPlainText($AccessToken)
+    [MetasysEnvVars]::setExpires($Expires)
+    [MetasysEnvVars]::setSiteHost($MetasysHost)
+    [MetasysEnvVars]::setSkipCertificateCheck($SkipCertificateCheck)
+
+    if ($Version -eq "") {
+        $Version = (Get-MetasysDefaultApiVersion) ?? (Get-MetasysLatestVersion)
+        Write-Information "No version specified. Defaulting to v$Version"
+    }
+    [MetasysEnvVars]::setVersion($Version)
+
+}
+
+Export-ModuleMember -Function Set-MetasysAccessToken
