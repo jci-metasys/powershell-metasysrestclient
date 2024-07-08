@@ -13,6 +13,13 @@ and this project adheres to
 - Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
   `Send-MetasysCommand`, ...)
 
+## [2.3.0-rc2] - 2024-07-07
+
+### Added
+
+- Add `Invoke-FindObject`
+- Add `Set-MetasysAccessToken`
+
 ## [2.3.0-rc1] - 2023-04-13
 
 ### Added
