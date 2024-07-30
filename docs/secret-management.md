@@ -35,8 +35,8 @@ There are three steps to follow
 Install the two modules
 
 ```powershell
-PS > Install-Module Microsoft.PowerShell.SecretStore -Repository PSGallery
-PS > Install-Module Microsoft.PowerShell.SecretManagement -Repository PSGallery
+Install-Module Microsoft.PowerShell.SecretStore -Repository PSGallery
+Install-Module Microsoft.PowerShell.SecretManagement -Repository PSGallery
 ```
 
 ## Configuration
@@ -51,7 +51,7 @@ not feel the need to password protect your vault. In that case you can use the
 following command to configure SecretStore. _Use at your own risk._
 
 ```powershell
-PS > Set-SecretStoreConfiguration -Authentication None -Interaction None
+Set-SecretStoreConfiguration -Authentication None -Interaction None
 ```
 
 > **Note** \
@@ -66,7 +66,7 @@ If your vault will store sensitive passwords you'll want to set a password for
 the vault. Set the timeout (in seconds) to a value you are comfortable with.
 
 ```powershell
-PS > Set-SecretStoreConfiguration -Authentication Password -PasswordTimeout 1800 -Interaction None
+Set-SecretStoreConfiguration -Authentication Password -PasswordTimeout 1800 -Interaction None
 ```
 
 This configuration will never prompt you for a password. So when using
@@ -88,7 +88,7 @@ Password: ********
 Now you need to register the SecretStore with the SecretManagement module:
 
 ```powershell
-PS > Register-SecretVault -Name SecretStore -Module Microsoft.PowerShell.SecretStore
+Register-SecretVault -Name SecretStore -Module Microsoft.PowerShell.SecretStore
 ```
 
 ## Test
