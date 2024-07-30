@@ -63,7 +63,7 @@ works with `v2`, `v3` and `v5` as well.
 From a powershell command prompt:
 
 ```powershell
-PS > Install-Module MetasysRestClient -Repository PSGallery
+Install-Module MetasysRestClient -Repository PSGallery
 ```
 
 ## Help
@@ -98,7 +98,7 @@ imm                                 imm
 You can find help on any of the commands using `help`
 
 ```powershell
-PS > help Invoke-MetasysMethod
+help Invoke-MetasysMethod
 ```
 
 ## Quick Start
@@ -131,7 +131,7 @@ Password: *********
 can specify it with the `-Version` switch.
 
 ```powershell
-PS > Connect-MetasysAccount -Version 3
+Connect-MetasysAccount -Version 3
 ```
 
 If you don't specify a version, then `Connect-MetasysAccount` will look for the
@@ -150,8 +150,8 @@ also specify the `Version` on this first call to be explicit about which version
 of the API you want. The default value of this parameter is `5`.
 
 ```powershell
-PS > $password = Get-SavedMetasysPassword -MetasysHost welchoas -UserName api
-PS > Connect-MetasysAccount -MetasysHost welchoas -UserName api -Password $password -Version 3
+$password = Get-SavedMetasysPassword -MetasysHost welchoas -UserName api
+Connect-MetasysAccount -MetasysHost welchoas -UserName api -Password $password -Version 3
 ```
 
 This will start a session using version 3 of the API. You don't need to specify
@@ -191,7 +191,7 @@ request. These are the easiest to work with because they only require a URL and
 nothing else. You can use a relative or absolute url.
 
 ```powershell
-PS > Invoke-MetasysMethod /objects
+Invoke-MetasysMethod /objects
 ```
 
 This will invoke the `/objects` endpoint and display the response body. Notice
@@ -311,7 +311,7 @@ In the example above, the `self` property of the last object is
 use that absolute url to read the default view of that object.
 
 ```powershell
-PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b
+Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b
 ```
 
 <details><summary>Click to See Response</summary>
@@ -537,8 +537,8 @@ Another good tip is to save identifiers in variables so you don't have to type
 them multiple times or copy/paste them:
 
 ```powershell
-PS > $Id = "ce820989-5617-50bd-90ea-2fd95d1402ba"
-PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/$Id/attributes/presentValue
+$Id = "ce820989-5617-50bd-90ea-2fd95d1402ba"
+Invoke-MetasysMethod https://welchoas/api/v4/objects/$Id/attributes/presentValue
 ```
 
 Examples of other urls that support `GET`
@@ -591,7 +591,7 @@ When the JSON string is relatively short like in this example you can just type
 it all on one line:
 
 ```powershell
-PS > Invoke-MetasysMethod -Method Patch /objects/$Id  -Body "{ 'item': { 'description': 'Zone 3 Temperature Set Point' } }"
+Invoke-MetasysMethod -Method Patch /objects/$Id  -Body "{ 'item': { 'description': 'Zone 3 Temperature Set Point' } }"
 ```
 
 We'll read it back to ensure it changed:
@@ -625,7 +625,7 @@ We can discover that the object supports `adjustCommand` by requesting the list
 of commands:
 
 ```powershell
-PS > imm /objects/$Id/commands
+imm /objects/$Id/commands
 ```
 
 <details><summary> Click to see response</summary>
@@ -1233,8 +1233,8 @@ PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body "{ 'parameters': 
 We could also add an annotation to the command:
 
 ```powershell
-PS > $json = '{ "parameters": [72.5], "annotation": "Adjust Set Point for the afternoon" }'
-PS > imm /objects/$Id/commands/adjustCommand -Method Put -Body $json
+$json = '{ "parameters": [72.5], "annotation": "Adjust Set Point for the afternoon" }'
+imm /objects/$Id/commands/adjustCommand -Method Put -Body $json
 ```
 
 ### Creating an Object (POST)
@@ -1264,7 +1264,7 @@ use the `Raw` switch so that `Get-Content` returns the whole file as one string,
 rather than an array of strings -- one string per line).
 
 ```powershell
-PS > imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw)
+imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw)
 ```
 
 Notice that currently the creation of a new object doesn't return anything. So
@@ -1311,7 +1311,7 @@ Set-Cookie: Secure; HttpOnly
 header from above gives the url we can use to read the object back.
 
 ```powershell
-PS > imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 ```
 
 <details><summary>Click to see response</summary>
