@@ -284,6 +284,10 @@ Describe "Connect-Metasys" -Tag "Unit" {
 
                 } -Times 1 -Exactly -Scope Context
             }
+
+            It 'Should save the value of skip certificate check for calls to imm' {
+                $env:METASYS_SKIP_CERTIFICATE_CHECK | Should -Be 'True'
+            }
         }
 
     }
