@@ -71,7 +71,7 @@
     FunctionsToExport    = 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse',
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
     'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount', 'Get-MetasysLatestVersion', 'Set-MetasysDefaultApiVersion', 'Get-MetasysDefaultApiVersion',
-    'Set-MetasysSkipSecureCheckNotSecure', 'Reset-MetasysSkipSecureCheckNotSecure', 'Get-MetasysSkipSecureCheckNotSecure',
+    'Set-MetasysSkipSecureCheckNotSecure', 'Reset-MetasysSkipSecureCheckNotSecure', 
     'Invoke-MetasysGetStream', 'Invoke-MetasysFindObject',
     'Set-MetasysAccessToken'
 

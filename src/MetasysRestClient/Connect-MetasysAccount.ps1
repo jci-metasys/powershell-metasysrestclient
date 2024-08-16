@@ -211,17 +211,6 @@ function Connect-MetasysAccount {
             Write-Information "No version specified. Defaulting to v$Version"
         }
 
-        # Need to use $PSBoundParameters to check to see if a switch is present. (.IsPresent just casts the value to boolean, so if it was set to `false` IsPresent returns `$true`)
-        if (!$PSBoundParameters.ContainsKey('SkipCertificateCheck')) {
-            # switch parameter was not passed by the caller
-            # however, it may have been set by a host entry in the .metasysrestclient config file
-            # So only use the default if the switch in the config file wasn't explicitly set
-            if (!$SkipCertificateCheck) {
-                $SkipCertificateCheck = Get-MetasysSkipSecureCheckNotSecure
-            }
-        }
-
-
         $body = @{
             username = $UserName;
             password = ConvertFrom-SecureString -AsPlainText $Password

@@ -135,22 +135,11 @@ function Invoke-MetasysMethod {
         # Alias: -v
         [Alias("v")]
         [string]$Version,
-        # Skips certificate validation checks. This includes all validations
-        # such as expiration, revocation, trusted root authority, etc.
-        # [!WARNING] Using this parameter is not secure and is not recommended.
-        # This switch is only intended to be used against known hosts using a
-        # self-signed certificate for testing purposes. Use at your own risk.
-        [switch]$SkipCertificateCheck,
         # A collection of headers to include in the request
         #
         # Alias: -h
         [Alias("h")]
         [hashtable]$Headers = @{},
-        # Add support for password to be passed in
-        #
-        # Alias: -p
-        [Alias("p")]
-        [SecureString]$Password,
         # Return the response as PSObject or Hashtable instead of JSON string
         # Aliases: -o, -object
         [Alias("o", "object")]
@@ -189,11 +178,6 @@ function Invoke-MetasysMethod {
 
         # Read SkipCertificateCheck from environment
         $SkipCertificateCheck = [MetasysEnvVars]::getSkipCertificateCheck()
-
-
-        if (!$SkipCertificateCheck.IsPresent) {
-            $SkipCertificateCheck = Get-MetasysSkipSecureCheckNotSecure
-        }
 
         $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
         if ($uri.IsAbsoluteUri) {
@@ -412,4 +396,3 @@ Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders',
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', 'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables'
 
 Export-ModuleMember -Alias 'imm'
-

@@ -124,7 +124,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
 
         }
 
-        Context "No parameters passed, but preferences for version and skip cert check are set" {
+        Context "No parameters passed, but preferences for version are set" {
             BeforeAll {
                 Clear-MetasysEnvVariables
                 $mockConsole = [MockConsole]::new()
@@ -148,10 +148,6 @@ Describe "Connect-Metasys" -Tag "Unit" {
                     $oldVersion
                 }
 
-                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
-                    $true
-                }
-
                 # qualify with $script to avoid unused-vars warnings from PSScriptAnalyzer
                 $script:response = Connect-MetasysAccount
             }
@@ -162,7 +158,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 Clear-MetasysEnvVariables
             }
 
-            It "Should invoke Invoke-RestMethod with correct version and skip check" {
+            It "Should invoke Invoke-RestMethod with correct version" {
                 $expectedBody = @{
                     username = $mockConsole.GetUserName();
                     password = $mockConsole.GetPasswordAsPlainText();
@@ -172,45 +168,11 @@ Describe "Connect-Metasys" -Tag "Unit" {
                     $Method -eq 'Post' -and
                     $ContentType -eq 'application/json' -and
                     $Uri.ToString() -eq "https://$($mockConsole.GetMetasysHost())/api/v$oldVersion/login" -and
-                    ($Body | ConvertFrom-Json | ConvertTo-Json -Compress) -eq $expectedBody -and
-                    $SkipCertificateCheck -eq $true
+                    ($Body | ConvertFrom-Json | ConvertTo-Json -Compress) -eq $expectedBody
 
                 } -Times 1 -Exactly -Scope Context
             }
 
-        }
-
-        Context "If SkipCertificateCheck is explicitly set to false" {
-            It "Should override a user preference of true" {
-                Clear-MetasysEnvVariables
-                $mockConsole = [MockConsole]::new()
-                Mock Read-Host -ModuleName MetasysRestClient {
-                    $mockConsole.ReadHost($Prompt)
-                }
-
-                $loginResponse = CreateLoginResponse
-                Mock Invoke-RestMethod -ModuleName MetasysRestClient {
-                    $loginResponse
-                }
-
-                Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient
-                Mock Get-SavedMetasysUsers -ModuleName MetasysRestClient
-                Mock Set-SavedMetasysPassword -ModuleName MetasysRestClient
-
-                # So in this test the preference is to skip the cert check,
-                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
-                    $true
-                }
-
-                # But we're going to explicitly set skip cert check to false in the command line
-                # It should take precedence
-                $script:response = Connect-MetasysAccount -SkipCertificateCheck:$false
-
-                Should -Invoke Invoke-RestMethod -ModuleName MetasysRestClient -ParameterFilter {
-                    $SkipCertificateCheck -eq $false
-
-                } -Times 1 -Exactly -Scope Context
-            }
         }
 
         Context "When host, username, and password are passed as parameters" {
@@ -321,6 +283,10 @@ Describe "Connect-Metasys" -Tag "Unit" {
                     $SkipCertificateCheck -eq $true
 
                 } -Times 1 -Exactly -Scope Context
+            }
+
+            It 'Should save the value of skip certificate check for calls to imm' {
+                $env:METASYS_SKIP_CERTIFICATE_CHECK | Should -Be 'True'
             }
         }
 

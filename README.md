@@ -127,8 +127,9 @@ UserName: api
 Password: *********
 ```
 
-**Note:** If you wish to control which version of the REST API will be used, you
-can specify it with the `-Version` switch.
+> [!Tip]\
+> If you wish to control which version of the REST API will be used, you can specify
+> it with the `-Version` switch.
 
 ```powershell
 Connect-MetasysAccount -Version 3
@@ -180,7 +181,7 @@ Or since `Alias` is a positional parameter just type
 cma r12
 ```
 
-> **Information** \
+> [!Note]\
 > You'll still be prompted for a password if this is the first time you are connecting
 > to the host or if you don't have a secret store configured.
 
@@ -1307,8 +1308,9 @@ Cache-Control: private
 Set-Cookie: Secure; HttpOnly
 ```
 
-**Note:** The status of `200` tells us everything was good and the `Location`
-header from above gives the url we can use to read the object back.
+> [!Note]\
+> The status of `200` tells us everything was good and the `Location` header from
+> above gives the url we can use to read the object back.
 
 ```powershell
 imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
@@ -1566,7 +1568,7 @@ cma -MetasysHost myhost.domain -UserName john_smith -Version 4 -SkipCertificateC
 cma myhost2
 ```
 
-> **Note** \
+> [!Tip]\
 > If you supply a value for `-UserName` it will override any `username` value in
 > `.metasysrestclient`. Likewise, if you supply a value for `-Version` it will override
 > any `version` value in `.metasysrestclient`.
@@ -1590,7 +1592,7 @@ doesn't have a valid certificate. A parameter is provided,
 includes all validations such as expiration, revocation, trusted root authority,
 etc.
 
-> **WARNING** \
+> [!Caution]\
 > Using this parameter is not secure and is not recommended. This switch is intended
 > to be used against known hosts using a self-signed certificate for testing purposes.
 > _Use at your own risk_.
