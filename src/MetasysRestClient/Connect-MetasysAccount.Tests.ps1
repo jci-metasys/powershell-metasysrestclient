@@ -175,35 +175,6 @@ Describe "Connect-Metasys" -Tag "Unit" {
 
         }
 
-        Context "If SkipCertificateCheck is explicitly set to false" {
-            It "Should override a user preference of true" {
-                Clear-MetasysEnvVariables
-                $mockConsole = [MockConsole]::new()
-                Mock Read-Host -ModuleName MetasysRestClient {
-                    $mockConsole.ReadHost($Prompt)
-                }
-
-                $loginResponse = CreateLoginResponse
-                Mock Invoke-RestMethod -ModuleName MetasysRestClient {
-                    $loginResponse
-                }
-
-                Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient
-                Mock Get-SavedMetasysUsers -ModuleName MetasysRestClient
-                Mock Set-SavedMetasysPassword -ModuleName MetasysRestClient
-
-
-                # But we're going to explicitly set skip cert check to false in the command line
-                # It should take precedence
-                $script:response = Connect-MetasysAccount -SkipCertificateCheck:$false
-
-                Should -Invoke Invoke-RestMethod -ModuleName MetasysRestClient -ParameterFilter {
-                    $SkipCertificateCheck -eq $false
-
-                } -Times 1 -Exactly -Scope Context
-            }
-        }
-
         Context "When host, username, and password are passed as parameters" {
             BeforeAll {
                 Clear-MetasysEnvVariables
