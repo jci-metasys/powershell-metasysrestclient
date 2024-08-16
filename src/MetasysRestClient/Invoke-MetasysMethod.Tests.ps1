@@ -160,7 +160,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
         Context "Version and SkipCertificateCheck not supplied" {
 
-            It "Should use user preferences if set" {
+            It "Should use user preference for version if set" {
 
                 Mock Invoke-WebRequest -ModuleName MetasysRestClient
 
@@ -169,15 +169,10 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                     "3"
                 }
 
-                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
-                    $true
-                }
-
                 Invoke-MetasysMethod /objects
 
                 Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
-                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v3/objects" -and
-                    $SkipCertificateCheck -eq $true
+                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v3/objects"
                 } -Exactly -Times 1 -Scope Context
 
             }
@@ -211,9 +206,6 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                 Mock Connect-MetasysAccount -ModuleName MetasysRestClient
                 Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient {
                     ConvertTo-SecureString -String "ThePassword" -AsPlainText
-                }
-                Mock Get-MetasysSkipSecureCheckNotSecure -ModuleName MetasysRestClient {
-                    $null
                 }
 
                 Invoke-MetasysMethod /objects
@@ -404,6 +396,3 @@ Header2: Header 2
     }
 
 }
-
-
-

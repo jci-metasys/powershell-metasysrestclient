@@ -190,11 +190,6 @@ function Invoke-MetasysMethod {
         # Read SkipCertificateCheck from environment
         $SkipCertificateCheck = [MetasysEnvVars]::getSkipCertificateCheck()
 
-
-        if (!$SkipCertificateCheck.IsPresent) {
-            $SkipCertificateCheck = Get-MetasysSkipSecureCheckNotSecure
-        }
-
         $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
         if ($uri.IsAbsoluteUri) {
             $versionSegment = $uri.Segments[2]
@@ -412,4 +407,3 @@ Export-ModuleMember -Function 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders',
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', 'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables'
 
 Export-ModuleMember -Alias 'imm'
-
