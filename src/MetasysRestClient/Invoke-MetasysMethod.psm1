@@ -272,7 +272,11 @@ function Invoke-MetasysMethod {
         if ($responseObject) {
 
             $contentLength = 0
-            [Int]::TryParse($responseObject.Headers["Content-Length"], [ref] $contentLength)  | Out-Null
+            if ($responseObject.Headers["Content-Length"]) {
+                [Int]::TryParse($responseObject.Headers["Content-Length"], [ref] $contentLength)  | Out-Null
+            } elseif ($responseObject.Content -is [String]) {
+                $contentLength = $responseObject.Content
+            }
 
             if ($responseObject.Headers["Content-Type"] -like "*json*" -or $contentLength -eq 0 -or $responseObject.StatusCode -eq 204 -or $responseObject.StatusCode -ge 400) {
                 $contentType = "json"
@@ -317,10 +321,10 @@ function Invoke-MetasysMethod {
             if ($contentType -eq "text") {
 
                 if ($IncludeResponseHeaders) {
-                    convertResponseObjectToString $responseObject
+                    $responseObject.RawContent
                 }
                 else {
-                    $responseObject.Content
+                    $response
                 }
             }
 
