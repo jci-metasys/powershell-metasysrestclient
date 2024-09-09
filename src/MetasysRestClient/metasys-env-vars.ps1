@@ -53,11 +53,19 @@ class MetasysEnvVars {
     }
 
     static [string] getLast() {
-        return $env:METASYS_LAST_RESPONSE
+        if ($env:METASYS_LAST_RESPONSE_PATH) {
+            return [System.IO.File]::ReadAllText($env:METASYS_LAST_RESPONSE_PATH)
+        }
+        return ""
     }
 
     static [void] setLast([string]$last) {
-        $env:METASYS_LAST_RESPONSE = $last
+        # This variable used to save the last response to an env var, but that generally can be very large
+        # So now instead we write the response to a temp file and instead of writing to
+        # $env:METASYS_LAST_RESPONSE we write the path of the file to $env:METASYS_LAST_RESPONSE_PATH
+        $tempFile = New-TemporaryFile
+        Set-Content -Path $tempFile.FullName -Value $last
+        $env:METASYS_LAST_RESPONSE_PATH = $tempFile.FullName
     }
 
     static [void] clear() {
