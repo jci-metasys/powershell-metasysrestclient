@@ -8,22 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.4] - 2024-09-10
 
-- Add specialized functions (`New-MetasysObject`, `Get-MetasysPresentValue`,
-  `Send-MetasysCommand`, ...)
+### Changes
 
-## [2.3.0-rc2] - 2024-07-07
+- Eliminate obsolete parameters from `Invoke-MetasysMethod`:
+  `SkipCertificateCheck`, `Password`. These weren't even being used.
+- Fix an issue with responses that have a content type of `text`.
+- Save last response in a temporary file instead of an env variable to avoid
+  sessions errors.
 
 ### Added
 
 - Add `Invoke-FindObject`
 - Add `Set-MetasysAccessToken`
-
-## [2.3.0-rc1] - 2023-04-13
-
-### Added
-
 - Add `-Subscribe` parameter to `Invoke-MetasysMethod` (syntactic sugar for
   adding a subscription to a resource, instead of using `-Headers`)
 - Add `Invoke-MetasysGetStream` which is used to receive server-sent events from
