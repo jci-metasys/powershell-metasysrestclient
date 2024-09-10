@@ -11,7 +11,7 @@
     NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1", "Read-ConfigFile.ps1", "constants.ps1", "preferences.ps1", "Invoke-MetasysGetStream.ps1", "event-parser.ps1", "Invoke-FindObject.ps1")
 
     # Version number of this module.
-    ModuleVersion        = '2.3.0'
+    ModuleVersion        = '2.4.0'
     # Supported PSEditions
     # CompatiblePSEditions = @()
     CompatiblePSEditions = @("Core")
@@ -71,7 +71,7 @@
     FunctionsToExport    = 'Invoke-MetasysMethod', 'Show-LastMetasysHeaders', 'Show-LastMetasysAccessToken', 'Show-LastMetasysResponseBody', 'Show-LastMetasysFullResponse',
     'Get-LastMetasysResponseBodyAsObject', 'Show-LastMetasysStatus', "Get-SavedMetasysUsers", "Get-SavedMetasysPassword", "Remove-SavedMetasysPassword", "Set-SavedMetasysPassword",
     'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount', 'Get-MetasysLatestVersion', 'Set-MetasysDefaultApiVersion', 'Get-MetasysDefaultApiVersion',
-    'Set-MetasysSkipSecureCheckNotSecure', 'Reset-MetasysSkipSecureCheckNotSecure', 
+    'Set-MetasysSkipSecureCheckNotSecure', 'Reset-MetasysSkipSecureCheckNotSecure',
     'Invoke-MetasysGetStream', 'Invoke-MetasysFindObject',
     'Set-MetasysAccessToken'
 
@@ -115,7 +115,7 @@
             # ReleaseNotes = ''
 
             # Prerelease string of this module
-            Prerelease = 'rc2'
+            # Prerelease = 'rc2'
 
             # Flag to indicate whether the module requires explicit user acceptance for install/update/save
             # RequireLicenseAcceptance = $false
