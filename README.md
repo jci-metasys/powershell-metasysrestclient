@@ -24,7 +24,8 @@ Features:
 - Powershell Core for your OS: See the
   [repository](https://github.com/powershell/powershell).
 
-  **Note:** Windows PowerShell is not supported
+  **Note:** Windows PowerShell (the version of PowerShell built into Windows) is
+  not supported.
 
 - (Optional) Microsoft.PowerShell.SecretManagement
 - (Optional) Microsoft.PowerShell.SecretStore (or other SecretVault
@@ -50,8 +51,8 @@ updated to help you do the most common actions.
 
 ## Metasys REST API Versions
 
-Examples in this README are from `v4` of the API. However, Metasys Rest Client
-works with `v2`, `v3` and `v5` as well.
+Examples in this README are from `v6` of the API. However, Metasys Rest Client
+works with `v2`, `v3`, `v4` and `v5` as well.
 
 ## PowerShell References
 
@@ -137,7 +138,7 @@ Connect-MetasysAccount -Version 3
 
 If you don't specify a version, then `Connect-MetasysAccount` will look for the
 environment variable `$env:METASYS_DEFAULT_API_VERSION`. If that variable is not
-set, it will default to a version. At the time of writing, that version is 5.
+set, it will default to a version. At the time of writing, that version is 6.
 
 Whatever version is used in the call to `Connect-MetasysAccount` will be used
 for all other calls in the current session (unless overridden with `-Version`
@@ -146,9 +147,9 @@ switch or by specifying a full URL).
 #### Starting a Session without Prompts
 
 If you want to start a session without being prompted for `Metasys Host`,
-`UserName`, and `Password` you can supply them all as parameters. You should
-also specify the `Version` on this first call to be explicit about which version
-of the API you want. The default value of this parameter is `5`.
+`UserName`, and `Password` you can supply them all as parameters. You can also
+specify the `Version` on this first call to be explicit about which version of
+the API you want. The default value of this parameter is `6`.
 
 ```powershell
 $password = Get-SavedMetasysPassword -MetasysHost welchoas -UserName api
@@ -167,23 +168,25 @@ example we looked it up using `Get-SavedMetasysPassword`. See
 
 Starting with version 2.2.0-rc2 you can use a
 [Configuration File](#configuration) to define aliases and other parameters for
-all of your hosts. Assuming I had a file in place for a host named
-`r12adsdaily.cg.na.jci.com` with an alias of `r12` I could type just the
-following to connect to that host.
+all of your hosts. Assuming I had a configuration file in place and in it I had
+defined a host named `r16adsdaily.cg.na.jci.com` with an alias of `r16` I could
+type just the following to connect to that host.
 
 ```powershell
-cma -Alias r12
+cma -Alias r16
 ```
 
 Or since `Alias` is a positional parameter just type
 
 ```powershell
-cma r12
+cma r16
 ```
 
 > [!Note]\
 > You'll still be prompted for a password if this is the first time you are connecting
-> to the host or if you don't have a secret store configured.
+> to the host or if you don't have a secret store configured. (If you do have a secret
+> store configured and you've previously logged into this server, then `cma r16`
+> will be enough to get you logged in without being prompted for username or password.)
 
 ### Reading Information (GET)
 
@@ -206,17 +209,17 @@ an error message.)
 
 ```json
 {
-  "self": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/objects?flatten=false&includeExtensions=true&includeInternal=false&depth=1",
+  "self": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/objects?flatten=false&includeExtensions=true&includeInternal=false&depth=1",
   "items": [
     {
-      "self": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+      "self": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
       "parentUrl": null,
       "networkDeviceUrl": null,
-      "pointsUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/points",
-      "objectsUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/objects",
-      "alarmsUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/alarms",
-      "auditsUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/audits",
-      "trendedAttributesUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/trendedAttributes",
+      "pointsUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/points",
+      "objectsUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/objects",
+      "alarmsUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/alarms",
+      "auditsUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/audits",
+      "trendedAttributesUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962/trendedAttributes",
       "itemReference": "welchoas:welchoas/$site",
       "hasChildrenMatchingQuery": true,
       "name": "Site",
@@ -225,14 +228,14 @@ an error message.)
       "classification": "site",
       "items": [
         {
-          "self": "https://welchoas/api/v4/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d",
-          "parentUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
-          "networkDeviceUrl": "https://welchoas/api/v4/networkDevices/896f7c45-de4b-5a2c-9084-bceb0ec85962",
-          "pointsUrl": "https://welchoas/api/v4/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/points",
-          "objectsUrl": "https://welchoas/api/v4/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/objects",
-          "alarmsUrl": "https://welchoas/api/v4/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/alarms",
-          "auditsUrl": "https://welchoas/api/v4/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/audits",
-          "trendedAttributesUrl": "https://welchoas/api/v4/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/trendedAttributes",
+          "self": "https://welchoas/api/v6/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d",
+          "parentUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+          "networkDeviceUrl": "https://welchoas/api/v6/networkDevices/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+          "pointsUrl": "https://welchoas/api/v6/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/points",
+          "objectsUrl": "https://welchoas/api/v6/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/objects",
+          "alarmsUrl": "https://welchoas/api/v6/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/alarms",
+          "auditsUrl": "https://welchoas/api/v6/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/audits",
+          "trendedAttributesUrl": "https://welchoas/api/v6/objects/c8dd833e-427b-55a1-9f7d-c4f09ea3524d/trendedAttributes",
           "itemReference": "welchoas:welchoas/$site.UserTrees",
           "hasChildrenMatchingQuery": false,
           "name": "User Views",
@@ -242,14 +245,14 @@ an error message.)
           "items": []
         },
         {
-          "self": "https://welchoas/api/v4/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb",
-          "parentUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
-          "networkDeviceUrl": "https://welchoas/api/v4/networkDevices/896f7c45-de4b-5a2c-9084-bceb0ec85962",
-          "pointsUrl": "https://welchoas/api/v4/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/points",
-          "objectsUrl": "https://welchoas/api/v4/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/objects",
-          "alarmsUrl": "https://welchoas/api/v4/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/alarms",
-          "auditsUrl": "https://welchoas/api/v4/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/audits",
-          "trendedAttributesUrl": "https://welchoas/api/v4/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/trendedAttributes",
+          "self": "https://welchoas/api/v6/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb",
+          "parentUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+          "networkDeviceUrl": "https://welchoas/api/v6/networkDevices/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+          "pointsUrl": "https://welchoas/api/v6/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/points",
+          "objectsUrl": "https://welchoas/api/v6/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/objects",
+          "alarmsUrl": "https://welchoas/api/v6/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/alarms",
+          "auditsUrl": "https://welchoas/api/v6/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/audits",
+          "trendedAttributesUrl": "https://welchoas/api/v6/objects/7fd71bf8-c080-59c3-835f-e5c5f0ffabbb/trendedAttributes",
           "itemReference": "welchoas:welchoas/$site.SummaryDefs",
           "hasChildrenMatchingQuery": false,
           "name": "Summary Definitions",
@@ -259,14 +262,14 @@ an error message.)
           "items": []
         },
         {
-          "self": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
-          "parentUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
-          "networkDeviceUrl": "https://welchoas/api/v4/networkDevices/896f7c45-de4b-5a2c-9084-bceb0ec85962",
-          "pointsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/points",
-          "objectsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/objects",
-          "alarmsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/alarms",
-          "auditsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/audits",
-          "trendedAttributesUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/trendedAttributes",
+          "self": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
+          "parentUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+          "networkDeviceUrl": "https://welchoas/api/v6/networkDevices/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+          "pointsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/points",
+          "objectsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/objects",
+          "alarmsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/alarms",
+          "auditsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/audits",
+          "trendedAttributesUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/trendedAttributes",
           "itemReference": "welchoas:welchoas",
           "hasChildrenMatchingQuery": true,
           "name": "welchoas",
@@ -302,32 +305,32 @@ an error message.)
 
 </details>
 
-An _absolute url_ looks like `https://{hostname}/api/v4/objects`. Many API
+An _absolute url_ looks like `https://{hostname}/api/v6/objects`. Many API
 endpoints return absolute URLs in their response payloads. These are used to
 provide information about other useful resources on the system. So it's
 convenient to be able to copy and paste those to make another request.
 
 In the example above, the `self` property of the last object is
-`https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b`. Let's
+`https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b`. Let's
 use that absolute url to read the default view of that object.
 
 ```powershell
-Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b
+Invoke-MetasysMethod https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b
 ```
 
 <details><summary>Click to See Response</summary>
 
 ```json
 {
-  "self": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b?includeSchema=false&viewId=viewNameEnumSet.focusView",
+  "self": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b?includeSchema=false&viewId=viewNameEnumSet.focusView",
   "objectType": "objectTypeEnumSet.oasClass",
-  "parentUrl": "https://welchoas/api/v4/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
-  "objectsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/objects",
+  "parentUrl": "https://welchoas/api/v6/objects/896f7c45-de4b-5a2c-9084-bceb0ec85962",
+  "objectsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/objects",
   "networkDeviceUrl": null,
-  "pointsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/points",
-  "trendedAttributesUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/trendedAttributes",
-  "alarmsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/alarms",
-  "auditsUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/audits",
+  "pointsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/points",
+  "trendedAttributesUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/trendedAttributes",
+  "alarmsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/alarms",
+  "auditsUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b/audits",
   "item": {
     "id": "8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
     "name": "welchoas",
@@ -512,13 +515,13 @@ Invoke-MetasysMethod https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299
 </details>
 
 A _relative url_ looks like `/objects`. In other words, it's everything after
-`https://{hostname}/api/v4`.
+`https://{hostname}/api/v6`.
 
 In this next example we'll read the `presentValue` of an object. I happen to
 know the `id` for this object is `ce820989-5617-50bd-90ea-2fd95d1402ba`.
 
 ```powershell
-PS > Invoke-MetasysMethod https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/presentValue
+PS > Invoke-MetasysMethod https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/attributes/presentValue
 
 {
   "item": {
@@ -539,7 +542,7 @@ them multiple times or copy/paste them:
 
 ```powershell
 $Id = "ce820989-5617-50bd-90ea-2fd95d1402ba"
-Invoke-MetasysMethod https://welchoas/api/v4/objects/$Id/attributes/presentValue
+Invoke-MetasysMethod https://welchoas/api/v6/objects/$Id/attributes/presentValue
 ```
 
 Examples of other urls that support `GET`
@@ -609,7 +612,7 @@ PS > Invoke-MetasysMethod /objects/$Id/attributes/description
 }
 ```
 
-### Using an Alias
+### Using an Alias for Invoke-MetasysMethod
 
 Many of the built-in PowerShell commands have long names just like
 `Invoke-WebRequest`. Many of those also have aliases that are much shorter (eg.
@@ -633,11 +636,11 @@ imm /objects/$Id/commands
 
 ```json
 {
-  "self": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands",
+  "self": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands",
   "items": [
     {
       "id": "commandIdEnumSet.adjustCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.adjustCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.adjustCommand",
       "title": "Adjust",
       "commandBodySchema": {
         "type": "object",
@@ -794,7 +797,7 @@ imm /objects/$Id/commands
     },
     {
       "id": "commandIdEnumSet.overrideCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.overrideCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.overrideCommand",
       "title": "Operator Override",
       "commandBodySchema": {
         "type": "object",
@@ -840,7 +843,7 @@ imm /objects/$Id/commands
     },
     {
       "id": "commandIdEnumSet.temporaryOverrideCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.temporaryOverrideCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.temporaryOverrideCommand",
       "title": "Temporary Override",
       "commandBodySchema": {
         "type": "object",
@@ -904,7 +907,7 @@ imm /objects/$Id/commands
     },
     {
       "id": "commandIdEnumSet.overrideReleaseCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.overrideReleaseCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.overrideReleaseCommand",
       "title": "Release Operator Override",
       "commandBodySchema": {
         "type": "object",
@@ -925,7 +928,7 @@ imm /objects/$Id/commands
     },
     {
       "id": "commandIdEnumSet.releaseCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.releaseCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.releaseCommand",
       "title": "Release",
       "commandBodySchema": {
         "type": "object",
@@ -1100,7 +1103,7 @@ imm /objects/$Id/commands
     },
     {
       "id": "commandIdEnumSet.releaseAllCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.releaseAllCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.releaseAllCommand",
       "title": "Release All",
       "commandBodySchema": {
         "type": "object",
@@ -1162,7 +1165,7 @@ imm /objects/$Id/commands
     },
     {
       "id": "commandIdEnumSet.enableAlarmsCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.enableAlarmsCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.enableAlarmsCommand",
       "title": "Enable Alarms",
       "commandBodySchema": {
         "type": "object",
@@ -1183,7 +1186,7 @@ imm /objects/$Id/commands
     },
     {
       "id": "commandIdEnumSet.disableAlarmsCommand",
-      "invokeUrl": "https://welchoas/api/v4/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.disableAlarmsCommand",
+      "invokeUrl": "https://welchoas/api/v6/objects/ce820989-5617-50bd-90ea-2fd95d1402ba/commands/commandIdEnumSet.disableAlarmsCommand",
       "title": "Disable Alarms",
       "commandBodySchema": {
         "type": "object",
@@ -1285,7 +1288,7 @@ PS > Show-LastMetasysHeaders
 Content-Length: 0
 Strict-Transport-Security: max-age=31536000
 Date: Mon, 05 Jul 2021 23:07:21 GMT
-Location: https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+Location: https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 X-Content-Type-Options: nosniff
 Pragma: no-cache,no-cache
 X-XSS-Protection: 1; mode=block
@@ -1299,7 +1302,7 @@ PS > Show-LastMetasysFullResponse
 Content-Length: 0
 Strict-Transport-Security: max-age=31536000
 Date: Mon, 05 Jul 2021 23:07:21 GMT
-Location: https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+Location: https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 X-Content-Type-Options: nosniff
 Pragma: no-cache,no-cache
 X-XSS-Protection: 1; mode=block
@@ -1313,22 +1316,22 @@ Set-Cookie: Secure; HttpOnly
 > above gives the url we can use to read the object back.
 
 ```powershell
-imm https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+imm https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 ```
 
 <details><summary>Click to see response</summary>
 
 ```json
 {
-  "self": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84?includeSchema=false&viewId=viewNameEnumSet.focusView",
+  "self": "https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84?includeSchema=false&viewId=viewNameEnumSet.focusView",
   "objectType": "objectTypeEnumSet.avClass",
-  "parentUrl": "https://welchoas/api/v4/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
-  "objectsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/objects",
-  "networkDeviceUrl": "https://welchoas/api/v4/networkDevices/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
-  "pointsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/points",
-  "trendedAttributesUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/trendedAttributes",
-  "alarmsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/alarms",
-  "auditsUrl": "https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/audits",
+  "parentUrl": "https://welchoas/api/v6/objects/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
+  "objectsUrl": "https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/objects",
+  "networkDeviceUrl": "https://welchoas/api/v6/networkDevices/8f2c6bb1-6bfd-5643-b581-299c1fec6b1b",
+  "pointsUrl": "https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/points",
+  "trendedAttributesUrl": "https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/trendedAttributes",
+  "alarmsUrl": "https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/alarms",
+  "auditsUrl": "https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84/audits",
   "item": {
     "id": "3fdb754b-4f6e-592e-9c1e-8b72ad51cb84",
     "name": "Set Point",
@@ -1459,7 +1462,7 @@ response headers will be shown when the request finishes.
 PS > imm /objects -Method Post -Body (Get-Content -Path new-av.json -Raw) -IncludeResponseHeaders
 
 200 (OK)
-Location: https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
+Location: https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84
 Expires: -1
 Cache-Control: private
 Strict-Transport-Security: max-age=31536000
@@ -1477,7 +1480,7 @@ Let's delete the previous object
 
 ```powershell
 # There is no response body to this payload, use -IncludeResponseHeaders to see the results
-PS > imm -Method Delete https://welchoas/api/v4/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84 -IncludeResponseHeaders
+PS > imm -Method Delete https://welchoas/api/v6/objects/3fdb754b-4f6e-592e-9c1e-8b72ad51cb84 -IncludeResponseHeaders
 
 204 (NoContent)
 X-XSS-Protection: 1; mode=block
