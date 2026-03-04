@@ -3,7 +3,7 @@
 param()
 
 Set-StrictMode -Version 3
-Set-Variable -Name LatestVersion -Value 5 -Option Constant
+Set-Variable -Name LatestVersion -Value 6 -Option Constant
 
 function Connect-MetasysAccount {
     <#
@@ -49,7 +49,7 @@ function Connect-MetasysAccount {
     Assuming you have this alias in your configuration file (see NOTES), this will prompt you for your password and connect you with the configured username and version.
 
     .NOTES
-    The Metasys REST API mandates that you specify the version of the API you wish to call. This command assumes that you wish to use the latest version of the API (v5 at time of writing). If you wish to use an older version of the API use the -Version parameter. To avoid having to specify this every time you connect you have two choices. You can use a configuration file as described below to specify a different version for each host you connect to. Or you can modify your start up profile to set the environment variable $env:METASYS_DEFAULT_API_VERSION to which ever version you wish. (For example you could set it to 4).
+    The Metasys REST API mandates that you specify the version of the API you wish to call. This command assumes that you wish to use the latest version of the API (v6 at time of writing). If you wish to use an older version of the API use the -Version parameter. To avoid having to specify this every time you connect you have two choices. You can use a configuration file as described below to specify a different version for each host you connect to. Or you can modify your start up profile to set the environment variable $env:METASYS_DEFAULT_API_VERSION to which ever version you wish. (For example you could set it to 4).
 
     Whichever version of the API was used to connect to Metasys will be used for every other call in your session (unless you override that with the -Version parameter or by specifying a full URL).
 
