@@ -183,13 +183,13 @@ function Invoke-MetasysMethod {
         if ($uri.IsAbsoluteUri) {
             $versionSegment = $uri.Segments[2]
             $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
-            if ($Version -ne "" -and $versionNumber -ne $Version) {
+            if (-not [string]::IsNullOrEmpty($Version) -and $versionNumber -ne $Version) {
                 Write-Error "An absolute url was given for Path and it specifies a version ('$versionNumber') that conflicts with Version ('$Version')"
                 continue
             }
         }
 
-        If ($Version -eq "") {
+        If ([string]::IsNullOrEmpty($Version)) {
             # Use the version from last cma call, else the default api version (if set), else latest version
             $Version = $env:METASYS_VERSION ?? (Get-MetasysDefaultApiVersion) ?? (Get-MetasysLatestVersion)
             Write-Information "No version specified. Defaulting to v$Version"

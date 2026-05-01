@@ -206,7 +206,7 @@ function Connect-MetasysAccount {
             $Password = (Get-SavedMetasysPassword -SiteHost $MetasysHost -UserName $UserName) ?? (Read-Host -Prompt "Password" -AsSecureString)
         }
 
-        if ($Version -eq "") {
+        if ([string]::IsNullOrEmpty($Version)) {
             $Version = (Get-MetasysDefaultApiVersion) ?? (Get-MetasysLatestVersion)
             Write-Information "No version specified. Defaulting to v$Version"
         }
