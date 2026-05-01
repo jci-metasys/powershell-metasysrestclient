@@ -179,6 +179,34 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
         }
 
+        Context "URI construction" {
+
+            BeforeAll {
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient { "3" }
+            }
+
+            It "Should not produce double slash when path starts with '/'" {
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+
+                Invoke-MetasysMethod /objects
+
+                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
+                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v3/objects"
+                } -Exactly -Times 1 -Scope It
+            }
+
+            It "Should build a valid URI when path does not start with '/'" {
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+
+                Invoke-MetasysMethod objects
+
+                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
+                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v3/objects"
+                } -Exactly -Times 1 -Scope It
+            }
+
+        }
+
 
     }
 
@@ -393,6 +421,67 @@ Header2: Header 2
             $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders | dos2unix
             $actual | Should -Be  $expectedString
         }
+    }
+
+}
+
+Describe 'Show-LastMetasysResponseBody' -Tag Unit {
+
+    Context 'When last response body is a plain JSON string value' {
+
+        BeforeAll {
+            $tmpFile = [System.IO.Path]::GetTempFileName()
+            # Simulate trailing newline that Set-Content adds when writing the body
+            [System.IO.File]::WriteAllText($tmpFile, '"hello"' + "`n")
+            $env:METASYS_LAST_RESPONSE_PATH = $tmpFile
+        }
+
+        AfterAll {
+            if ($tmpFile -and (Test-Path $tmpFile)) { Remove-Item $tmpFile -Force }
+            $env:METASYS_LAST_RESPONSE_PATH = $null
+        }
+
+        It 'Should return the raw JSON string without trailing whitespace' {
+            $result = Show-LastMetasysResponseBody
+            $result | Should -Be '"hello"'
+        }
+
+        It 'Should not have trailing whitespace' {
+            $result = Show-LastMetasysResponseBody
+            $result | Should -Be $result.TrimEnd()
+        }
+
+    }
+
+    Context 'When last response body is a JSON object' {
+
+        BeforeAll {
+            $tmpFile = [System.IO.Path]::GetTempFileName()
+            [System.IO.File]::WriteAllText($tmpFile, '{"key":"value"}')
+            $env:METASYS_LAST_RESPONSE_PATH = $tmpFile
+        }
+
+        AfterAll {
+            if ($tmpFile -and (Test-Path $tmpFile)) { Remove-Item $tmpFile -Force }
+            $env:METASYS_LAST_RESPONSE_PATH = $null
+        }
+
+        It 'Should return formatted JSON' {
+            $result = Show-LastMetasysResponseBody
+            $result | Should -Not -BeNullOrEmpty
+            $result | Should -BeLike '*"key"*'
+        }
+
+    }
+
+    Context 'When there is no last response body' {
+
+        It 'Should return nothing' {
+            $env:METASYS_LAST_RESPONSE_PATH = $null
+            $result = Show-LastMetasysResponseBody
+            $result | Should -BeNullOrEmpty
+        }
+
     }
 
 }
