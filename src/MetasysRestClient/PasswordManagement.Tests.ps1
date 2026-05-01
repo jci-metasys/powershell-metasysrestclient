@@ -60,7 +60,7 @@ Describe "Password Management When No Vaults Registered" {
                 Mock Get-SecretVault -ModuleName MetasysRestClient
             }
             Mock Write-Information -ModuleName MetasysRestClient
-            $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
+            $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText -Force)
             if (!$result) {
                 $returnedNothing = $true
             }
@@ -153,7 +153,7 @@ Describe "Password Management When Vault Registered but the module for that vaul
                 Mock Get-SecretVault -ModuleName MetasysRestClient
             }
             Mock Write-Information -ModuleName MetasysRestClient
-            $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
+            $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText -Force)
             if (!$result) {
                 $returnedNothing = $true
             }
@@ -247,7 +247,7 @@ Describe "Password Management When a Single Vault is registered" {
                 Mock Get-SecretVault -ModuleName MetasysRestClient
             }
             Mock Write-Information -ModuleName MetasysRestClient
-            $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText)
+            $result = Set-SavedMetasysPassword -SiteHost anything -UserName anything -Password (ConvertTo-SecureString anything -AsPlainText -Force)
             if (!$result) {
                 $returnedNothing = $true
             }

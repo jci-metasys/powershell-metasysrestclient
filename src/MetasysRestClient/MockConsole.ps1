@@ -6,7 +6,7 @@ class MockConsole {
 
     static [String] $DefaultMetasysHost = "testhost"
     static [String] $DefaultUserName = "testuser"
-    static [SecureString] $DefaultPassword = (ConvertTo-SecureString "testpassword" -AsPlainText)
+    static [SecureString] $DefaultPassword = (ConvertTo-SecureString "testpassword" -AsPlainText -Force)
     static [string] $DefaultPath = "/objects"
 
     [Hashtable]$Inputs = @{ }

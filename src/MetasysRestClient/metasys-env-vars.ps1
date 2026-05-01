@@ -49,7 +49,7 @@ class MetasysEnvVars {
     }
 
     static [void] setTokenAsPlainText([String]$token) {
-        [MetasysEnvVars]::setToken(($token | ConvertTo-SecureString -AsPlainText))
+        [MetasysEnvVars]::setToken(($token | ConvertTo-SecureString -AsPlainText -Force))
     }
 
     static [string] getLast() {
