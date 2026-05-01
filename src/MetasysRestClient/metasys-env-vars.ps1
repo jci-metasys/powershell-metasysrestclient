@@ -63,6 +63,9 @@ class MetasysEnvVars {
         # This variable used to save the last response to an env var, but that generally can be very large
         # So now instead we write the response to a temp file and instead of writing to
         # $env:METASYS_LAST_RESPONSE we write the path of the file to $env:METASYS_LAST_RESPONSE_PATH
+        if ($env:METASYS_LAST_RESPONSE_PATH -and (Test-Path $env:METASYS_LAST_RESPONSE_PATH)) {
+            Remove-Item -Path $env:METASYS_LAST_RESPONSE_PATH -Force -ErrorAction SilentlyContinue
+        }
         $tempFile = New-TemporaryFile
         Set-Content -Path $tempFile.FullName -Value $last
         $env:METASYS_LAST_RESPONSE_PATH = $tempFile.FullName
@@ -79,6 +82,10 @@ class MetasysEnvVars {
         $env:METASYS_SKIP_CERTIFICATE_CHECK = $null
         $env:METASYS_USER_NAME = $null
         $env:METASYS_VERSION = $null
+        if ($env:METASYS_LAST_RESPONSE_PATH -and (Test-Path $env:METASYS_LAST_RESPONSE_PATH)) {
+            Remove-Item -Path $env:METASYS_LAST_RESPONSE_PATH -Force -ErrorAction SilentlyContinue
+        }
+        $env:METASYS_LAST_RESPONSE_PATH = $null
     }
 
     static [void] setHeaders([Hashtable]$headers) {
