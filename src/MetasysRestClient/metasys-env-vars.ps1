@@ -64,7 +64,7 @@ class MetasysEnvVars {
         # So now instead we write the response to a temp file and instead of writing to
         # $env:METASYS_LAST_RESPONSE we write the path of the file to $env:METASYS_LAST_RESPONSE_PATH
         if ($env:METASYS_LAST_RESPONSE_PATH -and (Test-Path $env:METASYS_LAST_RESPONSE_PATH)) {
-            Remove-Item -Path $env:METASYS_LAST_RESPONSE_PATH -Force
+            Remove-Item -Path $env:METASYS_LAST_RESPONSE_PATH -Force -ErrorAction SilentlyContinue
         }
         $tempFile = New-TemporaryFile
         Set-Content -Path $tempFile.FullName -Value $last
@@ -83,7 +83,7 @@ class MetasysEnvVars {
         $env:METASYS_USER_NAME = $null
         $env:METASYS_VERSION = $null
         if ($env:METASYS_LAST_RESPONSE_PATH -and (Test-Path $env:METASYS_LAST_RESPONSE_PATH)) {
-            Remove-Item -Path $env:METASYS_LAST_RESPONSE_PATH -Force
+            Remove-Item -Path $env:METASYS_LAST_RESPONSE_PATH -Force -ErrorAction SilentlyContinue
         }
         $env:METASYS_LAST_RESPONSE_PATH = $null
     }
