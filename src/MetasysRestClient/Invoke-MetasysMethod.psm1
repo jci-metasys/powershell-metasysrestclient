@@ -181,6 +181,10 @@ function Invoke-MetasysMethod {
 
         $uri = [Uri]::new($path, [UriKind]::RelativeOrAbsolute)
         if ($uri.IsAbsoluteUri) {
+            if ($uri.Segments.Length -lt 3 -or $uri.Segments[1] -ne 'api/' -or $uri.Segments[2] -notmatch '^v\d+/$') {
+                Write-Error "The URL '$Path' does not appear to be a valid Metasys API URL (expected https://host/api/vN/...)"
+                continue
+            }
             $versionSegment = $uri.Segments[2]
             $versionNumber = $versionSegment.SubString(1, $versionSegment.Length - 2)
             if ($Version -ne "" -and $versionNumber -ne $Version) {
@@ -209,7 +213,7 @@ function Invoke-MetasysMethod {
                     try {
                         Write-Information "Session has expired. Trying to reconnect with this command:"
                         Write-Information "Connect-MetasysAccount -SiteHost $([MetasysEnvVars]::getSiteHost()) -UserName $([MetasysEnvVars]::getUserName()) -Version $($Version) `
--                         -SkipCertificateCheck:$($SkipCertificateCheck)"
+                         -SkipCertificateCheck:$($SkipCertificateCheck)"
                         Connect-MetasysAccount -SiteHost ([MetasysEnvVars]::getSiteHost()) -UserName ([MetasysEnvVars]::getUserName()) -Version $Version `
                             -SkipCertificateCheck:$SkipCertificateCheck
                     }
