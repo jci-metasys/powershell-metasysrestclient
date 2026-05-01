@@ -355,6 +355,70 @@ Header2: Header 2
     }
 
 
+    Describe 'Temp file cleanup (regression tests for temp file leak)' {
+
+        Describe 'setLast called twice should clean up first temp file' {
+            BeforeAll {
+                Clear-MetasysEnvVariables
+                $env:METASYS_ACCESS_TOKEN = (ConvertTo-SecureString -AsPlainText "This is the token") | ConvertFrom-SecureString
+                $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
+                $env:METASYS_HOST = "oas12"
+                $env:METASYS_VERSION = $LatestVersion
+            }
+
+            It 'first temp file should be deleted after second call to Invoke-MetasysMethod' {
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient {
+                    @{
+                        StatusCode        = 200
+                        StatusDescription = "OK"
+                        Headers           = @{ "Content-Type" = "application/json" }
+                        Content           = [System.Text.Encoding]::UTF8.GetBytes('"response1"')
+                    }
+                }
+                Invoke-MetasysMethod /objects | Out-Null
+                $firstPath = $env:METASYS_LAST_RESPONSE_PATH
+
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient {
+                    @{
+                        StatusCode        = 200
+                        StatusDescription = "OK"
+                        Headers           = @{ "Content-Type" = "application/json" }
+                        Content           = [System.Text.Encoding]::UTF8.GetBytes('"response2"')
+                    }
+                }
+                Invoke-MetasysMethod /objects | Out-Null
+
+                $firstPath | Should -Not -Exist
+                $env:METASYS_LAST_RESPONSE_PATH | Should -Not -BeNullOrEmpty
+                $env:METASYS_LAST_RESPONSE_PATH | Should -Exist
+            }
+
+            AfterAll {
+                Clear-MetasysEnvVariables
+            }
+        }
+
+        Describe 'Clear-MetasysEnvVariables removes the temp file' {
+            It 'should delete the temp file and null out METASYS_LAST_RESPONSE_PATH' {
+                $tempFile = [System.IO.Path]::GetTempFileName()
+                $env:METASYS_LAST_RESPONSE_PATH = $tempFile
+
+                Clear-MetasysEnvVariables | Out-Null
+
+                $tempFile | Should -Not -Exist
+                $env:METASYS_LAST_RESPONSE_PATH | Should -BeNullOrEmpty
+            }
+        }
+
+        Describe 'Clear-MetasysEnvVariables is safe when no temp file exists' {
+            It 'should not throw when METASYS_LAST_RESPONSE_PATH is null' {
+                $env:METASYS_LAST_RESPONSE_PATH = $null
+
+                { Clear-MetasysEnvVariables } | Should -Not -Throw
+            }
+        }
+    }
+
     Describe 'When -IncludeResponseHeaders with response error' {
         BeforeAll {
             Clear-MetasysEnvVariables
