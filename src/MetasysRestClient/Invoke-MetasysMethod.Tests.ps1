@@ -396,3 +396,15 @@ Header2: Header 2
     }
 
 }
+
+Describe 'Read-ConfigFile' -Tag Unit {
+    Describe 'When config file contains invalid JSON' {
+        It 'Connect-MetasysAccount should throw' {
+            Mock Get-Content -ModuleName MetasysRestClient {
+                'this is not json'
+            }
+
+            { Connect-MetasysAccount } | Should -Throw
+        }
+    }
+}
