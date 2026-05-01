@@ -225,11 +225,11 @@ function Invoke-MetasysMethod {
                     $refreshRequest = buildRequest -uri $uri -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                     try {
-                        Write-Information -Message "Attempting to refresh access token"
+                        Write-Information "Attempting to refresh access token"
                         $refreshResponse = Invoke-RestMethod @refreshRequest
                         [MetasysEnvVars]::setExpires($refreshResponse.expires)
                         [MetasysEnvVars]::setTokenAsPlainText($refreshResponse.accessToken)
-                        Write-Information -Message "Refresh token successful"
+                        Write-Information "Refresh token successful"
                     }
                     catch {
                         Write-Debug "Error attempting to refresh token"
@@ -257,7 +257,7 @@ function Invoke-MetasysMethod {
         $response = $null
         $responseObject = $null
 
-        Write-Information -Message "Attempting request"
+        Write-Information "Attempting request"
 
         try {
             $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
@@ -275,7 +275,7 @@ function Invoke-MetasysMethod {
             if ($responseObject.Headers["Content-Length"]) {
                 [Int]::TryParse($responseObject.Headers["Content-Length"], [ref] $contentLength)  | Out-Null
             } elseif ($responseObject.Content -is [String]) {
-                $contentLength = $responseObject.Content
+                $contentLength = $responseObject.Content.Length
             }
 
             if ($responseObject.Headers["Content-Type"] -like "*json*" -or $contentLength -eq 0 -or $responseObject.StatusCode -eq 204 -or $responseObject.StatusCode -ge 400) {
@@ -372,8 +372,13 @@ function ConvertFrom-JsonSafely {
 
 function Show-LastMetasysResponseBody {
     $body = [MetasysEnvVars]::getLast()
-    if ($body -and ($contentType -eq "json")) {
-        ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
+    if ($body) {
+        try {
+            ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
+        }
+        catch {
+            $body
+        }
     }
 }
 

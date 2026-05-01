@@ -16,6 +16,6 @@ function buildUri {
         return $uri
     }
 
-    $fullPath = "https://$siteHost/$([Path]::Join("api", "v" + $version, $path))"
+    $fullPath = "https://$siteHost/$([System.IO.Path]::Join("api", "v" + $version, $path))"
     return [Uri]::new($fullPath)
 }
