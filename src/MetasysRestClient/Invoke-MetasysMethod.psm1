@@ -373,11 +373,12 @@ function ConvertFrom-JsonSafely {
 function Show-LastMetasysResponseBody {
     $body = [MetasysEnvVars]::getLast()
     if ($body) {
-        try {
-            ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
-        }
-        catch {
+        $parsed = ConvertFrom-JsonSafely $body
+        if ($parsed -is [String]) {
             $body
+        }
+        else {
+            $parsed | ConvertTo-Json -Depth 20
         }
     }
 }
