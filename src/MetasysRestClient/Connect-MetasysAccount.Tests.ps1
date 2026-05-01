@@ -393,6 +393,30 @@ Describe "Connect-Metasys" -Tag "Unit" {
             }
         }
 
+        Context "When -Version parameter is omitted (null, not empty string)" {
+            BeforeAll {
+                Mock Invoke-RestMethod -ModuleName MetasysRestClient {
+                    CreateLoginResponse
+                }
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
+
+                # Omit -Version entirely so $Version is $null, not ""
+                Connect-MetasysAccount -MetasysHost "testhost" -UserName "user" `
+                    -Password ("pass" | ConvertTo-SecureString -AsPlainText -Force)
+            }
+
+            It "Should use the latest version in the URI" {
+                Should -Invoke Invoke-RestMethod -ModuleName MetasysRestClient -ParameterFilter {
+                    $Uri.ToString() -eq "https://testhost/api/v$LatestVersion/login"
+                } -Times 1 -Exactly -Scope Context
+            }
+
+            It 'Should set $env:METASYS_VERSION to the latest version (not null or empty)' {
+                $env:METASYS_VERSION | Should -Not -BeNullOrEmpty
+                $env:METASYS_VERSION | Should -Be $LatestVersion
+            }
+        }
+
     }
 
     Describe "Error Processing" {

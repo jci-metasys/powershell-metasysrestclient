@@ -179,6 +179,24 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
         }
 
+        Context "When -Version is omitted (null) and METASYS_VERSION env var is set" {
+            BeforeAll {
+                $env:METASYS_VERSION = "4"
+
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+                Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
+
+                # Omit -Version entirely so $Version is $null, not ""
+                Invoke-MetasysMethod /objects
+            }
+
+            It "Should use the saved version from METASYS_VERSION env var in the URI" {
+                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
+                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v4/objects"
+                } -Exactly -Times 1 -Scope Context
+            }
+        }
+
 
     }
 
@@ -395,4 +413,35 @@ Header2: Header 2
         }
     }
 
+}
+
+Describe 'Get-MetasysLatestVersion' -Tag Unit {
+    It 'Should return version 6' {
+        Get-MetasysLatestVersion | Should -Be "6"
+    }
+}
+
+Describe 'Set-MetasysAccessToken' -Tag Unit {
+    AfterEach { Clear-MetasysEnvVariables }
+
+    It 'Should default to API version 6 when -Version is not specified' {
+        Set-MetasysAccessToken -AccessToken "mytoken" -MetasysHost "myhost" -Expires ([DateTimeOffset]::MaxValue)
+        $env:METASYS_VERSION | Should -Be "6"
+    }
+
+    It 'Should use specified version when -Version is provided' {
+        Set-MetasysAccessToken -AccessToken "mytoken" -MetasysHost "myhost" -Expires ([DateTimeOffset]::MaxValue) -Version "4"
+        $env:METASYS_VERSION | Should -Be "4"
+    }
+}
+
+Describe 'Module manifest' -Tag Unit {
+    It 'Should not export Set-MetasysSkipSecureCheckNotSecure' {
+        $commands = Get-Command -Module MetasysRestClient
+        $commands.Name | Should -Not -Contain 'Set-MetasysSkipSecureCheckNotSecure'
+    }
+    It 'Should not export Reset-MetasysSkipSecureCheckNotSecure' {
+        $commands = Get-Command -Module MetasysRestClient
+        $commands.Name | Should -Not -Contain 'Reset-MetasysSkipSecureCheckNotSecure'
+    }
 }
