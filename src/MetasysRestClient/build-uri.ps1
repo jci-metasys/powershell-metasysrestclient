@@ -16,6 +16,6 @@ function buildUri {
         return $uri
     }
 
-    $fullPath = "https://$siteHost/api/v$version/$path"
+    $fullPath = "https://$siteHost/api/v$version/" + $path.TrimStart('/')
     return [Uri]::new($fullPath)
 }

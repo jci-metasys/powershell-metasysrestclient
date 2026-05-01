@@ -375,7 +375,7 @@ function Show-LastMetasysResponseBody {
     if ($body) {
         $parsed = ConvertFrom-JsonSafely $body
         if ($parsed -is [String]) {
-            $body
+            $body.TrimEnd()
         }
         else {
             $parsed | ConvertTo-Json -Depth 20
