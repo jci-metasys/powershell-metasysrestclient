@@ -156,7 +156,7 @@ function Set-MetasysAccessToken {
         [string]$MetasysHost,
         [DateTimeOffset]$Expires = [DateTimeOffset]::MaxValue,
         [switch]$SkipCertificateCheck,
-        [string]$Version = "5"
+        [string]$Version = "6"
     )
 
     [MetasysEnvVars]::setTokenAsPlainText($AccessToken)
