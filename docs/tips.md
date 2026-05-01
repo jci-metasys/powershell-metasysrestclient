@@ -58,7 +58,7 @@ PS > $descriptionUpdate = @"
 >>   }
 >> }
 >> "@
-PS > Invoke-MetsysMethod /objects/$Id -Method Patch -Body $descriptionUpdate
+PS > Invoke-MetasysMethod /objects/$Id -Method Patch -Body $descriptionUpdate
 ```
 
 ### Using a Hashtable
@@ -117,7 +117,7 @@ PS > Write-Output $updateJSON
     }
   }
 }
-PS > imm /objects/$Id -Method Path -Body $updateJSON
+PS > imm /objects/$Id -Method Patch -Body $updateJSON
 ```
 
 ### Using the Contents of File
