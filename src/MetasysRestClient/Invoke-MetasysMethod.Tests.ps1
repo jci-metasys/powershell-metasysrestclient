@@ -396,3 +396,46 @@ Header2: Header 2
     }
 
 }
+
+Describe 'Read-ConfigFile' -Tag Unit {
+    Describe 'When config file contains invalid JSON' {
+        It 'Connect-MetasysAccount should throw' {
+            Mock Get-Content -ModuleName MetasysRestClient {
+                'this is not json'
+            }
+
+            { Connect-MetasysAccount } | Should -Throw
+        }
+    }
+}
+
+Describe 'Get-MetasysLatestVersion' -Tag Unit {
+    It 'Should return version 6' {
+        Get-MetasysLatestVersion | Should -Be "6"
+    }
+}
+
+Describe 'Set-MetasysAccessToken' -Tag Unit {
+    AfterEach { Clear-MetasysEnvVariables }
+
+    It 'Should default to API version 6 when -Version is not specified' {
+        Set-MetasysAccessToken -AccessToken "mytoken" -MetasysHost "myhost" -Expires ([DateTimeOffset]::MaxValue)
+        $env:METASYS_VERSION | Should -Be "6"
+    }
+
+    It 'Should use specified version when -Version is provided' {
+        Set-MetasysAccessToken -AccessToken "mytoken" -MetasysHost "myhost" -Expires ([DateTimeOffset]::MaxValue) -Version "4"
+        $env:METASYS_VERSION | Should -Be "4"
+    }
+}
+
+Describe 'Module manifest' -Tag Unit {
+    It 'Should not export Set-MetasysSkipSecureCheckNotSecure' {
+        $commands = Get-Command -Module MetasysRestClient
+        $commands.Name | Should -Not -Contain 'Set-MetasysSkipSecureCheckNotSecure'
+    }
+    It 'Should not export Reset-MetasysSkipSecureCheckNotSecure' {
+        $commands = Get-Command -Module MetasysRestClient
+        $commands.Name | Should -Not -Contain 'Reset-MetasysSkipSecureCheckNotSecure'
+    }
+}

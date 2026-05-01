@@ -25,7 +25,7 @@ function New-EventParser {
             [PSCustomObject]@{
                 EventType = $script:eventType;
                 EventId   = $script:lastEventId;
-                Data      = $script:data.ToString() | ConvertFrom-Json;
+                Data      = try { $script:data.ToString() | ConvertFrom-Json } catch { $script:data.ToString() };
             }
             $script:data = ""
             $script:eventType = ""
@@ -57,7 +57,7 @@ function New-EventParser {
             }
 
             if ($FieldName -eq "id") {
-                if (!$FieldName.Contains("\0")) {
+                if (!$Value.Contains([char]0)) {
                     $script:lastEventId = $Value
                 }
             }

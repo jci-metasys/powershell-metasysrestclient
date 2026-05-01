@@ -6,7 +6,7 @@ class MockConsole {
 
     static [String] $DefaultMetasysHost = "testhost"
     static [String] $DefaultUserName = "testuser"
-    static [SecureString] $DefaultPassword = (ConvertTo-SecureString "testpassword" -AsPlainText)
+    static [SecureString] $DefaultPassword = (ConvertTo-SecureString "testpassword" -AsPlainText -Force)
     static [string] $DefaultPath = "/objects"
 
     [Hashtable]$Inputs = @{ }
@@ -18,7 +18,7 @@ class MockConsole {
         $this.Inputs[[MockConsole]::PathPrompt] = [MockConsole]::DefaultPath
     }
 
-    MockConsole([String]$SiteHost = $DefaultSiteHost, [string]$UserName = $DefaultUserName,
+    MockConsole([String]$SiteHost = $DefaultMetasysHost, [string]$UserName = $DefaultUserName,
         [SecureString]$Password = $DefaultPassword) {
 
         $this.Inputs[[MockConsole]::MetasysHostPrompt] = $SiteHost
