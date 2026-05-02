@@ -23,9 +23,8 @@ function Invoke-MetasysGetStream {
 
     $token = [MetasysEnvVars]::getTokenAsPlainText()
 
-    if ($null -eq $token ) {
-        Write-Error "No connection to a Metasys site exists. Please connect using Connect-MetasysAccount"
-        exit
+    if ([string]::IsNullOrEmpty($token)) {
+        Write-Error "No connection to a Metasys site exists. Please connect using Connect-MetasysAccount" -ErrorAction Stop
     }
 
     $metasysHost = [MetasysEnvVars]::getSiteHost()
