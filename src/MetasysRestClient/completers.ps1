@@ -32,7 +32,7 @@ function Get-MetasysCachedObjectIds {
         $commandAst,
         $fakeBoundParameters )
 
-    $cache = GetCacheObject -MetasysHost ([MetasysEnvVars]::getSiteHost()) | ConvertFrom-Json -AsHashtable
+    $cache = GetCacheObject -MetasysHost ([MetasysEnvVars]::getSiteHost())
 
     foreach ($reference in $cache.Keys) {
         $id = $cache[$reference]
@@ -40,6 +40,16 @@ function Get-MetasysCachedObjectIds {
             [System.Management.Automation.CompletionResult]::new($id, "$id, $reference", [System.Management.Automation.CompletionResultType]::ParameterValue, $id)
         }
     }
+}
+
+Register-ArgumentCompleter -CommandName "Invoke-MetasysReadAttribute" -ParameterName "ItemReference" -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+    Get-MetasysCachedItemReferences $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameters
+}
+
+Register-ArgumentCompleter -CommandName "Invoke-MetasysReadAttribute" -ParameterName "ObjectId" -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+    Get-MetasysCachedObjectIds $commandName $parameterName $wordToComplete $commandAst $fakeBoundParameters
 }
 
 Export-ModuleMember -Function "Get-MetasysCachedItemReferences", "Get-MetasysCachedObjectIds"
