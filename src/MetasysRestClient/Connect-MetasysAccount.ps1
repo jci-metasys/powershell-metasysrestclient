@@ -218,7 +218,7 @@ function Connect-MetasysAccount {
 
         $uri = "https://$MetasysHost/api/v$Version/login"
         try {
-            Write-Information "Invoke-RestMethod -Uri $uri -Method Post -ContentType 'application/json' -Body '{ `"username`": `"$UserName`", `"password`": `"********`" }' -SkipCertificateCheck:`$$SkipCertificateCheck"
+            Write-Debug "Invoke-RestMethod -Uri $uri -Method Post -ContentType 'application/json' -Body '{ `"username`": `"$UserName`", `"password`": `"********`" }' -SkipCertificateCheck:`$$SkipCertificateCheck"
             $response = Invoke-RestMethod -Uri $uri -Method Post -ContentType 'application/json' -Body $body -SkipCertificateCheck:$SkipCertificateCheck
         }
         catch {

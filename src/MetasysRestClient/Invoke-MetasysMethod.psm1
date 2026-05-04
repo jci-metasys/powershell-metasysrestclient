@@ -230,11 +230,11 @@ function Invoke-MetasysMethod {
                     $refreshRequest = buildRequest -uri $uri -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                     try {
-                        Write-Information -Message "Attempting to refresh access token"
+                        Write-Debug "Attempting to refresh access token"
                         $refreshResponse = Invoke-RestMethod @refreshRequest
                         [MetasysEnvVars]::setExpires($refreshResponse.expires)
                         [MetasysEnvVars]::setTokenAsPlainText($refreshResponse.accessToken)
-                        Write-Information -Message "Refresh token successful"
+                        Write-Debug "Refresh token successful"
                     }
                     catch {
                         Write-Debug "Error attempting to refresh token"
@@ -262,7 +262,7 @@ function Invoke-MetasysMethod {
         $response = $null
         $responseObject = $null
 
-        Write-Information -Message "Attempting request"
+        Write-Debug "Attempting request"
 
         try {
             $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck

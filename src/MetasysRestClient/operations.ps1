@@ -123,22 +123,57 @@ function Remove-MetasysCache {
 function Invoke-MetasysReadAttribute {
     <#
     .SYNOPSIS
-        Read the specified attribute of the specified object
+        Read the specified attribute of the specified object.
 
     .DESCRIPTION
-        This function calls the get attribute value operation using the object id and
-        attribute id specified.
+        Reads a single attribute value from a Metasys object and returns it to the pipeline.
+
+        The object may be identified by object ID (-ObjectId) or by fully-qualified item reference
+        (-ItemReference). When using -ItemReference, the resolved object ID is cached locally
+        so subsequent calls for the same reference skip the lookup API call.
+
+        AttributeId defaults to 'presentValue' when not specified.
+
+        Non-normal conditions on the attribute are reported after the value:
+          - A WARNING is written if the condition indicates something unexpected (e.g. reliability fault).
+          - An INFORMATION message is written if the only condition is a non-default write priority.
+            To see these messages, pass -InformationAction Continue or set
+            $InformationPreference = 'Continue'.
+
+    .PARAMETER ObjectId
+        The object ID of the Metasys object to read from.
+
+    .PARAMETER ItemReference
+        The fully-qualified item reference (e.g. site:device.AV1) of the object to read from.
+        Tab completion is available from the local object ID cache.
+
+    .PARAMETER AttributeId
+        The attribute to read. Defaults to 'presentValue'.
 
     .OUTPUTS
-        System.String
-            The payloads from Metasys are formatted JSON strings. This is the default return type for this function.
+        The attribute value (type depends on the Metasys data type of the attribute).
 
     .EXAMPLE
-        Invoke-MetasysReadAttribute -ObjectId ba1a703a-1e96-54ae-9ae6-9590a55c2e4a -AttributeId name
+        Invoke-MetasysReadAttribute -ObjectId ba1a703a-1e96-54ae-9ae6-9590a55c2e4a
 
-        This will read the attribute `name` of the object and return its value.
+        Reads the presentValue of the object with the given object ID.
 
-        MOLEX LIGHT POWER
+    .EXAMPLE
+        ira welch12:welch12/AV1
+
+        Reads the presentValue using the item reference. The alias 'ira' and positional
+        parameter binding mean you can type this immediately after 'ira <Tab>'.
+
+    .EXAMPLE
+        ira welch12:welch12/AV1 -AttributeId name
+
+        Reads the 'name' attribute of the object.
+
+    .EXAMPLE
+        ira welch12:welch12/AV1 -InformationAction Continue
+
+        Reads presentValue and also displays informational messages such as a non-default
+        write priority condition.
 
     #>
     [CmdletBinding(PositionalBinding = $false)]
