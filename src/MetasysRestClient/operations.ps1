@@ -145,11 +145,11 @@ function Invoke-MetasysReadAttribute {
     param(
         [Parameter(Mandatory = $true, ParameterSetName = "ObjectId")]
         [string]$ObjectId,
-        [Parameter(Mandatory = $true, ParameterSetName = "ItemReference")]
+        [Parameter(Mandatory = $true, ParameterSetName = "ItemReference", Position = 0)]
         [string]$ItemReference,
 
-        [Parameter(Mandatory = $true)]
-        [String]$AttributeId
+        [Parameter(Mandatory = $false)]
+        [String]$AttributeId = "presentValue"
     )
 
     $shouldReadAttribute = $true

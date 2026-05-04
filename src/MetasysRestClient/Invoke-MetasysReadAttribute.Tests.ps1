@@ -308,4 +308,41 @@ Describe "Invoke-MetasysReadAttribute" -Tag Unit {
             (Get-Alias -Name ira).Definition | Should -Be 'Invoke-MetasysReadAttribute'
         }
     }
+
+    Describe "Parameter defaults and positional binding" {
+
+        BeforeAll {
+            SetupConnectedSession
+            $objectId = "ba1a703a-1e96-54ae-9ae6-9590a55c2e4a"
+            $responseBody = CreateReadAttributeResponse -AttributeId "presentValue" -Value 42.0
+
+            Mock Invoke-WebRequest -ModuleName MetasysRestClient {
+                [PSCustomObject]@{
+                    Content           = $responseBody
+                    StatusCode        = 200
+                    StatusDescription = "OK"
+                    Headers           = @{ "Content-Type" = "application/json" }
+                }
+            }
+        }
+
+        It "AttributeId defaults to presentValue when omitted" {
+            Invoke-MetasysReadAttribute -ObjectId $objectId
+
+            Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
+                $Uri.ToString() -like "*/attributes/presentValue*"
+            } -Exactly -Times 1 -Scope It
+        }
+
+        It "ItemReference is positional at position 0" {
+            Mock GetObjectId -ModuleName MetasysRestClient { $objectId }
+
+            # Pass ItemReference positionally — no parameter name
+            Invoke-MetasysReadAttribute "site:device.AHU-1"
+
+            Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
+                $Uri.ToString() -like "*/attributes/presentValue*"
+            } -Exactly -Times 1 -Scope It
+        }
+    }
 }
