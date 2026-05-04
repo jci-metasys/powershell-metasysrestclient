@@ -128,7 +128,7 @@ Describe "Invoke-MetasysReadAttribute" -Tag Unit {
             }
         }
 
-        Context "Attribute has non-normal conditions" {
+        Context "Attribute has non-normal conditions (reliability)" {
 
             BeforeAll {
                 $objectId = "ba1a703a-1e96-54ae-9ae6-9590a55c2e4a"
@@ -158,6 +158,44 @@ Describe "Invoke-MetasysReadAttribute" -Tag Unit {
                 Should -Invoke Write-Warning -ModuleName MetasysRestClient -ParameterFilter {
                     $Message -like "*$attributeId*non-normal conditions*"
                 } -Exactly -Times 1 -Scope Context
+            }
+        }
+
+        Context "Attribute has only a priority condition" {
+
+            BeforeAll {
+                $objectId = "ba1a703a-1e96-54ae-9ae6-9590a55c2e4a"
+                $attributeId = "presentValue"
+                $condition = @{
+                    presentValue = @{
+                        priority = "writePriorityEnumSet.priorityDefault"
+                    }
+                }
+                $responseBody = CreateReadAttributeResponse -AttributeId $attributeId -Value 23.3 -Condition $condition
+
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient {
+                    [PSCustomObject]@{
+                        Content           = $responseBody
+                        StatusCode        = 200
+                        StatusDescription = "OK"
+                        Headers           = @{ "Content-Type" = "application/json" }
+                    }
+                }
+
+                Mock Write-Warning -ModuleName MetasysRestClient
+                Mock Write-Information -ModuleName MetasysRestClient
+
+                Invoke-MetasysReadAttribute -ObjectId $objectId -AttributeId $attributeId
+            }
+
+            It "Should write an Information message (not a warning) about the priority condition" {
+                Should -Invoke Write-Information -ModuleName MetasysRestClient -ParameterFilter {
+                    $MessageData -like "*$attributeId*non-normal conditions*priority*"
+                } -Exactly -Times 1 -Scope Context
+            }
+
+            It "Should not write a warning for a priority-only condition" {
+                Should -Invoke Write-Warning -ModuleName MetasysRestClient -Exactly -Times 0 -Scope Context
             }
         }
     }

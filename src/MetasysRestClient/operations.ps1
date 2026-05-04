@@ -183,7 +183,15 @@ function Invoke-MetasysReadAttribute {
         $responseParsed = $response | ConvertFrom-Json -AsHashtable -Depth 20
 
         if (([System.Management.Automation.OrderedHashtable]$responseParsed.condition).ContainsKey($AttributeId)) {
-            Write-Warning ("$AttributeId has non-normal conditions $(ConvertTo-Json $responseParsed.condition[$AttributeId])")
+            $conditionDetail = $responseParsed.condition[$AttributeId]
+            $conditionKeys = @($conditionDetail.Keys)
+            $message = "$AttributeId has non-normal conditions $(ConvertTo-Json $conditionDetail)"
+            if ($conditionKeys.Count -eq 1 -and $conditionKeys[0] -eq "priority") {
+                Write-Information $message
+            }
+            else {
+                Write-Warning $message
+            }
         }
     }
 }
