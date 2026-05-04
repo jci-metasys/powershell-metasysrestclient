@@ -12,15 +12,29 @@ function Invoke-MetasysFindObject {
     $deviceResponse = Invoke-MetasysMethod -Method Get `
         -Path /networkDevices?classification=device -ReturnBodyAsObject
 
+    if ($deviceResponse.items.Count -eq 0) {
+        $deviceResponse = Invoke-MetasysMethod -Method Get `
+            -Path /networkDevices?classification=server -ReturnBodyAsObject
+    }
+
+    if ($deviceResponse.items.Count -eq 0) {
+        return
+    }
+
     $firstDevice = $deviceResponse.items[0]
     $firstDeviceId = $firstDevice.id
 
     $matchingObjects = (Invoke-MetasysMethod -Method Get `
-        -Path /objects/$firstDeviceId/objects?objectType=$ObjectType`&flatten=true `
-        -ReturnBodyAsObject) | Select-Object -ExpandProperty items `
-        | Where-Object objectType -EQ $ObjectType
+            -Path /objects/$firstDeviceId/objects?objectType=$ObjectType`&flatten=true `
+            -ReturnBodyAsObject) | Select-Object -ExpandProperty items `
+    | Where-Object objectType -EQ $ObjectType
 
-    $matchingObjects | Select-Object -Property id, name, itemReference
+    $result = $matchingObjects | Select-Object -Property id, name, itemReference
+
+    $metasysHost = [MetasysEnvVars]::getSiteHost()
+    CacheObjectIds -MetasysHost $metasysHost -Objects $result
+
+    $result
 
 }
 

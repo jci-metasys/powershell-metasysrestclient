@@ -8,7 +8,9 @@
     # Script module or binary module file associated with this manifest.
     RootModule           = 'Invoke-MetasysMethod.psm1'
 
-    NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1", "Read-ConfigFile.ps1", "constants.ps1", "preferences.ps1", "Invoke-MetasysGetStream.ps1", "event-parser.ps1", "Invoke-FindObject.ps1")
+    NestedModules        = @("metasys-env-vars.ps1", "PasswordManagement.ps1", "build-uri.ps1", "build-request.ps1", "Connect-MetasysAccount.ps1",
+        "Read-ConfigFile.ps1", "constants.ps1", "preferences.ps1", "Invoke-MetasysGetStream.ps1", "event-parser.ps1", "Invoke-FindObject.ps1",
+        "operations.ps1", "metasys-value.ps1", "completers.ps1")
 
     # Version number of this module.
     ModuleVersion        = '2.4.0'
@@ -32,7 +34,7 @@
     Description          = 'Interact with a Metasys site through Metasys REST API'
 
     # Minimum version of the PowerShell engine required by this module
-    PowerShellVersion    = '7.0.0'
+    PowerShellVersion    = '7.2.0'
 
     # Name of the PowerShell host required by this module
     # PowerShellHostName = ''
@@ -53,7 +55,7 @@
     # RequiredModules = @()
 
     # Assemblies that must be loaded prior to importing this module
-    # RequiredAssemblies = @()
+    RequiredAssemblies   = @('System.Text.Json.dll')
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module.
     # ScriptsToProcess = @()
@@ -73,7 +75,9 @@
     'Get-LastMetasysHeadersAsObject', 'Clear-MetasysEnvVariables', 'Connect-MetasysAccount', 'Get-MetasysLatestVersion', 'Set-MetasysDefaultApiVersion', 'Get-MetasysDefaultApiVersion',
     'Set-MetasysSkipSecureCheckNotSecure', 'Reset-MetasysSkipSecureCheckNotSecure',
     'Invoke-MetasysGetStream', 'Invoke-MetasysFindObject',
-    'Set-MetasysAccessToken'
+    'Set-MetasysAccessToken',
+    "Get-MetasysCachedItemReferences", "Get-MetasysCachedObjectIds", 'Remove-MetasysCache', 'Invoke-MetasysDiscoverObjects',
+    'Invoke-MetasysReadAttribute'
 
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -83,7 +87,7 @@
     VariablesToExport    = @()
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-    AliasesToExport      = 'imm', 'cma', 'ims', 'ifo'
+    AliasesToExport      = 'imm', 'cma', 'ims', 'ifo', 'ira'
 
     # DSC resources to export from this module
     # DscResourcesToExport = @()
