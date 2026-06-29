@@ -28,6 +28,10 @@ function buildRequest {
         $request.Authentication = "bearer"
     }
 
+    # Hint to servers that we prefer encodings PowerShell can auto-decompress.
+    # Servers may ignore this and send br or other encodings anyway.
+    $request.Headers["Accept-Encoding"] = "gzip, deflate"
+
     if ($headers) {
         foreach ($header in $Headers.GetEnumerator()) {
             $request.Headers[$header.Key] = $header.Value

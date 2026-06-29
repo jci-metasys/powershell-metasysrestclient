@@ -30,24 +30,146 @@ function setBackgroundColorsToMatchConsole {
 
 }
 
-function convertResponseObjectToString {
+
+function invokeHttpRequest {
     param(
-        [WebResponseObject]$responseObject
+        [string]$uri,
+        [string]$method,
+        [string]$body,
+        [string]$token,
+        [switch]$skipCertificateCheck,
+        [hashtable]$headers = @{},
+        [string]$outputFile = ""
     )
 
-    $body = [String]::new($responseObject.Content)
-    $errorMessage = "`nStatus: " + $responseObject.StatusCode.ToString() + " (" + $responseObject.StatusDescription + ")"
-    $responseObject.Headers.Keys | ForEach-Object { $errorMessage += "`n" + $_ + ": " + $responseObject.Headers[$_] }
-    $errorMessage += "`n$body"
-    return $errorMessage
-}
+    $handler = [System.Net.Http.HttpClientHandler]::new()
+    $handler.AutomaticDecompression = [System.Net.DecompressionMethods]::GZip -bor [System.Net.DecompressionMethods]::Deflate
+    if ($skipCertificateCheck) {
+        $handler.ServerCertificateCustomValidationCallback = [System.Net.Http.HttpClientHandler]::DangerousAcceptAnyServerCertificateValidator
+    }
+    $httpReq = $null
+    $httpResp = $null
+    $client = [System.Net.Http.HttpClient]::new($handler)
+    try {
+        $client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", "Bearer $token") | Out-Null
+        foreach ($key in $headers.Keys) {
+            $client.DefaultRequestHeaders.TryAddWithoutValidation($key, $headers[$key]) | Out-Null
+        }
 
-function createErrorStringFromResponseObject {
-    param(
-        [WebResponseObject]$responseObject
-    )
+        $httpMethod = [System.Net.Http.HttpMethod]::new($method.ToUpper())
+        $httpReq = [System.Net.Http.HttpRequestMessage]::new($httpMethod, $uri)
+        if ($body) {
+            $httpReq.Content = [System.Net.Http.StringContent]::new($body, [System.Text.Encoding]::UTF8, "application/json")
+        }
 
-    return convertResponseObjectToString $responseObject
+        # ResponseHeadersRead returns once headers arrive; body is not buffered in memory,
+        # so large payloads do not cause OverflowException.
+        $httpResp = $client.SendAsync($httpReq, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead).GetAwaiter().GetResult()
+
+        $statusCode = [int]$httpResp.StatusCode
+        $statusDescription = $httpResp.ReasonPhrase
+
+        $responseHeaders = @{}
+        foreach ($h in $httpResp.Headers) {
+            $responseHeaders[$h.Key] = $h.Value -join ", "
+        }
+        foreach ($h in $httpResp.Content.Headers) {
+            $responseHeaders[$h.Key] = $h.Value -join ", "
+        }
+
+        # AutomaticDecompression strips gzip/deflate from ContentEncoding after handling them.
+        # identity means no encoding. Anything else left (e.g. br, zstd) is unhandled binary.
+        $contentEncoding = @($httpResp.Content.Headers.ContentEncoding | Where-Object { $_ -ne 'identity' })
+        $isBinary = $contentEncoding.Count -gt 0
+
+        # Binary with no output file: return immediately without downloading the body.
+        if ($isBinary -and -not $outputFile) {
+            return [PSCustomObject]@{
+                StatusCode        = $statusCode
+                StatusDescription = $statusDescription
+                Headers           = $responseHeaders
+                Content           = $null
+                ContentEncoding   = $contentEncoding -join ", "
+            }
+        }
+
+        # Content-Length may be absent for chunked transfers.
+        $totalBytes = $httpResp.Content.Headers.ContentLength
+        $stream = $httpResp.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
+        $buffer = [byte[]]::new(81920)
+        $totalRead = [long]0
+
+        $reportProgress = {
+            if ($totalBytes -gt 0) {
+                $pct = [int]([Math]::Min(($totalRead / $totalBytes) * 100, 100))
+                Write-Progress -Activity "Downloading" `
+                    -Status "$([int]($totalRead / 1KB)) KB / $([int]($totalBytes / 1KB)) KB" `
+                    -PercentComplete $pct
+            } else {
+                Write-Progress -Activity "Downloading" `
+                    -Status "$([int]($totalRead / 1KB)) KB received" `
+                    -PercentComplete -1
+            }
+        }
+
+        if ($isBinary) {
+            # Stream directly to file — no MemoryStream, no double-allocation.
+            $fileStream = [System.IO.FileStream]::new($outputFile, [System.IO.FileMode]::Create, [System.IO.FileAccess]::Write)
+            try {
+                $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
+                while ($bytesRead -gt 0) {
+                    $fileStream.Write($buffer, 0, $bytesRead)
+                    $totalRead += $bytesRead
+                    & $reportProgress
+                    $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
+                }
+            }
+            finally {
+                Write-Progress -Activity "Downloading" -Completed
+                $fileStream.Dispose()
+                $stream.Dispose()
+            }
+            return [PSCustomObject]@{
+                StatusCode        = $statusCode
+                StatusDescription = $statusDescription
+                Headers           = $responseHeaders
+                Content           = $null
+                ContentEncoding   = $contentEncoding -join ", "
+            }
+        }
+
+        # Text/JSON: buffer in MemoryStream.
+        $accumulator = [System.IO.MemoryStream]::new()
+        try {
+            $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
+            while ($bytesRead -gt 0) {
+                $accumulator.Write($buffer, 0, $bytesRead)
+                $totalRead += $bytesRead
+                & $reportProgress
+                $bytesRead = $stream.Read($buffer, 0, $buffer.Length)
+            }
+        }
+        finally {
+            Write-Progress -Activity "Downloading" -Completed
+            $stream.Dispose()
+        }
+
+        $bytes = $accumulator.ToArray()
+        $accumulator.Dispose()
+
+        return [PSCustomObject]@{
+            StatusCode        = $statusCode
+            StatusDescription = $statusDescription
+            Headers           = $responseHeaders
+            Content           = [System.Text.Encoding]::UTF8.GetString($bytes)
+            ContentEncoding   = $null
+        }
+    }
+    finally {
+        if ($null -ne $httpResp) { $httpResp.Dispose() }
+        if ($null -ne $httpReq) { $httpReq.Dispose() }
+        $client.Dispose()
+    }
 }
 
 function invokeWithWarningsOff {
@@ -149,6 +271,11 @@ function Invoke-MetasysMethod {
         # Alias: -rh
         [Alias("rh")]
         [Switch]$IncludeResponseHeaders,
+        # Write the response body to this file path. Use when the response is binary.
+        #
+        # Alias: -of
+        [Alias("of")]
+        [string]$OutFile,
 
         # Add a subscription for this resource. Pass a `stream id` as the value
         # of this parameter. For example `0915342b-4557-401e-a061-237d0bced15d` (
@@ -250,66 +377,71 @@ function Invoke-MetasysMethod {
             $Headers['Metasys-Subscribe'] = $Subscribe
         }
 
-        $request = buildRequest -uri $uri -method $Method -body $Body -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck `
-            -headers $Headers
-
-
         $response = $null
-        $responseObject = $null
 
         Write-Information -Message "Attempting request"
 
+        $resolvedOutputFile = ""
+        if ($OutFile) {
+            $resolvedOutputFile = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutFile)
+        }
+
+        $result = $null
         try {
-            $responseObject = Invoke-WebRequest @request -SkipHttpErrorCheck
+            $result = invokeHttpRequest -uri $uri.ToString() -method $Method.ToString() -body $Body `
+                -token ([MetasysEnvVars]::getTokenAsPlainText()) -skipCertificateCheck:$SkipCertificateCheck `
+                -headers $Headers -outputFile $resolvedOutputFile
         }
         catch {
-            # Catches errors like host name can't be found but not http errors like 4xx, 5xx due to SkipHttpErrorCheck above
             Write-Error $_
             return
         }
 
-        $contentType = "unknown"; # one of json, text, unknown
-        if ($responseObject) {
-
-            $contentLength = 0
-            if ($responseObject.Headers["Content-Length"]) {
-                [Int]::TryParse($responseObject.Headers["Content-Length"], [ref] $contentLength)  | Out-Null
-            } elseif ($responseObject.Content -is [String]) {
-                $contentLength = $responseObject.Content
+        if ($result -and $result.ContentEncoding) {
+            if ($OutFile) {
+                $resolvedOutputFile
+            } else {
+                Write-Warning "The response is $($result.ContentEncoding)-encoded binary. Use -OutFile to save it, e.g.:"
+                Write-Warning "    imm $Path -OutFile output.bin"
             }
-
-            if ($responseObject.Headers["Content-Type"] -like "*json*" -or $contentLength -eq 0 -or $responseObject.StatusCode -eq 204 -or $responseObject.StatusCode -ge 400) {
-                $contentType = "json"
-            }
-            elseif ($responseObject.Headers["Content-Type"] -like "text*") {
-                $contentType = "text"
-            }
-            else {
-                $contentType = "unknown"
-                Write-Error "An unexpected content type was found"
-                Write-Error (createErrorStringFromResponseObject -responseObject $responseObject)
-
-            }
-            if ($responseObject.Content -is [String]) {
-                $response = $responseObject.Content
-            }
-            else {
-                $response = [System.Text.Encoding]::UTF8.GetString($responseObject.Content)
-            }
+            return
         }
 
-        # Only overwrite the last response if $response is not null
+        $statusCode = $result.StatusCode
+        $statusDescription = $result.StatusDescription
+        $responseHeaders = $result.Headers
+        $response = $result.Content
+
+        $contentType = "unknown" # one of json, text, unknown
+        $contentLength = 0
+        if ($responseHeaders["Content-Length"]) {
+            [Int]::TryParse($responseHeaders["Content-Length"], [ref] $contentLength) | Out-Null
+        } else {
+            $contentLength = if ($null -ne $response) { $response.Length } else { 0 }
+        }
+
+        if ($responseHeaders["Content-Type"] -like "*json*" -or $contentLength -eq 0 -or $statusCode -eq 204 -or $statusCode -ge 400) {
+            $contentType = "json"
+        }
+        elseif ($responseHeaders["Content-Type"] -like "text*") {
+            $contentType = "text"
+        }
+        else {
+            $contentType = "unknown"
+            Write-Warning "Unexpected content type: $($responseHeaders["Content-Type"])"
+        }
+
+        # Only overwrite the last response if content is JSON
         if ($null -ne $response -and $contentType -eq "json") {
             [MetasysEnvVars]::setLast($response)
-            [MetasysEnvVars]::setHeaders($responseObject.Headers)
-            [MetasysEnvVars]::setStatus($responseObject.StatusCode, $responseObject.StatusDescription)
+            [MetasysEnvVars]::setHeaders($responseHeaders)
+            [MetasysEnvVars]::setStatus($statusCode, $statusDescription)
         }
 
         if ($ReturnBodyAsObject.IsPresent -and $null -ne $response -and $contentType -eq "json") {
             Get-LastMetasysResponseBodyAsObject
         }
         elseif ($null -ne $response) {
-
             if ($contentType -eq "json") {
                 if ($IncludeResponseHeaders) {
                     Show-LastMetasysFullResponse
@@ -318,16 +450,17 @@ function Invoke-MetasysMethod {
                     Show-LastMetasysResponseBody
                 }
             }
-            if ($contentType -eq "text") {
-
+            elseif ($contentType -eq "text") {
                 if ($IncludeResponseHeaders) {
-                    $responseObject.RawContent
+                    "$statusCode ($statusDescription)"
+                    $responseHeaders.Keys | ForEach-Object { "$_`: $($responseHeaders[$_])" }
+                    ""
+                    $response
                 }
                 else {
                     $response
                 }
             }
-
         }
     }
 

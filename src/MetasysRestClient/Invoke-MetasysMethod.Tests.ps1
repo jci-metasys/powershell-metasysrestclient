@@ -117,8 +117,10 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                     $mockConsole.ReadHost($Prompt)
                 }
 
-                Mock Invoke-WebRequest -ModuleName MetasysRestClient {
-
+                Mock invokeHttpRequest -ModuleName MetasysRestClient {
+                    [PSCustomObject]@{ StatusCode = 200; StatusDescription = "OK"
+                        Headers = @{ "Content-Type" = "application/json" }
+                        Content = "{}"; ContentEncoding = $null }
                 }
 
                 Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
@@ -133,8 +135,8 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             }
 
             It "Should prompt for Path,  and Invoke Operation" {
-                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient  -ParameterFilter {
-                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v$LatestVersion" + "$($mockConsole.GetResponse([MockConsole]::PathPrompt))"
+                Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient  -ParameterFilter {
+                    $uri -eq "https://$($env:METASYS_HOST)/api/v$LatestVersion" + "$($mockConsole.GetResponse([MockConsole]::PathPrompt))"
                 } -Exactly -Times 1 -Scope Context
 
             }
@@ -146,14 +148,14 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
                 Mock Write-Error -ModuleName MetasysRestClient
 
-                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+                Mock invokeHttpRequest -ModuleName MetasysRestClient
 
                 @( "body1", "body2" ) | Invoke-MetasysMethod -Method Post https://oas12/api/v4/objects -Version 3
 
             }
 
             It "Should exit BEGIN block and not enter PROCESS block" {
-                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times 0 -Scope Context
+                Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Exactly -Times 0 -Scope Context
             }
 
         }
@@ -162,7 +164,11 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
             It "Should use user preference for version if set" {
 
-                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+                Mock invokeHttpRequest -ModuleName MetasysRestClient {
+                    [PSCustomObject]@{ StatusCode = 200; StatusDescription = "OK"
+                        Headers = @{ "Content-Type" = "application/json" }
+                        Content = "{}"; ContentEncoding = $null }
+                }
 
                 Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient
                 Mock Get-MetasysDefaultApiVersion -ModuleName MetasysRestClient {
@@ -171,8 +177,8 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
                 Invoke-MetasysMethod /objects
 
-                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -ParameterFilter {
-                    $Uri.ToString() -eq "https://$($env:METASYS_HOST)/api/v3/objects"
+                Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -ParameterFilter {
+                    $uri -eq "https://$($env:METASYS_HOST)/api/v3/objects"
                 } -Exactly -Times 1 -Scope Context
 
             }
@@ -202,7 +208,11 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
         Context "An operation is invoked, but session is expired" {
             BeforeAll {
 
-                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+                Mock invokeHttpRequest -ModuleName MetasysRestClient {
+                    [PSCustomObject]@{ StatusCode = 200; StatusDescription = "OK"
+                        Headers = @{ "Content-Type" = "application/json" }
+                        Content = "{}"; ContentEncoding = $null }
+                }
                 Mock Connect-MetasysAccount -ModuleName MetasysRestClient
                 Mock Get-SavedMetasysPassword -ModuleName MetasysRestClient {
                     ConvertTo-SecureString -String "ThePassword" -AsPlainText
@@ -221,7 +231,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             }
 
             It "Should call the operation" {
-                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Scope Context -Times 1 -Exactly
+                Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Scope Context -Times 1 -Exactly
             }
         }
 
@@ -242,8 +252,8 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             Context "Single body passed in" {
                 It "Should exit BEGIN block and not enter PROCESS block" {
                     Mock Write-Error -ModuleName MetasysRestClient
-                    Mock Invoke-WebRequest -ModuleName MetasysRestClient
-                    Invoke-MetasysMethod /objects -Method Post -Body "body" | Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times  0
+                    Mock invokeHttpRequest -ModuleName MetasysRestClient
+                    Invoke-MetasysMethod /objects -Method Post -Body "body" | Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Exactly -Times  0
 
                 }
             }
@@ -251,8 +261,8 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                 It "Should exit BEGIN block and not enter PROCESS block" {
 
                     Mock Write-Error -ModuleName MetasysRestClient
-                    Mock Invoke-WebRequest -ModuleName MetasysRestClient
-                    @("body1", "body2") | Invoke-MetasysMethod /objects -Method Post | Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times  0
+                    Mock invokeHttpRequest -ModuleName MetasysRestClient
+                    @("body1", "body2") | Invoke-MetasysMethod /objects -Method Post | Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Exactly -Times  0
                 }
 
             }
@@ -273,7 +283,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                     Mock Connect-MetasysAccount -ModuleName MetasysRestClient {
                         throw "error"
                     }
-                    Invoke-MetasysMethod /objects -Method Post -Body "body" | Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times  0
+                    Invoke-MetasysMethod /objects -Method Post -Body "body" | Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Exactly -Times  0
 
                 }
             }
@@ -286,7 +296,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
                         throw "error"
                     }
 
-                    @("body1", "body2") | Invoke-MetasysMethod /objects -Method Post | Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times  0
+                    @("body1", "body2") | Invoke-MetasysMethod /objects -Method Post | Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Exactly -Times  0
 
                 }
             }
@@ -304,11 +314,11 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             Context "Multiple bodies passed in and refresh token fails" {
                 It "Should exit BEGIN block and not enter PROCESS block" {
 
-                    Mock Invoke-WebRequest -ModuleName MetasysRestClient
+                    Mock invokeHttpRequest -ModuleName MetasysRestClient
                     Mock Invoke-RestMethod -ModuleName MetasysRestClient {
                         throw "error"
                     }
-                    @("body1", "body2") | Invoke-MetasysMethod /objects -Method Post | Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times  0
+                    @("body1", "body2") | Invoke-MetasysMethod /objects -Method Post | Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Exactly -Times  0
 
                 }
             }
@@ -326,20 +336,20 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
         It "Should display response headers and then the response body" {
 
-            $response = @{
-                StatusCode        = 200;
-                StatusDescription = "OK"
-                Headers           = @{
-                    Header1        = "This is header 1";
-                    Header2        = "Header 2";
-                    "Content-Type" = "application/json"
-                };
-                Content           = 123, 10, 32, 32, 34, 105, 116, 101, 109, 34, 58, 32, 123, 10, 32, 32, 32, 32, 34, 112, 114, 101, 115, 101, 110, 116, 86, 97, 108, 117, 101, 34, 58, 32, 55, 50, 46, 53, 10, 32, 32, 125, 10, 125
+            Mock invokeHttpRequest -ModuleName MetasysRestClient {
+                [PSCustomObject]@{
+                    StatusCode        = 200
+                    StatusDescription = "OK"
+                    Headers           = @{
+                        Header1        = "This is header 1"
+                        Header2        = "Header 2"
+                        "Content-Type" = "application/json"
+                    }
+                    Content           = '{"item":{"presentValue":72.5}}'
+                    ContentEncoding   = $null
+                }
             }
-            Mock Invoke-WebRequest -ModuleName MetasysRestClient {
-                # Mocking Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject
-                $response
-            }
+            $expectedBody = '{"item":{"presentValue":72.5}}' | ConvertFrom-Json | ConvertTo-Json -Depth 20 | dos2unix
             $expectedString = @"
 200 (OK)
 Content-Type: application/json
@@ -348,12 +358,78 @@ Header2: Header 2
 
 
 "@ | dos2unix
-            $expectedString += [System.Text.Encoding]::UTF8.GetString($response.Content)
+            $expectedString += $expectedBody
             $actual = Invoke-MetasysMethod /anything -IncludeResponseHeaders | sortHeaders | dos2unix
             $actual | Should -Be  $expectedString
         }
     }
 
+
+    Describe 'When response is binary' {
+        BeforeAll {
+            Clear-MetasysEnvVariables
+            $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
+            $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+            $env:METASYS_VERSION = $LatestVersion
+            $env:METASYS_HOST = "oas12"
+        }
+
+        Context 'Without -OutFile' {
+            BeforeAll {
+                Mock invokeHttpRequest -ModuleName MetasysRestClient {
+                    [PSCustomObject]@{
+                        StatusCode        = 200
+                        StatusDescription = "OK"
+                        Headers           = @{}
+                        Content           = $null
+                        ContentEncoding   = "br"
+                    }
+                }
+                Mock Write-Warning -ModuleName MetasysRestClient
+                Invoke-MetasysMethod /something
+            }
+
+            It "Should warn the user" {
+                Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 2 -Exactly -Scope Context
+            }
+
+            It "Should not call invokeHttpRequest more than once" {
+                Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -Times 1 -Exactly -Scope Context
+            }
+        }
+
+        Context 'With -OutFile' {
+            BeforeAll {
+                Mock invokeHttpRequest -ModuleName MetasysRestClient {
+                    [PSCustomObject]@{
+                        StatusCode        = 200
+                        StatusDescription = "OK"
+                        Headers           = @{}
+                        Content           = $null
+                        ContentEncoding   = "br"
+                    }
+                }
+                Mock Write-Warning -ModuleName MetasysRestClient
+                $script:tempFile = [System.IO.Path]::GetTempFileName()
+                Invoke-MetasysMethod /something -OutFile $script:tempFile
+            }
+
+            It "Should pass the resolved output path to invokeHttpRequest" {
+                Should -Invoke invokeHttpRequest -ModuleName MetasysRestClient -ParameterFilter {
+                    $outputFile -eq $script:tempFile
+                } -Times 1 -Exactly -Scope Context
+            }
+
+            It "Should not warn the user" {
+                Should -Invoke Write-Warning -ModuleName MetasysRestClient -Times 0 -Scope Context
+            }
+
+            It "Should output the file path" {
+                $output = Invoke-MetasysMethod /something -OutFile $script:tempFile
+                $output | Should -Be $script:tempFile
+            }
+        }
+    }
 
     Describe 'When -IncludeResponseHeaders with response error' {
         BeforeAll {
@@ -365,19 +441,18 @@ Header2: Header 2
         }
 
         It "Should display all headers and response body" {
-            Mock Invoke-WebRequest -ModuleName MetasysRestClient {
-                # Mocking Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject
-                $response = @{
-                    StatusCode        = 400;
+            Mock invokeHttpRequest -ModuleName MetasysRestClient {
+                [PSCustomObject]@{
+                    StatusCode        = 400
                     StatusDescription = "Bad Request"
                     Headers           = @{
-                        Header1        = "This is header 1";
-                        Header2        = "Header 2";
+                        Header1        = "This is header 1"
+                        Header2        = "Header 2"
                         "Content-Type" = "application/json"
-                    };
-                    Content           = 34, 104, 101, 108, 108, 111, 34
+                    }
+                    Content           = '"hello"'
+                    ContentEncoding   = $null
                 }
-                $response
             }
             $expectedString = @"
 400 (Bad Request)
