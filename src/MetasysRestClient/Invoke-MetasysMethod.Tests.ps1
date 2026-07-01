@@ -395,4 +395,23 @@ Header2: Header 2
         }
     }
 
+    Describe 'Show-LastMetasysResponseBody called standalone' {
+
+        BeforeAll {
+            $script:tempFile = New-TemporaryFile
+            Set-Content -Path $script:tempFile.FullName -Value '{"answer":42}'
+            $env:METASYS_LAST_RESPONSE_PATH = $script:tempFile.FullName
+        }
+
+        AfterAll {
+            Remove-Item $script:tempFile.FullName -ErrorAction SilentlyContinue
+            $env:METASYS_LAST_RESPONSE_PATH = $null
+        }
+
+        It "Returns the stored response body as formatted JSON without error" {
+            $result = Show-LastMetasysResponseBody
+            $result | Should -BeLike '*"answer": 42*'
+        }
+    }
+
 }

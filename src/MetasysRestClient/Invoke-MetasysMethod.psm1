@@ -372,7 +372,7 @@ function ConvertFrom-JsonSafely {
 
 function Show-LastMetasysResponseBody {
     $body = [MetasysEnvVars]::getLast()
-    if ($body -and ($contentType -eq "json")) {
+    if ($body) {
         ConvertFrom-JsonSafely $body | ConvertTo-Json -Depth 20
     }
 }
