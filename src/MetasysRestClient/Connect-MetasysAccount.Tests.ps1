@@ -189,7 +189,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
 
                 $script:metasysHost = "aHost"
                 $script:userName = "aUser"
-                $script:securePassword = "aPassword" | ConvertTo-SecureString -AsPlainText
+                $script:securePassword = "aPassword" | ConvertTo-SecureString -AsPlainText -Force
 
                 # qualify with $script to avoid unused-vars warnings from PSScriptAnalyzer
                 $script:response = Connect-MetasysAccount -MetasysHost $script:metasysHost `
@@ -246,13 +246,15 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 Mock Get-Content -ModuleName MetasysRestClient {
                     @"
                     {
-                        "hosts": {
-                            "alias": "host",
-                            "hostname": "$($script:metasysHost)",
-                            "username": "$($script:username)",
-                            "version": "$($script:version)",
-                            "skip-certificate-check": true
-                        }
+                        "hosts": [
+                            {
+                                "alias": "host",
+                                "hostname": "$($script:metasysHost)",
+                                "username": "$($script:username)",
+                                "version": "$($script:version)",
+                                "skip-certificate-check": true
+                            }
+                        ]
                     }
 "@
                 }
@@ -360,7 +362,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
                     "hostname"
                 }
                 else {
-                    "password" | ConvertTo-SecureString -AsPlainText
+                    "password" | ConvertTo-SecureString -AsPlainText -Force
                 }
             }
         }
@@ -407,7 +409,7 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 Mock Write-Information -ModuleName MetasysRestClient
 
                 {
-                    Connect-MetasysAccount -h oas -u user -p (password | ConvertTo-SecureString -AsPlainText)
+                    Connect-MetasysAccount -h oas -u user -p (password | ConvertTo-SecureString -AsPlainText -Force)
                 } | Should -Throw
 
                 Should -Invoke Write-Information -ModuleName MetasysRestClient -Exactly -Times 0 -ParameterFilter {
