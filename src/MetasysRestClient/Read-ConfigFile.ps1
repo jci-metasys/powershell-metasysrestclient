@@ -27,9 +27,8 @@ function Read-ConfigFile {
                 }
             }
         } else {
-            $path = $HOME + "/.metasysapirc"
-            Write-Error "Cannot parse '$path' file. Expected valid JSON."
-            Exit
+            $path = $HOME + "/.metasysrestclient"
+            throw "Cannot parse '$path' file. Expected valid JSON."
         }
     }
 }

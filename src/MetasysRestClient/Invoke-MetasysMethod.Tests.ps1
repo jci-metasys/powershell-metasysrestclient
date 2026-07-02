@@ -490,3 +490,20 @@ Header2: Header 2
     }
 
 }
+
+Describe "Invoke-MetasysGetStream" -Tag Unit {
+
+    Context "When called without an established connection" {
+
+        BeforeAll {
+            $env:METASYS_ACCESS_TOKEN = $null
+            $env:METASYS_HOST = $null
+        }
+
+        It "Should throw an error instead of entering an infinite loop" {
+            { Invoke-MetasysGetStream } | Should -Throw "*No connection*"
+        }
+
+    }
+
+}
