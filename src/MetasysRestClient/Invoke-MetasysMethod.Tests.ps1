@@ -104,7 +104,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
     Describe "When Token Stored in Env Vars and Token is not expired, and SiteHost stored in env vars" {
         BeforeAll {
             Clear-MetasysEnvVariables
-            $env:METASYS_ACCESS_TOKEN = (ConvertTo-SecureString -AsPlainText "This is the token") | ConvertFrom-SecureString
+            InModuleScope MetasysRestClient { [MetasysEnvVars]::setTokenAsPlainText("This is the token") }
             $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
             $env:METASYS_HOST = "oas12"
         }
@@ -198,7 +198,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
         BeforeAll {
             Clear-MetasysEnvVariables
             $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow - [TimeSpan]::FromMinutes(5)).ToString("o")
-            $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+            InModuleScope MetasysRestClient { [MetasysEnvVars]::setTokenAsPlainText("secure token") }
             $env:METASYS_VERSION = $LatestVersion
             $env:METASYS_HOST = "oas12"
             $env:METASYS_USER_NAME = "api"
@@ -273,7 +273,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             BeforeAll {
                 Clear-MetasysEnvVariables
                 $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow - [TimeSpan]::FromMinutes(5)).ToString("o")
-                $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+                InModuleScope MetasysRestClient { [MetasysEnvVars]::setTokenAsPlainText("secure token") }
                 $env:METASYS_VERSION = $LatestVersion
             }
 
@@ -306,7 +306,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
             BeforeAll {
                 Clear-MetasysEnvVariables
                 $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(2)).ToString("o")
-                $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+                InModuleScope MetasysRestClient { [MetasysEnvVars]::setTokenAsPlainText("secure token") }
                 $env:METASYS_VERSION = $LatestVersion
                 $env:METASYS_HOST = "oas12"
             }
@@ -329,7 +329,7 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
         BeforeAll {
             Clear-MetasysEnvVariables
             $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
-            $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+            InModuleScope MetasysRestClient { [MetasysEnvVars]::setTokenAsPlainText("secure token") }
             $env:METASYS_VERSION = $LatestVersion
             $env:METASYS_HOST = "oas12"
         }
@@ -369,7 +369,7 @@ Header2: Header 2
         BeforeAll {
             Clear-MetasysEnvVariables
             $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
-            $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+            InModuleScope MetasysRestClient { [MetasysEnvVars]::setTokenAsPlainText("secure token") }
             $env:METASYS_VERSION = $LatestVersion
             $env:METASYS_HOST = "oas12"
         }
@@ -435,7 +435,7 @@ Header2: Header 2
         BeforeAll {
             Clear-MetasysEnvVariables
             $env:METASYS_EXPIRES = ([DateTimeOffset]::UtcNow + [TimeSpan]::FromMinutes(30)).ToString("o")
-            $env:METASYS_ACCESS_TOKEN = "secure token" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString
+            InModuleScope MetasysRestClient { [MetasysEnvVars]::setTokenAsPlainText("secure token") }
             $env:METASYS_VERSION = $LatestVersion
             $env:METASYS_HOST = "oas12"
         }

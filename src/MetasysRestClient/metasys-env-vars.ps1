@@ -1,5 +1,7 @@
 Set-StrictMode -Version 3
 class MetasysEnvVars {
+    static hidden [string] $Token = $null
+
     static [string] getSiteHost() {
         return $env:METASYS_HOST
     }
@@ -16,7 +18,7 @@ class MetasysEnvVars {
         $env:METASYS_VERSION = $version
     }
 
-    static [DateTimeOffset] getExpires() {
+    static [object] getExpires() {
         $aDate = [DateTimeOffset]::Now
         if ([DateTimeOffset]::TryParse($env:METASYS_EXPIRES, [ref]$aDate)) {
             return $aDate
@@ -28,28 +30,22 @@ class MetasysEnvVars {
         $env:METASYS_EXPIRES = $expires.ToString("o")
     }
 
-    static [SecureString] getToken() {
-        if ($env:METASYS_ACCESS_TOKEN) {
-            return ConvertTo-SecureString $env:METASYS_ACCESS_TOKEN
-        }
-        return $null
+    static [object] getToken() {
+        $t = [MetasysEnvVars]::Token
+        if ([string]::IsNullOrEmpty($t)) { return $null }
+        return $t
     }
 
-    static [void] setToken([SecureString]$token) {
-        $env:METASYS_ACCESS_TOKEN = ConvertFrom-SecureString -SecureString $token
+    static [void] setToken([string]$token) {
+        [MetasysEnvVars]::Token = $token
     }
 
-    static [String] getTokenAsPlainText() {
-        $secureToken = [MetasysEnvVars]::getToken()
-        if ($secureToken) {
-            return (ConvertFrom-SecureString -SecureString $secureToken -AsPlainText)
-        }
-
-        return $null
+    static [string] getTokenAsPlainText() {
+        return [MetasysEnvVars]::Token
     }
 
-    static [void] setTokenAsPlainText([String]$token) {
-        [MetasysEnvVars]::setToken(($token | ConvertTo-SecureString -AsPlainText))
+    static [void] setTokenAsPlainText([string]$token) {
+        [MetasysEnvVars]::Token = $token
     }
 
     static [string] getLast() {
@@ -77,7 +73,7 @@ class MetasysEnvVars {
     }
 
     static [void] clear() {
-        $env:METASYS_ACCESS_TOKEN = $null
+        [MetasysEnvVars]::Token = $null
         $env:METASYS_EXPIRES = $null
         $env:METASYS_HOST = $null
         $env:METASYS_LAST_HEADERS = $null

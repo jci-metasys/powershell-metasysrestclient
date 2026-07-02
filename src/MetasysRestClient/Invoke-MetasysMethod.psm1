@@ -469,7 +469,7 @@ function Invoke-MetasysMethod {
 
 
 function Show-LastMetasysAccessToken {
-    ConvertFrom-SecureString -AsPlainText -SecureString ([MetasysEnvVars]::getToken())
+    [MetasysEnvVars]::getToken()
 }
 
 function Show-LastMetasysHeaders {
