@@ -318,8 +318,13 @@ function Invoke-MetasysMethod {
 
         If ($Version -eq "") {
             # Use the version from last cma call, else the default api version (if set), else latest version
-            $Version = $env:METASYS_VERSION ?? (Get-MetasysDefaultApiVersion) ?? (Get-MetasysLatestVersion)
-            Write-Information "No version specified. Defaulting to v$Version"
+            if ($env:METASYS_VERSION) {
+                $Version = $env:METASYS_VERSION
+            }
+            else {
+                $Version = (Get-MetasysDefaultApiVersion) ?? (Get-MetasysLatestVersion)
+                Write-Information "No version specified. Defaulting to v$Version"
+            }
         }
 
         # Login Region
@@ -352,11 +357,11 @@ function Invoke-MetasysMethod {
                     $refreshRequest = buildRequest -uri $uri -token ([MetasysEnvVars]::getToken()) -skipCertificateCheck:$SkipCertificateCheck
 
                     try {
-                        Write-Information -Message "Attempting to refresh access token"
+                        Write-Debug "Attempting to refresh access token"
                         $refreshResponse = Invoke-RestMethod @refreshRequest
                         [MetasysEnvVars]::setExpires($refreshResponse.expires)
                         [MetasysEnvVars]::setTokenAsPlainText($refreshResponse.accessToken)
-                        Write-Information -Message "Refresh token successful"
+                        Write-Debug "Refresh token successful"
                     }
                     catch {
                         Write-Debug "Error attempting to refresh token"
@@ -379,7 +384,7 @@ function Invoke-MetasysMethod {
 
         $response = $null
 
-        Write-Information -Message "Attempting request"
+        Write-Debug "Attempting request"
 
         $resolvedOutputFile = ""
         if ($OutFile) {
