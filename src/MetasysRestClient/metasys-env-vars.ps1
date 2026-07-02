@@ -59,13 +59,21 @@ class MetasysEnvVars {
         return ""
     }
 
+    static [string] getLastResponseDir() {
+        return [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), 'MetasysRestClient')
+    }
+
     static [void] setLast([string]$last) {
-        # This variable used to save the last response to an env var, but that generally can be very large
-        # So now instead we write the response to a temp file and instead of writing to
-        # $env:METASYS_LAST_RESPONSE we write the path of the file to $env:METASYS_LAST_RESPONSE_PATH
-        $tempFile = New-TemporaryFile
-        Set-Content -Path $tempFile.FullName -Value $last
-        $env:METASYS_LAST_RESPONSE_PATH = $tempFile.FullName
+        $dir = [MetasysEnvVars]::getLastResponseDir()
+        # Clean the directory before writing so files from any prior write don't accumulate.
+        if ([System.IO.Directory]::Exists($dir)) {
+            Get-ChildItem -Path $dir -File | Remove-Item -ErrorAction SilentlyContinue
+        } else {
+            [System.IO.Directory]::CreateDirectory($dir) | Out-Null
+        }
+        $path = [System.IO.Path]::Combine($dir, 'last-response')
+        Set-Content -Path $path -Value $last -NoNewline
+        $env:METASYS_LAST_RESPONSE_PATH = $path
     }
 
     static [void] clear() {
@@ -79,6 +87,7 @@ class MetasysEnvVars {
         $env:METASYS_SKIP_CERTIFICATE_CHECK = $null
         $env:METASYS_USER_NAME = $null
         $env:METASYS_VERSION = $null
+        $env:METASYS_LAST_RESPONSE_PATH = $null
     }
 
     static [void] setHeaders([Hashtable]$headers) {
