@@ -9,7 +9,7 @@ function buildRequest {
         [Parameter(Mandatory = $true)]
         [string]$uri,
         [string]$body = $null,
-        [SecureString]$token,
+        [string]$token,
         [switch]$skipCertificateCheck,
         [Hashtable]$headers
     )
@@ -24,8 +24,7 @@ function buildRequest {
     }
 
     if ($token) {
-        $request.Token = $token
-        $request.Authentication = "bearer"
+        $request.Headers["Authorization"] = "Bearer $token"
     }
 
     # Hint to servers that we prefer encodings PowerShell can auto-decompress.

@@ -98,8 +98,8 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 } -Times 1 -Exactly -Scope Context
             }
 
-            It 'Should set $env:METASYS_ACCESS_TOKEN as an encrypted string whose decrypted value matches what we expect' {
-                $env:METASYS_ACCESS_TOKEN | ConvertTo-SecureString | ConvertFrom-SecureString -AsPlainText | Should -Be  $loginResponse.accessToken
+            It 'Should store the access token with value matching what we expect' {
+                InModuleScope MetasysRestClient { [MetasysEnvVars]::getTokenAsPlainText() } | Should -Be $loginResponse.accessToken
             }
 
             It 'Should set $env:METASYS_EXPIRES' {
@@ -219,8 +219,8 @@ Describe "Connect-Metasys" -Tag "Unit" {
                 } -Times 1 -Exactly -Scope Context
             }
 
-            It 'Should set $env:METASYS_ACCESS_TOKEN' {
-                $env:METASYS_ACCESS_TOKEN | ConvertTo-SecureString | ConvertFrom-SecureString -AsPlainText | Should -Be  $loginResponse.accessToken
+            It 'Should store the access token with value matching what we expect' {
+                InModuleScope MetasysRestClient { [MetasysEnvVars]::getTokenAsPlainText() } | Should -Be $loginResponse.accessToken
             }
 
             It 'Should set $env:METASYS_EXPIRES' {
