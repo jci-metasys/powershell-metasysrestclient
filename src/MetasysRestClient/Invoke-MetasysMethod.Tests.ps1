@@ -160,6 +160,49 @@ Describe "Invoke-MetasysMethod" -Tag Unit {
 
         }
 
+        Context "Non-Metasys absolute URL is passed" {
+
+            BeforeAll {
+                $env:METASYS_VERSION = "6"
+
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+                Mock Write-Error -ModuleName MetasysRestClient
+
+                Invoke-MetasysMethod "https://some-other-host.com/not/a/metasys/url"
+            }
+
+            It "Should not invoke WebRequest (URL guard skips the request)" {
+                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times 0 -Scope Context
+            }
+
+            It "Should write an error for the invalid URL" {
+                Should -Invoke Write-Error -ModuleName MetasysRestClient -Exactly -Times 1 -Scope Context
+            }
+
+            AfterAll {
+                Remove-Item Env:\METASYS_VERSION -ErrorAction SilentlyContinue
+            }
+        }
+
+        Context "Valid Metasys absolute URL is passed" {
+
+            BeforeAll {
+                $env:METASYS_VERSION = "6"
+
+                Mock Invoke-WebRequest -ModuleName MetasysRestClient
+
+                Invoke-MetasysMethod "https://oas12/api/v6/objects"
+            }
+
+            It "Should invoke WebRequest for the valid Metasys URL" {
+                Should -Invoke Invoke-WebRequest -ModuleName MetasysRestClient -Exactly -Times 1 -Scope Context
+            }
+
+            AfterAll {
+                Remove-Item Env:\METASYS_VERSION -ErrorAction SilentlyContinue
+            }
+        }
+
         Context "Version and SkipCertificateCheck not supplied" {
 
             It "Should use user preference for version if set" {
