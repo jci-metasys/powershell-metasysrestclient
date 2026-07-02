@@ -16,7 +16,7 @@ else {
 $response = Invoke-MetasysMethod /enumerations -SiteHost diana12oas -ReturnBodyAsObject -ErrorAction Stop
 
 if ($response -isnot [PSCustomObject] -and $response -isnot [Hashtable]) {
-    Write-Error "Expected response as object to be PSCustomObject or Hashtable, not $($response.GetType()))"
+    Write-Error "Expected response as object to be PSCustomObject or Hashtable, not $($response.GetType())"
 }
 else {
     Write-Output "Success"

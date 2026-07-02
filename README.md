@@ -595,7 +595,7 @@ When the JSON string is relatively short like in this example you can just type
 it all on one line:
 
 ```powershell
-Invoke-MetasysMethod -Method Patch /objects/$Id  -Body "{ 'item': { 'description': 'Zone 3 Temperature Set Point' } }"
+Invoke-MetasysMethod -Method Patch /objects/$Id  -Body '{ "item": { "description": "Zone 3 Temperature Set Point" } }'
 ```
 
 We'll read it back to ensure it changed:
@@ -1610,8 +1610,8 @@ PS > cd src/MetasysRestClient
 PS > Invoke-Pester
 ```
 
-Or simply use the script `runtests.ps1` in the root
+Or simply use the script `run-tests.ps1` in the root
 
 ```powershell
-PS > ./runtests.ps1
+PS > ./run-tests.ps1
 ```

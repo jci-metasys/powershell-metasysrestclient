@@ -20,14 +20,14 @@ function Read-ConfigFile {
         if ($configs) {
             $hosts = $configs.hosts
             if ($hosts) {
-                # Return the last match option
+                # Return the first match
                 $hostEntry = $hosts.Where{ $_.alias -eq $Alias} | Select-Object -First 1
                 if ($hostEntry.psobject.properties['hostname']) {
                     $hostEntry
                 }
             }
         } else {
-            $path = $HOME + "/.metasysapirc"
+            $path = $HOME + "/.metasysrestclient"
             Write-Error "Cannot parse '$path' file. Expected valid JSON."
             Exit
         }
